@@ -85,7 +85,8 @@
     "publish": {
       "provider": "github",
       "owner": "NelushaUdaraka",
-      "repo": "stackview"
+      "repo": "stackview",
+      "releaseType": "release"
     },
     "directories": {
       "output": "dist"
