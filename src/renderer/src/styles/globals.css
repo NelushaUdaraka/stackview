@@ -1,0 +1,611 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ── Light mode (default) ── */
+  :root {
+    --bg-app:      248 250 252;   /* slate-50  */
+    --bg-base:     255 255 255;   /* white     */
+    --bg-raised:   241 245 249;   /* slate-100 */
+    --bg-overlay:  226 232 240;   /* slate-200 */
+    --border:      226 232 240;   /* slate-200 */
+    --border-sub:  241 245 249;   /* slate-100 */
+    --text-1:       15  23  42;   /* slate-900 */
+    --text-2:       71  85 105;   /* slate-600 */
+    --text-3:      100 116 139;   /* slate-500 */
+    --text-4:      148 163 184;   /* slate-400 */
+    --scrollbar-thumb: #cbd5e1;
+  }
+
+  /* ── Dark (neutral) ── */
+  html.dark {
+    --bg-app:        0   0   0;   /* #000000  */
+    --bg-base:       9   9   9;   /* #090909  */
+    --bg-raised:    18  18  18;   /* #121212  */
+    --bg-overlay:   28  28  28;   /* #1c1c1c  */
+    --border:       28  28  28;
+    --border-sub:   18  18  18;
+    --text-1:      250 250 250;   /* neutral-50  */
+    --text-2:      163 163 163;   /* neutral-400 */
+    --text-3:      115 115 115;   /* neutral-500 */
+    --text-4:       82  82  82;   /* neutral-600 */
+    --scrollbar-thumb: #333333;
+  }
+
+  /* ── Midnight (blue-dark) ── */
+  html.midnight {
+    --bg-app:        2   6  23;   /* slate-950 */
+    --bg-base:      15  23  42;   /* slate-900 */
+    --bg-raised:    30  41  59;   /* slate-800 */
+    --bg-overlay:   51  65  85;   /* slate-700 */
+    --border:       30  41  59;   /* slate-800 */
+    --border-sub:   15  23  42;   /* slate-900 */
+    --text-1:      241 245 249;   /* slate-100 */
+    --text-2:      148 163 184;   /* slate-400 */
+    --text-3:      100 116 139;   /* slate-500 */
+    --text-4:       71  85 105;   /* slate-600 */
+    --scrollbar-thumb: #334155;
+  }
+
+  /* ── Nord ── */
+  html.nord {
+    --bg-app:       19  23  34;   /* #131722 */
+    --bg-base:      36  41  54;   /* #242936 */
+    --bg-raised:    46  52  64;   /* #2e3440 */
+    --bg-overlay:   59  66  82;   /* #3b4252 */
+    --border:       59  66  82;
+    --border-sub:   46  52  64;
+    --text-1:      236 239 244;   /* #eceff4 */
+    --text-2:      216 222 233;   /* #d8dee9 */
+    --text-3:      129 161 193;   /* #81a1c1 */
+    --text-4:       76  86 106;   /* #4c566a */
+    --scrollbar-thumb: #4c566a;
+  }
+
+  /* ── Mocha (Catppuccin) ── */
+  html.mocha {
+    --bg-app:       17  17  27;   /* #11111b */
+    --bg-base:      24  24  37;   /* #181825 */
+    --bg-raised:    30  30  46;   /* #1e1e2e */
+    --bg-overlay:   49  50  68;   /* #313244 */
+    --border:       49  50  68;
+    --border-sub:   30  30  46;
+    --text-1:      205 214 244;   /* #cdd6f4 */
+    --text-2:      166 173 200;   /* #a6adc8 */
+    --text-3:      108 112 134;   /* #6c7086 */
+    --text-4:       88  91 112;   /* #585b70 */
+    --scrollbar-thumb: #585b70;
+  }
+
+  /* ── Solarized Dark ── */
+  html.solarized {
+    --bg-app:        0  43  54;   /* #002b36 */
+    --bg-base:       7  54  66;   /* #073642 */
+    --bg-raised:    19  67  80;   /* #134350 */
+    --bg-overlay:   35  83  96;   /* #235360 */
+    --border:       35  83  96;
+    --border-sub:    7  54  66;
+    --text-1:      253 246 227;   /* #fdf6e3 */
+    --text-2:      238 232 213;   /* #eee8d5 */
+    --text-3:      147 161 161;   /* #93a1a1 */
+    --text-4:       88 110 117;   /* #586e75 */
+    --scrollbar-thumb: #586e75;
+  }
+
+  /* ── Dracula ── */
+  html.dracula {
+    --bg-app:       30  31  41;   /* #1e1f29 */
+    --bg-base:      40  42  54;   /* #282a36 */
+    --bg-raised:    52  55  70;   /* #343746 */
+    --bg-overlay:   68  71  90;   /* #44475a */
+    --border:       68  71  90;
+    --border-sub:   52  55  70;
+    --text-1:      248 248 242;   /* #f8f8f2 */
+    --text-2:      189 147 249;   /* #bd93f9 */
+    --text-3:       98 114 164;   /* #6272a4 */
+    --text-4:       68  71  90;   /* #44475a */
+    --scrollbar-thumb: #44475a;
+  }
+
+  /* ── Gruvbox Dark ── */
+  html.gruvbox {
+    --bg-app:       29  32  33;   /* #1d2021 */
+    --bg-base:      40  40  40;   /* #282828 */
+    --bg-raised:    60  56  54;   /* #3c3836 */
+    --bg-overlay:   80  73  69;   /* #504945 */
+    --border:       80  73  69;
+    --border-sub:   60  56  54;
+    --text-1:      235 219 178;   /* #ebdbb2 */
+    --text-2:      213 196 161;   /* #d5c4a1 */
+    --text-3:      146 131 116;   /* #928374 */
+    --text-4:      102  92  84;   /* #665c54 */
+    --scrollbar-thumb: #504945;
+  }
+
+  /* ── Tokyo Night ── */
+  html.tokyo-night {
+    --bg-app:       22  22  30;   /* #16161e */
+    --bg-base:      26  27  46;   /* #1a1b2e */
+    --bg-raised:    36  40  59;   /* #24283b */
+    --bg-overlay:   41  46  66;   /* #292e42 */
+    --border:       41  46  66;
+    --border-sub:   36  40  59;
+    --text-1:      192 202 245;   /* #c0caf5 */
+    --text-2:      169 177 214;   /* #a9b1d6 */
+    --text-3:      122 131 179;   /* #7a83b3 */
+    --text-4:       65  72 104;   /* #414868 */
+    --scrollbar-thumb: #414868;
+  }
+
+  /* ── Rose Pine ── */
+  html.rose-pine {
+    --bg-app:       15  13  23;   /* #0f0d17 */
+    --bg-base:      25  23  36;   /* #191724 */
+    --bg-raised:    31  29  46;   /* #1f1d2e */
+    --bg-overlay:   38  35  58;   /* #26233a */
+    --border:       38  35  58;
+    --border-sub:   31  29  46;
+    --text-1:      224 222 244;   /* #e0def4 */
+    --text-2:      196 167 231;   /* #c4a7e7 */
+    --text-3:      144 140 170;   /* #908caa */
+    --text-4:       78  75 102;   /* #4e4b66 */
+    --scrollbar-thumb: #4e4b66;
+  }
+
+  /* ── Catppuccin Frappe ── */
+  html.frappe {
+    --bg-app:       35  38  52;   /* #232634 */
+    --bg-base:      48  52  70;   /* #303446 */
+    --bg-raised:    65  69  89;   /* #414559 */
+    --bg-overlay:   81  87 109;   /* #51576d */
+    --border:       81  87 109;
+    --border-sub:   65  69  89;
+    --text-1:      198 208 245;   /* #c6d0f5 */
+    --text-2:      165 173 206;   /* #a5adce */
+    --text-3:      115 121 148;   /* #737994 */
+    --text-4:       81  87 109;   /* #51576d */
+    --scrollbar-thumb: #626880;
+  }
+
+  /* ── Ayu Dark ── */
+  html.ayu {
+    --bg-app:       14  17  22;   /* #0e1116 */
+    --bg-base:      28  36  51;   /* #1c2433 */
+    --bg-raised:    31  45  61;   /* #1f2d3d */
+    --bg-overlay:   38  57  74;   /* #26394a */
+    --border:       38  57  74;
+    --border-sub:   31  45  61;
+    --text-1:      230 225 207;   /* #e6e1cf */
+    --text-2:      181 183 179;   /* #b5b7b3 */
+    --text-3:      100 108 121;   /* #646c79 */
+    --text-4:       56  67  82;   /* #384352 */
+    --scrollbar-thumb: #384352;
+  }
+
+  /* ── Everforest Dark ── */
+  html.everforest {
+    --bg-app:       30  35  38;   /* #1e2326 */
+    --bg-base:      39  46  51;   /* #272e33 */
+    --bg-raised:    46  56  60;   /* #2e383c */
+    --bg-overlay:   55  65  69;   /* #374145 */
+    --border:       55  65  69;
+    --border-sub:   46  56  60;
+    --text-1:      211 198 170;   /* #d3c6aa */
+    --text-2:      133 146 137;   /* #859289 */
+    --text-3:       82  92  98;   /* #525c62 */
+    --text-4:       61  72  77;   /* #3d484d */
+    --scrollbar-thumb: #3d484d;
+  }
+
+  /* ── Kanagawa Wave ── */
+  html.kanagawa {
+    --bg-app:       22  22  29;   /* #16161d */
+    --bg-base:      31  31  40;   /* #1f1f28 */
+    --bg-raised:    42  42  55;   /* #2a2a37 */
+    --bg-overlay:   54  54  70;   /* #363646 */
+    --border:       54  54  70;
+    --border-sub:   42  42  55;
+    --text-1:      220 215 186;   /* #dcd7ba */
+    --text-2:      200 192 147;   /* #c8c093 */
+    --text-3:      114 113 105;   /* #727169 */
+    --text-4:       84  84 109;   /* #54546d */
+    --scrollbar-thumb: #54546d;
+  }
+
+  /* ── Catppuccin Macchiato ── */
+  html.macchiato {
+    --bg-app:       24  25  38;   /* #181926 */
+    --bg-base:      30  32  48;   /* #1e2030 */
+    --bg-raised:    54  58  79;   /* #363a4f */
+    --bg-overlay:   73  77 100;   /* #494d64 */
+    --border:       73  77 100;
+    --border-sub:   54  58  79;
+    --text-1:      202 211 245;   /* #cad3f5 */
+    --text-2:      165 173 203;   /* #a5adcb */
+    --text-3:      110 115 141;   /* #6e738d */
+    --text-4:       73  77 100;   /* #494d64 */
+    --scrollbar-thumb: #5b6078;
+  }
+
+  /* ── One Dark ── */
+  html.one-dark {
+    --bg-app:       33  37  43;   /* #21252b */
+    --bg-base:      40  44  52;   /* #282c34 */
+    --bg-raised:    44  49  60;   /* #2c313c */
+    --bg-overlay:   56  62  74;   /* #383e4a */
+    --border:       56  62  74;
+    --border-sub:   44  49  60;
+    --text-1:      171 178 191;   /* #abb2bf */
+    --text-2:      157 165 180;   /* #9da5b4 */
+    --text-3:       99 109 131;   /* #636d83 */
+    --text-4:       59  64  72;   /* #3b4048 */
+    --scrollbar-thumb: #4b5263;
+  }
+
+  /* ── Night Owl ── */
+  html.night-owl {
+    --bg-app:        1  22  39;   /* #011627 */
+    --bg-base:      13  32  53;   /* #0d2035 */
+    --bg-raised:    11  41  66;   /* #0b2942 */
+    --bg-overlay:   19  47  76;   /* #132f4c */
+    --border:       19  47  76;
+    --border-sub:   11  41  66;
+    --text-1:      214 222 235;   /* #d6deeb */
+    --text-2:      130 170 255;   /* #82aaff */
+    --text-3:       92 117 140;   /* #5c758c */
+    --text-4:       29  59  83;   /* #1d3b53 */
+    --scrollbar-thumb: #1d3b53;
+  }
+
+  /* ── Synthwave ── */
+  html.synthwave {
+    --bg-app:       20   9  42;   /* #14092a */
+    --bg-base:      26  17  57;   /* #1a1139 */
+    --bg-raised:    36  22  80;   /* #241650 */
+    --bg-overlay:   50  29 102;   /* #321d66 */
+    --border:       50  29 102;
+    --border-sub:   36  22  80;
+    --text-1:      255 255 255;   /* #ffffff */
+    --text-2:      249 126 114;   /* #f97e72 */
+    --text-3:      132 139 189;   /* #848bbd */
+    --text-4:       75  59 110;   /* #4b3b6e */
+    --scrollbar-thumb: #3d1f6d;
+  }
+
+  /* ── Horizon ── */
+  html.horizon {
+    --bg-app:       22  20  31;   /* #16141f */
+    --bg-base:      28  30  38;   /* #1c1e26 */
+    --bg-raised:    35  37  48;   /* #232530 */
+    --bg-overlay:   46  48  64;   /* #2e3040 */
+    --border:       46  48  64;
+    --border-sub:   35  37  48;
+    --text-1:      213 216 218;   /* #d5d8da */
+    --text-2:      185 188 196;   /* #b9bcc4 */
+    --text-3:      132 135 147;   /* #848793 */
+    --text-4:       78  79  92;   /* #4e4f5c */
+    --scrollbar-thumb: #383a4a;
+  }
+
+  /* ── Moonlight ── */
+  html.moonlight {
+    --bg-app:       25  26  42;   /* #191a2a */
+    --bg-base:      30  32  48;   /* #1e2030 */
+    --bg-raised:    34  36  54;   /* #222436 */
+    --bg-overlay:   47  51  84;   /* #2f3354 */
+    --border:       47  51  84;
+    --border-sub:   34  36  54;
+    --text-1:      200 211 245;   /* #c8d3f5 */
+    --text-2:      169 184 232;   /* #a9b8e8 */
+    --text-3:      122 136 207;   /* #7a88cf */
+    --text-4:       68  74 115;   /* #444a73 */
+    --scrollbar-thumb: #3b4261;
+  }
+
+  /* ── Quiet Light ── */
+  html.quiet-light {
+    --bg-app:      242 242 242;
+    --bg-base:     250 250 250;
+    --bg-raised:   236 236 236;
+    --bg-overlay:  224 224 224;
+    --border:      208 208 208;
+    --border-sub:  224 224 224;
+    --text-1:       51  51  51;
+    --text-2:       85  85  85;
+    --text-3:      119 119 119;
+    --text-4:      170 170 170;
+    --scrollbar-thumb: #c0c0c0;
+  }
+
+  /* ── Solarized Light ── */
+  html.solarized-light {
+    --bg-app:      253 246 227;
+    --bg-base:     238 232 213;
+    --bg-raised:   228 221 200;
+    --bg-overlay:  216 209 186;
+    --border:      200 193 170;
+    --border-sub:  216 209 186;
+    --text-1:       88 110 117;
+    --text-2:      101 123 131;
+    --text-3:      131 148 150;
+    --text-4:      147 161 161;
+    --scrollbar-thumb: #b8b09e;
+  }
+
+  /* ── Tokyo Day ── */
+  html.tokyo-day {
+    --bg-app:      213 214 219;
+    --bg-base:     225 226 231;
+    --bg-raised:   234 235 240;
+    --bg-overlay:  205 206 214;
+    --border:      188 190 202;
+    --border-sub:  205 206 214;
+    --text-1:       52  62  88;
+    --text-2:       97 114 176;
+    --text-3:      130 143 183;
+    --text-4:      169 177 214;
+    --scrollbar-thumb: #b0b5cc;
+  }
+
+  /* ── Abyss ── */
+  html.abyss {
+    --bg-app:        0   6  18;
+    --bg-base:       0  12  24;
+    --bg-raised:     6  18  40;
+    --bg-overlay:   10  30  64;
+    --border:       18  52 110;
+    --border-sub:   10  30  64;
+    --text-1:      102 136 204;
+    --text-2:       82 110 176;
+    --text-3:       56  80 132;
+    --text-4:       18  52 110;
+    --scrollbar-thumb: #0a1e40;
+  }
+
+  /* ── Kimbie Dark ── */
+  html.kimbie {
+    --bg-app:       24  18  10;
+    --bg-base:      34  26  15;
+    --bg-raised:    44  35  22;
+    --bg-overlay:   58  46  30;
+    --border:       78  62  42;
+    --border-sub:   58  46  30;
+    --text-1:      211 175 134;
+    --text-2:      180 148 108;
+    --text-3:      134 105  72;
+    --text-4:       90  68  44;
+    --scrollbar-thumb: #4a3320;
+  }
+
+  /* ── Monokai ── */
+  html.monokai {
+    --bg-app:       30  30  28;
+    --bg-base:      39  40  34;
+    --bg-raised:    50  51  44;
+    --bg-overlay:   62  64  56;
+    --border:       75  76  67;
+    --border-sub:   62  64  56;
+    --text-1:      248 248 242;
+    --text-2:      212 211 186;
+    --text-3:      148 146 123;
+    --text-4:       99  98  82;
+    --scrollbar-thumb: #49483e;
+  }
+
+  /* ── Monokai Dimmed ── */
+  html.monokai-dimmed {
+    --bg-app:       22  22  20;
+    --bg-base:      30  30  26;
+    --bg-raised:    40  40  35;
+    --bg-overlay:   52  52  46;
+    --border:       64  64  56;
+    --border-sub:   52  52  46;
+    --text-1:      197 197 190;
+    --text-2:      165 165 158;
+    --text-3:      120 120 114;
+    --text-4:       78  78  72;
+    --scrollbar-thumb: #444440;
+  }
+
+  /* ── Red ── */
+  html.red {
+    --bg-app:       32   0   0;
+    --bg-base:      57   0   0;
+    --bg-raised:    74   8   8;
+    --bg-overlay:   90  16  16;
+    --border:      110  28  28;
+    --border-sub:   90  16  16;
+    --text-1:      248 248 248;
+    --text-2:      220 200 200;
+    --text-3:      170 140 140;
+    --text-4:      120  90  90;
+    --scrollbar-thumb: #6e1c1c;
+  }
+
+  /* ── Tokyo Night Storm ── */
+  html.tokyo-storm {
+    --bg-app:       31  35  53;
+    --bg-base:      36  40  59;
+    --bg-raised:    41  46  66;
+    --bg-overlay:   47  52  80;
+    --border:       47  52  80;
+    --border-sub:   41  46  66;
+    --text-1:      192 202 245;
+    --text-2:      169 177 214;
+    --text-3:      122 131 179;
+    --text-4:       65  72 104;
+    --scrollbar-thumb: #3b4261;
+  }
+
+  /* ── Tomorrow Night Blue ── */
+  html.tomorrow-blue {
+    --bg-app:        0  20  52;
+    --bg-base:       0  36  81;
+    --bg-raised:     0  48 100;
+    --bg-overlay:    0  63 143;
+    --border:        0  78 160;
+    --border-sub:    0  63 143;
+    --text-1:      255 255 255;
+    --text-2:      187 205 232;
+    --text-3:      114 133 183;
+    --text-4:       60  90 150;
+    --scrollbar-thumb: #003f8f;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  html {
+    background-color: rgb(var(--bg-app));
+    color: rgb(var(--text-1));
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: rgb(var(--bg-app));
+    color: rgb(var(--text-1));
+    transition: background-color 0.15s, color 0.15s;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+  .scrollbar-none { scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  ::selection { background: rgba(14,165,233,.3); color: inherit; }
+}
+
+/* ── Semantic Tailwind shorthand utilities ── */
+@layer utilities {
+  .bg-app     { background-color: rgb(var(--bg-app)); }
+  .bg-base    { background-color: rgb(var(--bg-base)); }
+  .bg-raised  { background-color: rgb(var(--bg-raised)); }
+  .bg-overlay { background-color: rgb(var(--bg-overlay)); }
+
+  .border-theme       { border-color: rgb(var(--border)); }
+  .border-theme-sub   { border-color: rgb(var(--border-sub)); }
+
+  .text-1 { color: rgb(var(--text-1)); }
+  .text-2 { color: rgb(var(--text-2)); }
+  .text-3 { color: rgb(var(--text-3)); }
+  .text-4 { color: rgb(var(--text-4)); }
+}
+
+@keyframes toast-progress {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
+@layer components {
+  .drag-region  { -webkit-app-region: drag; }
+  .no-drag      { -webkit-app-region: no-drag; }
+
+  /* ── Chrome-style tab curved-corner joins ── */
+  .chrome-tab-active::before,
+  .chrome-tab-active::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+  }
+  .chrome-tab-active::before {
+    left: -10px;
+    border-bottom-right-radius: 8px;
+    box-shadow: 4px 0 0 0 rgb(var(--bg-base));
+  }
+  .chrome-tab-active::after {
+    right: -10px;
+    border-bottom-left-radius: 8px;
+    box-shadow: -4px 0 0 0 rgb(var(--bg-base));
+  }
+
+  /* ── Inputs ── */
+  .input-base {
+    @apply w-full rounded-lg px-3 py-2 text-sm transition-colors
+      focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500;
+    background-color: rgb(var(--bg-base));
+    border: 1px solid rgb(var(--border));
+    color: rgb(var(--text-1));
+  }
+  .input-base::placeholder { color: rgb(var(--text-4)); }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white
+      text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
+      disabled:opacity-50 disabled:cursor-not-allowed;
+    background-color: rgb(var(--bg-raised));
+    color: rgb(var(--text-1));
+  }
+  .btn-secondary:hover { background-color: rgb(var(--bg-overlay)); }
+
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20
+      text-red-500 dark:text-red-400 border border-red-500/30
+      text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors;
+    color: rgb(var(--text-2));
+  }
+  .btn-ghost:hover {
+    color: rgb(var(--text-1));
+    background-color: rgb(var(--bg-raised));
+  }
+
+  /* ── Badges ── */
+  .badge        { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium; }
+  .badge-blue   { @apply badge bg-brand-500/20 text-brand-600 dark:text-brand-300; }
+  .badge-green  { @apply badge bg-emerald-500/20 text-emerald-600 dark:text-emerald-300; }
+  .badge-yellow { @apply badge bg-amber-500/20 text-amber-600 dark:text-amber-300; }
+  .badge-red    { @apply badge bg-red-500/20 text-red-600 dark:text-red-300; }
+  .badge-gray   {
+    @apply badge;
+    background-color: rgb(var(--bg-raised));
+    color: rgb(var(--text-2));
+  }
+
+  /* ── Cards / surfaces ── */
+  .card {
+    @apply rounded-xl border;
+    background-color: rgb(var(--bg-base));
+    border-color: rgb(var(--border));
+  }
+  .card-raised {
+    @apply rounded-xl border;
+    background-color: rgb(var(--bg-raised));
+    border-color: rgb(var(--border));
+  }
+
+  /* ── Sidebar search input ── */
+  .sidebar-search {
+    @apply w-full rounded-lg pl-8 pr-3 py-1.5 text-xs transition-colors
+      focus:outline-none focus:ring-1 focus:ring-brand-500/30;
+    background-color: rgb(var(--bg-raised));
+    border: 1px solid rgb(var(--border));
+    color: rgb(var(--text-1));
+  }
+  .sidebar-search::placeholder { color: rgb(var(--text-4)); }
+}
