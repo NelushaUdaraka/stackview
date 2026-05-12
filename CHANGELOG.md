@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-05-12
+
+### Improvements
+- Update-ready notification surfaced as a floating card in the bottom-right corner — installing no longer requires opening the Settings dropdown
+- Status badge dot on the NavRail Settings cog — amber while a new version is downloading, pulsing emerald when an update is ready to install
+- Dismissed notification re-arms automatically when a different version becomes available later in the same session
+
 ## [0.1.0] - 2026-05-12
 
 ### New Features
@@ -26,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Windows NSIS installer with per-user install and directory picker
 - Auto-update via GitHub Releases
 
-[Unreleased]: https://github.com/NelushaUdaraka/stackview/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/NelushaUdaraka/stackview/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/NelushaUdaraka/stackview/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/NelushaUdaraka/stackview/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/NelushaUdaraka/stackview/releases/tag/v0.0.1

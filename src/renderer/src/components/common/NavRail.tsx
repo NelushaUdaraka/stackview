@@ -401,7 +401,7 @@ export default function NavRail({
         >
           <button
             onClick={() => { setSettingsOpen(o => !o); setHoveredId(null); setTooltip(null) }}
-            className="flex items-center justify-center transition-all duration-200"
+            className="relative flex items-center justify-center transition-all duration-200"
             style={{
               width: 48,
               height: 48,
@@ -413,8 +413,29 @@ export default function NavRail({
                   : 'rgb(var(--bg-raised))',
               color: settingsOpen ? 'rgb(var(--text-1))' : 'rgb(var(--text-3))',
             }}
+            title={
+              updaterStatus.status === 'ready'
+                ? `Update v${updaterStatus.version ?? ''} ready — open Settings to install`
+                : updaterStatus.status === 'available'
+                  ? `Update v${updaterStatus.version ?? ''} available`
+                  : updaterStatus.status === 'downloading'
+                    ? `Downloading update… ${updaterStatus.percent ?? 0}%`
+                    : undefined
+            }
           >
             <Settings size={20} />
+            {(updaterStatus.status === 'available'
+              || updaterStatus.status === 'downloading'
+              || updaterStatus.status === 'ready') && (
+              <span
+                className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 ${
+                  updaterStatus.status === 'ready'
+                    ? 'bg-emerald-500 ring-emerald-500/30 animate-pulse'
+                    : 'bg-amber-500 ring-amber-500/30'
+                }`}
+                style={{ boxShadow: '0 0 0 2px rgb(var(--bg-raised))' }}
+              />
+            )}
           </button>
 
           {/* Settings dropdown — opens to the right */}

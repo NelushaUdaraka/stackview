@@ -1,6 +1,6 @@
 {
   "name": "stackview",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "StackView — AWS Service Explorer for LocalStack",
   "repository": "https://github.com/NelushaUdaraka/stackview.git",
   "main": "./out/main/index.js",

@@ -36,6 +36,7 @@ import S3ControlLayout from './components/s3control/S3ControlLayout'
 import TitleBar from './components/common/TitleBar'
 import NavRail from './components/common/NavRail'
 import ServiceBand from './components/common/ServiceBand'
+import UpdateBanner from './components/common/UpdateBanner'
 import type { AppSettings, QueueInfo, AppScreen, Service, AppTab, IconMode, Theme, UpdaterStatus } from './types'
 import { ALL_THEMES, THEME_CSS_VARS } from '../../shared/themes'
 
@@ -495,6 +496,10 @@ export default function App() {
           </div>
         </div>
       )}
+      <UpdateBanner
+        status={updaterStatus}
+        onInstall={() => window.electronAPI.installUpdate()}
+      />
     </div>
     </ToastProvider>
   )
