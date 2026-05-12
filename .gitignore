@@ -24,6 +24,9 @@ desktop.ini
 *.suo
 *.user
 
+# Claude Code per-user config
+.claude/settings.local.json
+
 # electron-builder
 app-update.yml
 __pycache__/

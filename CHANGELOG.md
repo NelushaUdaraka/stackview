@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-05-12
+
+### New Features
+- Service band on every service tab — shows the service icon, name, label, and active region above the sidebar and content
+- Per-service region override — open the gear in the service band to change the region for one service without affecting others, with a small indicator dot and a "Reset to global" action
+- Region picker popover with search, scoped to the active service
+
+### Fixes
+- Release notes no longer include the markdown reference-link footer from CHANGELOG.md
+
 ## [0.0.1] - 2025-01-01
 
 ### New Features
@@ -16,5 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Windows NSIS installer with per-user install and directory picker
 - Auto-update via GitHub Releases
 
-[Unreleased]: https://github.com/NelushaUdaraka/stackview/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/NelushaUdaraka/stackview/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/NelushaUdaraka/stackview/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/NelushaUdaraka/stackview/releases/tag/v0.0.1

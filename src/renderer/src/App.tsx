@@ -35,6 +35,7 @@ import R53ResolverLayout from './components/r53resolver/R53ResolverLayout'
 import S3ControlLayout from './components/s3control/S3ControlLayout'
 import TitleBar from './components/common/TitleBar'
 import NavRail from './components/common/NavRail'
+import ServiceBand from './components/common/ServiceBand'
 import type { AppSettings, QueueInfo, AppScreen, Service, AppTab, IconMode, Theme, UpdaterStatus } from './types'
 import { ALL_THEMES, THEME_CSS_VARS } from '../../shared/themes'
 
@@ -111,6 +112,8 @@ export default function App() {
   const [iconMode, setIconModeState] = useState<IconMode>('lucide')
   const [refreshKey, setRefreshKey] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
+  // Per-service region overrides — when unset for a service, settings.region is used.
+  const [serviceRegions, setServiceRegions] = useState<Partial<Record<Service, string>>>({})
   const [appVersion, setAppVersion] = useState('')
   const [autoUpdate, setAutoUpdateState] = useState(true)
   const [updaterStatus, setUpdaterStatus] = useState<UpdaterStatus>({ status: 'idle' })
@@ -182,7 +185,7 @@ export default function App() {
       await window.electronAPI.reinit(ep, rg)
       const result = await window.electronAPI.listQueues()
       if (result.success && result.data) {
-        const infos: QueueInfo[] = result.data.map((url) => ({
+        const infos: QueueInfo[] = result.data.map((url: string) => ({
           url,
           name: url.split('/').pop() ?? url
         }))
@@ -195,6 +198,27 @@ export default function App() {
   const reinitService = useCallback(async (svc: Service, endpoint: string, region: string) => {
     await SERVICE_REINIT_MAP[svc](endpoint, region)
   }, [])
+
+  const getServiceRegion = useCallback(
+    (svc: Service) => serviceRegions[svc] ?? settings.region,
+    [serviceRegions, settings.region]
+  )
+
+  const handleServiceRegionChange = useCallback(
+    async (svc: Service, region: string) => {
+      // Treat "matches global" as clearing the override.
+      setServiceRegions(prev => {
+        const next = { ...prev }
+        if (region === settings.region) delete next[svc]
+        else next[svc] = region
+        return next
+      })
+      await SERVICE_REINIT_MAP[svc](settings.endpoint, region)
+      if (svc === 'sqs') await refreshQueues(settings.endpoint, region)
+      setRefreshKey(k => k + 1)
+    },
+    [settings.endpoint, settings.region, refreshQueues]
+  )
 
   const toggleFavourite = useCallback((svc: Service) => {
     setFavouriteServices(prev => {
@@ -211,10 +235,10 @@ export default function App() {
 
   const handleSelectService = useCallback(
     (svc: Service) => {
-      reinitService(svc, settings.endpoint, settings.region)
+      reinitService(svc, settings.endpoint, getServiceRegion(svc))
       setTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, service: svc } : t))
     },
-    [settings, reinitService, activeTabId]
+    [settings, reinitService, activeTabId, getServiceRegion]
   )
 
   const handleOpenInNewTab = useCallback(
@@ -225,11 +249,11 @@ export default function App() {
         return
       }
       const id = newTabId()
-      reinitService(svc, settings.endpoint, settings.region)
+      reinitService(svc, settings.endpoint, getServiceRegion(svc))
       setTabs(prev => [...prev, { id, service: svc }])
       setActiveTabId(id)
     },
-    [settings, reinitService, tabs]
+    [settings, reinitService, tabs, getServiceRegion]
   )
 
   const handleNavRailSelect = useCallback(
@@ -238,11 +262,11 @@ export default function App() {
       if (existing) {
         setActiveTabId(existing.id)
       } else {
-        reinitService(svc, settings.endpoint, settings.region)
+        reinitService(svc, settings.endpoint, getServiceRegion(svc))
         setTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, service: svc } : t))
       }
     },
-    [settings, reinitService, tabs, activeTabId]
+    [settings, reinitService, tabs, activeTabId, getServiceRegion]
   )
 
   const handleCloseTab = useCallback((tabId: string) => {
@@ -278,17 +302,20 @@ export default function App() {
       const newSettings = { ...settings, region }
       setSettings(newSettings)
       await window.electronAPI.saveSettings(newSettings.endpoint, region)
-      // Only reinit services that have open tabs — skip idle services
+      // Only reinit services that have open tabs — skip idle services.
+      // Per-service overrides keep their region; everything else follows the new global.
       const openServices = [...new Set(
         tabs.map(t => t.service).filter((s): s is Service => s !== null)
       )]
       await Promise.all(
-        openServices.map(svc => SERVICE_REINIT_MAP[svc](newSettings.endpoint, region))
+        openServices.map(svc =>
+          SERVICE_REINIT_MAP[svc](newSettings.endpoint, serviceRegions[svc] ?? region)
+        )
       )
-      await refreshQueues(newSettings.endpoint, region)
+      await refreshQueues(newSettings.endpoint, serviceRegions.sqs ?? region)
       setRefreshKey(k => k + 1)
     },
-    [settings, tabs, refreshQueues]
+    [settings, tabs, refreshQueues, serviceRegions]
   )
 
   const handleRefreshActiveTab = useCallback(async () => {
@@ -296,13 +323,14 @@ export default function App() {
     if (!activeTab?.service) return
     setRefreshing(true)
     try {
-      await reinitService(activeTab.service, settings.endpoint, settings.region)
-      if (activeTab.service === 'sqs') await refreshQueues()
+      const region = getServiceRegion(activeTab.service)
+      await reinitService(activeTab.service, settings.endpoint, region)
+      if (activeTab.service === 'sqs') await refreshQueues(settings.endpoint, region)
       setRefreshKey(k => k + 1)
     } finally {
       setRefreshing(false)
     }
-  }, [tabs, activeTabId, settings, reinitService, refreshQueues])
+  }, [tabs, activeTabId, settings.endpoint, reinitService, refreshQueues, getServiceRegion])
 
   const handleReorderTabs = useCallback((newTabs: AppTab[]) => {
     setTabs(newTabs)
@@ -447,7 +475,20 @@ export default function App() {
                   className="absolute inset-0"
                   style={{ display: activeTabId === tab.id ? 'flex' : 'none', flexDirection: 'column' }}
                 >
-                  {renderLayout(tab)}
+                  {tab.service && (
+                    <ServiceBand
+                      service={tab.service}
+                      settings={settings}
+                      effectiveRegion={getServiceRegion(tab.service)}
+                      iconMode={iconMode}
+                      onRefresh={handleRefreshActiveTab}
+                      refreshing={refreshing}
+                      onChangeRegion={(rg) => handleServiceRegionChange(tab.service!, rg)}
+                    />
+                  )}
+                  <div className="flex-1 min-h-0 flex flex-col">
+                    {renderLayout(tab)}
+                  </div>
                 </div>
               ))}
             </div>
