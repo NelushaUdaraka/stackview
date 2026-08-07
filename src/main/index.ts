@@ -35,7 +35,8 @@ import { registerResourceGroupsHandlers } from "./handlers/resourceGroupsHandler
 import { registerConfigHandlers } from "./handlers/configHandlers";
 import { registerR53ResolverHandlers } from "./handlers/r53resolverHandlers";
 import { registerS3ControlHandlers } from "./handlers/s3ControlHandlers";
-import type { Theme } from "../../shared/themes";
+import { LIGHT_THEMES, DEFAULT_THEME, isTheme } from "../shared/themes";
+import type { Theme } from "../shared/themes";
 
 const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
 
@@ -144,10 +145,17 @@ ipcMain.handle("window:close", () => mainWindow?.close());
 ipcMain.handle("window:isMaximized", () => mainWindow?.isMaximized() ?? false);
 
 // --- Theme ---
-ipcMain.handle("theme:get", () => store.get("theme"));
+// A theme removed in the redesign is coerced to the default so the renderer and the
+// native chrome never disagree about what is stored.
+ipcMain.handle("theme:get", () => {
+  const stored = store.get("theme");
+  if (isTheme(stored)) return stored;
+  store.set("theme", DEFAULT_THEME);
+  return DEFAULT_THEME;
+});
 ipcMain.handle("theme:set", (_event, theme: Theme) => {
   store.set("theme", theme);
-  nativeTheme.themeSource = theme === 'light' ? 'light' : 'dark';
+  nativeTheme.themeSource = LIGHT_THEMES.includes(theme) ? 'light' : 'dark';
 });
 
 // --- Icon mode ---

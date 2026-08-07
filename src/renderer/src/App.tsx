@@ -38,16 +38,21 @@ import NavRail from './components/common/NavRail'
 import ServiceBand from './components/common/ServiceBand'
 import UpdateBanner from './components/common/UpdateBanner'
 import type { AppSettings, QueueInfo, AppScreen, Service, AppTab, IconMode, Theme, UpdaterStatus } from './types'
-import { ALL_THEMES, THEME_CSS_VARS } from '../../shared/themes'
+import { ALL_THEMES, THEME_CSS_VARS, LIGHT_THEMES, DEFAULT_THEME, isTheme } from '../../shared/themes'
 
 let themeStyleTag: HTMLStyleElement | null = null
 
 function applyTheme(t: Theme) {
   const root = document.documentElement
 
+  // One class per theme — design-themes.css scopes its non-token rules
+  // (mono service chips, flattened radii, the Blueprint grid) on html.<theme>.
+  root.classList.remove(...ALL_THEMES)
+  root.classList.add(t)
+
   // Keep .dark class in sync for Tailwind's dark: variant utilities
-  if (t === 'dark') root.classList.add('dark')
-  else root.classList.remove('dark')
+  if (LIGHT_THEMES.includes(t)) root.classList.remove('dark')
+  else root.classList.add('dark')
 
   // Inject variables into a dedicated <style> tag that sits after all
   // other stylesheets — guaranteed to win the cascade regardless of @layer ordering.
@@ -135,7 +140,8 @@ export default function App() {
         window.electronAPI.getAutoUpdate(),
       ])
       setSettings(savedSettings)
-      const resolved: Theme = ALL_THEMES.includes(savedTheme as Theme) ? savedTheme as Theme : 'dark'
+      // A theme removed in the redesign (any of the old colour themes) falls back to the default.
+      const resolved: Theme = isTheme(savedTheme) ? savedTheme : DEFAULT_THEME
       setThemeState(resolved)
       applyTheme(resolved)
       setIconModeState(savedIconMode)

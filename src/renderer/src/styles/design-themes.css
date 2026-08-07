@@ -1,0 +1,248 @@
+/**
+ * StackView — design-direction theme layer.
+ *
+ * Imported AFTER globals.css in main.tsx.
+ *
+ * Part 1 sets fallbacks on :root so the default theme, which only supplies the 11
+ * colour vars, inherits sane values for the other 20.
+ * Part 2 defines the eight directions.
+ * Part 3 adds utilities that read the new vars, so components stop hard-coding
+ * rounded-xl / text-sm / h-9 and start following the theme.
+ */
+
+/* ── 1. Fallbacks: the default theme keeps today's look ── */
+:root {
+  --accent: 14 165 233;
+  --accent-fg: 255 255 255;
+  --accent-soft: 224 242 254;
+  --ok: 16 185 129;
+  --warn: 245 158 11;
+  --danger: 239 68 68;
+
+  --radius-control: 8px;
+  --radius-container: 12px;
+  --border-width: 1px;
+
+  --row-h: 40px;
+  --row-h-sm: 32px;
+
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --text-body: 13px;
+  --text-label: 11px;
+  --text-title: 20px;
+  --title-weight: 700;
+  --title-tracking: -0.01em;
+
+  --hue-strength: 0.15;
+  --chip-size: 8px;
+  --elevation: none;
+}
+
+body { font-family: var(--font-ui); }
+
+/* ── 2. The eight directions ── */
+
+html.console {
+  --bg-app: 246 247 249; --bg-base: 255 255 255; --bg-raised: 246 247 249;
+  --bg-overlay: 236 238 241; --border: 227 230 234; --border-sub: 240 242 244;
+  --text-1: 22 25 29; --text-2: 74 80 87; --text-3: 118 125 134; --text-4: 139 146 155;
+  --scrollbar-thumb: #d7dbe0;
+  --accent: 59 91 219; --accent-fg: 255 255 255; --accent-soft: 238 242 255;
+  --ok: 18 183 106; --warn: 161 92 7; --danger: 180 35 24;
+  --radius-control: 6px; --radius-container: 8px; --border-width: 1px;
+  --row-h: 38px; --row-h-sm: 32px;
+  --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --text-body: 13px; --text-label: 11px; --text-title: 19px;
+  --title-weight: 600; --title-tracking: 0em;
+  --hue-strength: 0.10; --chip-size: 7px; --elevation: none;
+}
+
+html.graphite {
+  --bg-app: 11 11 13; --bg-base: 18 18 22; --bg-raised: 22 22 27;
+  --bg-overlay: 28 28 35; --border: 30 30 37; --border-sub: 22 22 27;
+  --text-1: 236 236 241; --text-2: 160 160 173; --text-3: 138 138 150; --text-4: 95 95 109;
+  --scrollbar-thumb: #2f2f3a;
+  --accent: 124 108 245; --accent-fg: 255 255 255; --accent-soft: 30 27 51;
+  --ok: 61 220 151; --warn: 232 176 70; --danger: 224 91 78;
+  --radius-control: 8px; --radius-container: 10px; --border-width: 1px;
+  --row-h: 40px; --row-h-sm: 34px;
+  --font-ui: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --text-body: 13px; --text-label: 10px; --text-title: 21px;
+  --title-weight: 800; --title-tracking: -0.01em;
+  --hue-strength: 0.08; --chip-size: 11px;
+  --elevation: 0 18px 50px rgba(0,0,0,.55);
+}
+
+html.terminal {
+  --bg-app: 22 22 29; --bg-base: 26 26 34; --bg-raised: 31 31 40;
+  --bg-overlay: 42 42 55; --border: 54 54 70; --border-sub: 42 42 55;
+  --text-1: 220 215 186; --text-2: 160 159 140; --text-3: 107 107 125; --text-4: 84 84 109;
+  --scrollbar-thumb: #363646;
+  --accent: 127 180 202; --accent-fg: 22 22 29; --accent-soft: 42 42 55;
+  --ok: 152 187 108; --warn: 230 195 132; --danger: 224 105 105;
+  --radius-control: 0px; --radius-container: 0px; --border-width: 1px;
+  --row-h: 26px; --row-h-sm: 22px;
+  --font-ui: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --text-body: 12px; --text-label: 10px; --text-title: 14px;
+  --title-weight: 500; --title-tracking: 0em;
+  --hue-strength: 0; --chip-size: 0px; --elevation: none;
+}
+
+html.daylight {
+  --bg-app: 250 249 247; --bg-base: 255 255 255; --bg-raised: 243 241 237;
+  --bg-overlay: 239 236 230; --border: 234 231 225; --border-sub: 238 233 225;
+  --text-1: 28 26 23; --text-2: 91 86 78; --text-3: 138 132 122; --text-4: 168 161 150;
+  --scrollbar-thumb: #dcd7cc;
+  --accent: 23 99 92; --accent-fg: 255 255 255; --accent-soft: 228 239 237;
+  --ok: 23 99 92; --warn: 154 97 20; --danger: 176 48 34;
+  --radius-control: 10px; --radius-container: 14px; --border-width: 1px;
+  --row-h: 38px; --row-h-sm: 34px;
+  --font-ui: 'Figtree', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --text-body: 14px; --text-label: 12px; --text-title: 26px;
+  --title-weight: 700; --title-tracking: -0.02em;
+  --hue-strength: 0.12; --chip-size: 9px;
+  --elevation: 0 1px 3px rgba(28,26,23,.05);
+}
+
+html.blueprint {
+  --bg-app: 244 247 251; --bg-base: 255 255 255; --bg-raised: 234 240 248;
+  --bg-overlay: 220 230 244; --border: 204 214 228; --border-sub: 230 237 246;
+  --text-1: 15 28 46; --text-2: 61 77 97; --text-3: 91 107 128; --text-4: 122 135 152;
+  --scrollbar-thumb: #b3c0d1;
+  --accent: 47 111 237; --accent-fg: 255 255 255; --accent-soft: 220 230 244;
+  --ok: 15 153 96; --warn: 161 101 15; --danger: 192 43 43;
+  --radius-control: 0px; --radius-container: 0px; --border-width: 1.5px;
+  --row-h: 32px; --row-h-sm: 30px;
+  --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --text-body: 13px; --text-label: 11px; --text-title: 23px;
+  --title-weight: 600; --title-tracking: 0em;
+  --hue-strength: 0.10; --chip-size: 0px; --elevation: none;
+}
+
+/* Blueprint alone paints a graph grid on the work surface. */
+html.blueprint .surface-grid {
+  background-image:
+    linear-gradient(rgb(var(--border-sub)) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--border-sub)) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+html.slate {
+  --bg-app: 27 29 33; --bg-base: 21 23 26; --bg-raised: 34 37 42;
+  --bg-overlay: 50 54 61; --border: 50 54 61; --border-sub: 34 37 42;
+  --text-1: 238 241 245; --text-2: 168 176 189; --text-3: 125 133 146; --text-4: 93 100 112;
+  --scrollbar-thumb: #3f444c;
+  --accent: 224 153 62; --accent-fg: 27 29 33; --accent-soft: 58 47 28;
+  --ok: 91 201 143; --warn: 224 153 62; --danger: 224 91 78;
+  --radius-control: 7px; --radius-container: 10px; --border-width: 1px;
+  --row-h: 34px; --row-h-sm: 30px;
+  --font-ui: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --text-body: 13px; --text-label: 10.5px; --text-title: 20px;
+  --title-weight: 800; --title-tracking: -0.01em;
+  --hue-strength: 0.10; --chip-size: 5px; --elevation: none;
+}
+
+html.signal {
+  --bg-app: 7 19 27; --bg-base: 13 31 44; --bg-raised: 11 26 37;
+  --bg-overlay: 20 40 58; --border: 27 43 58; --border-sub: 20 40 58;
+  --text-1: 230 242 248; --text-2: 165 195 212; --text-3: 92 122 145; --text-4: 37 68 92;
+  --scrollbar-thumb: #25445c;
+  --accent: 61 220 151; --accent-fg: 7 19 27; --accent-soft: 20 51 42;
+  --ok: 61 220 151; --warn: 242 193 78; --danger: 224 91 78;
+  --radius-control: 7px; --radius-container: 10px; --border-width: 1px;
+  --row-h: 36px; --row-h-sm: 32px;
+  --font-ui: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --text-body: 13px; --text-label: 10.5px; --text-title: 20px;
+  --title-weight: 800; --title-tracking: -0.01em;
+  --hue-strength: 0.10; --chip-size: 6px; --elevation: none;
+}
+
+html.paper {
+  --bg-app: 247 244 236; --bg-base: 255 253 247; --bg-raised: 247 244 236;
+  --bg-overlay: 236 231 219; --border: 20 17 13; --border-sub: 221 214 198;
+  --text-1: 20 17 13; --text-2: 61 55 44; --text-3: 107 99 85; --text-4: 156 148 130;
+  --scrollbar-thumb: #c9c2b2;
+  --accent: 214 48 31; --accent-fg: 247 244 236; --accent-soft: 247 244 236;
+  --ok: 28 124 74; --warn: 161 101 15; --danger: 214 48 31;
+  --radius-control: 0px; --radius-container: 0px; --border-width: 2px;
+  --row-h: 38px; --row-h-sm: 34px;
+  --font-ui: 'Figtree', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --text-body: 13px; --text-label: 11px; --text-title: 32px;
+  --title-weight: 800; --title-tracking: -0.035em;
+  --hue-strength: 0; --chip-size: 9px; --elevation: none;
+}
+
+/* ── 3. Utilities that consume the new vars ── */
+/* Plain CSS, not `@layer utilities`: Tailwind processes each file on its own and
+   rejects the directive here, since this file carries no `@tailwind` directives.
+   Loading after globals.css puts these after Tailwind's utilities anyway, so a
+   `.r-container` still wins over a leftover `rounded-xl` at equal specificity. */
+.r-control   { border-radius: var(--radius-control); }
+.r-container { border-radius: var(--radius-container); }
+.bw          { border-width: var(--border-width); }
+
+.row-h    { height: var(--row-h); }
+.row-h-sm { height: var(--row-h-sm); }
+
+.font-mono-theme { font-family: var(--font-mono); }
+.t-body  { font-size: var(--text-body); }
+.t-label { font-size: var(--text-label); letter-spacing: .08em; }
+.t-title {
+  font-size: var(--text-title);
+  font-weight: var(--title-weight);
+  letter-spacing: var(--title-tracking);
+  line-height: 1.1;
+}
+
+.bg-accent      { background-color: rgb(var(--accent)); }
+.bg-accent-soft { background-color: rgb(var(--accent-soft)); }
+.text-accent    { color: rgb(var(--accent)); }
+.text-on-accent { color: rgb(var(--accent-fg)); }
+.border-accent  { border-color: rgb(var(--accent)); }
+
+.text-ok     { color: rgb(var(--ok)); }
+.text-warn   { color: rgb(var(--warn)); }
+.text-danger { color: rgb(var(--danger)); }
+
+.elev { box-shadow: var(--elevation); }
+
+/* Selection marker: a 2px accent bar, not a coloured fill. */
+.row-selected {
+  background-color: rgb(var(--bg-raised));
+  box-shadow: inset 2px 0 0 0 rgb(var(--accent));
+}
+
+/* Per-service hue, dialled down by the theme. Set --svc on the element. */
+.svc-chip {
+  width: var(--chip-size);
+  height: var(--chip-size);
+  border-radius: calc(var(--radius-control) / 2);
+  background: var(--svc, rgb(var(--text-3)));
+}
+.svc-tint { background-color: rgb(var(--bg-raised)); }
+.svc-fg   { color: var(--svc, rgb(var(--text-2))); }
+
+/* Mono directions drop service colour entirely. Defining --svc here collapses every
+   service hue to one neutral value wherever svcTint()/svcSolid() resolve it. */
+html.terminal,
+html.paper { --svc: rgb(var(--text-2)); }
+
+html.terminal .svc-chip,
+html.paper .svc-chip { display: none; }
+html.terminal .svc-fg,
+html.paper .svc-fg { color: rgb(var(--text-1)); }
+
+/* Themes with radius 0 must also flatten Tailwind's baked-in radii. */
+html.terminal [class*="rounded"],
+html.blueprint [class*="rounded"],
+html.paper [class*="rounded"] { border-radius: 0 !important; }

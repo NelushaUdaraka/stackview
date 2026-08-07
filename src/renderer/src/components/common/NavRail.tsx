@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from 'react'
 import {
   Settings, LogOut, Link2, RefreshCw, Search as SearchIcon,
-  ArrowLeftRight, ExternalLink, Plus, Star, Image, Check,
+  ArrowLeftRight, ExternalLink, Plus, Star, Image,
   Download, ArrowUpCircle, CheckCircle2, AlertCircle
 } from 'lucide-react'
 import appIcon from '../../assets/icon.png'
@@ -9,7 +9,8 @@ import type { AppSettings, Service, IconMode, Theme, UpdaterStatus } from '../..
 import { AWS_REGIONS } from '../../constants'
 import { AwsServiceIcon } from './AwsServiceIcons'
 import { SERVICE_CONFIG, ALL_SERVICES_ORDERED } from '../../services/serviceConfig'
-import { THEME_DEFINITIONS, ALL_THEMES } from '../../../../shared/themes'
+import { svcTint, svcSolid } from '../../services/serviceHue'
+import ThemePicker from './ThemePicker'
 
 
 function hexToRgba(hex: string, alpha: number) {
@@ -262,9 +263,9 @@ export default function NavRail({
               const hex = SERVICE_CONFIG[svc].hex
 
               const bgColor = isActive
-                ? hex
+                ? svcSolid(hex)
                 : isHovered
-                  ? hexToRgba(hex, 0.15)
+                  ? svcTint(hex, 0.15)
                   : 'transparent'
 
               return (
@@ -290,7 +291,7 @@ export default function NavRail({
                       height: isActive ? 32 : isHovered ? 16 : 0,
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      backgroundColor: hex,
+                      backgroundColor: svcSolid(hex),
                       opacity: isActive ? 1 : isHovered ? 0.5 : 0,
                     }}
                   />
@@ -308,7 +309,7 @@ export default function NavRail({
                   >
                     {iconMode === 'aws'
                       ? <AwsServiceIcon service={svc} size={40} />
-                      : <Icon size={22} style={{ color: isActive ? '#ffffff' : hex, transition: 'color 0.15s' }} />
+                      : <Icon size={22} style={{ color: isActive ? 'rgb(var(--accent-fg))' : svcSolid(hex), transition: 'color 0.15s' }} />
                     }
                   </button>
                 </div>
@@ -474,7 +475,7 @@ export default function NavRail({
                       onClick={() => { onRegionChange(r.value); setSettingsOpen(false) }}
                       className={`w-full text-left px-2.5 py-1.5 text-xs transition-colors flex items-center justify-between gap-2
                         ${settings.region === r.value
-                          ? 'bg-brand-500/10 text-brand-600 dark:text-brand-300 font-semibold'
+                          ? 'bg-accent-soft text-accent font-semibold'
                           : 'text-2 hover:bg-overlay'
                         }`}
                     >
@@ -490,44 +491,11 @@ export default function NavRail({
               {/* Appearance */}
               <div className="px-3 pt-3 pb-2">
                 <p className="text-[10px] font-semibold text-3 uppercase tracking-wider mb-2.5">Appearance</p>
-                <div className="grid grid-cols-3 gap-1 mb-2.5">
-                  {ALL_THEMES.map(themeKey => {
-                    const def = THEME_DEFINITIONS[themeKey]
-                    const isActive = theme === themeKey
-                    return (
-                      <button
-                        key={themeKey}
-                        title={def.label}
-                        onClick={() => { onSetTheme(themeKey); setSettingsOpen(false) }}
-                        className="rounded-md overflow-hidden transition-all hover:scale-[1.02]"
-                        style={{
-                          outline: isActive ? '2px solid #0ea5e9' : '1px solid transparent',
-                          outlineOffset: 1,
-                        }}
-                      >
-                        <div className="relative h-6 w-full" style={{ backgroundColor: def.preview.bg }}>
-                          {isActive && (
-                            <span className="absolute top-0.5 right-0.5">
-                              <Check size={9} color="#ffffff" strokeWidth={3} />
-                            </span>
-                          )}
-                        </div>
-                        <div
-                          className="h-6 w-full flex items-center px-1.5 gap-1"
-                          style={{ backgroundColor: def.preview.surface }}
-                        >
-                          <span
-                            className="text-[8px] font-semibold flex-1 truncate leading-none"
-                            style={{ color: def.preview.text }}
-                          >
-                            {def.label}
-                          </span>
-                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: def.preview.bg }} />
-                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: def.preview.text }} />
-                        </div>
-                      </button>
-                    )
-                  })}
+                <div className="mb-2.5">
+                  <ThemePicker
+                    theme={theme}
+                    onSetTheme={t => { onSetTheme(t); setSettingsOpen(false) }}
+                  />
                 </div>
                 <button
                   onClick={() => { onToggleIconMode(); setSettingsOpen(false) }}
@@ -583,14 +551,14 @@ export default function NavRail({
                     className="relative flex-shrink-0 transition-colors duration-200"
                     style={{
                       width: 28, height: 16, borderRadius: 8,
-                      backgroundColor: autoUpdate ? '#0ea5e9' : 'rgb(var(--border))',
+                      backgroundColor: autoUpdate ? 'rgb(var(--accent))' : 'rgb(var(--border))',
                     }}
                   >
                     <div
                       className="absolute top-0.5 transition-transform duration-200"
                       style={{
                         width: 12, height: 12, borderRadius: '50%',
-                        backgroundColor: '#ffffff',
+                        backgroundColor: 'rgb(var(--accent-fg))',
                         transform: autoUpdate ? 'translateX(14px)' : 'translateX(2px)',
                       }}
                     />
@@ -705,11 +673,11 @@ export default function NavRail({
                   >
                     <span
                       className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: iconMode === 'aws' ? 'transparent' : hexToRgba(hex, 0.15) }}
+                      style={{ backgroundColor: iconMode === 'aws' ? 'transparent' : svcTint(hex, 0.15) }}
                     >
                       {iconMode === 'aws'
                         ? <AwsServiceIcon service={svc} size={20} />
-                        : <Icon size={14} style={{ color: hex }} />
+                        : <Icon size={14} style={{ color: svcSolid(hex) }} />
                       }
                     </span>
                     <span className="truncate">{SERVICE_CONFIG[svc].label}</span>

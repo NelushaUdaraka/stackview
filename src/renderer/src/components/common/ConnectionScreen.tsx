@@ -7,7 +7,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Search,
-  Check,
   Minus,
   Square,
   X,
@@ -20,7 +19,7 @@ import {
 } from 'lucide-react'
 import type { AppSettings, Theme, UpdaterStatus } from '../../types'
 import { AWS_REGIONS } from '../../constants'
-import { ALL_THEMES, THEME_DEFINITIONS } from '../../../../shared/themes'
+import ThemePicker from './ThemePicker'
 import appIcon from '../../assets/icon.png'
 
 interface Props {
@@ -149,42 +148,10 @@ export default function ConnectionScreen({
               {/* Theme */}
               <div className="px-3 pt-3 pb-2">
                 <p className="text-[10px] font-semibold text-3 uppercase tracking-wider mb-2">Theme</p>
-                <div className="grid grid-cols-3 gap-1">
-                  {ALL_THEMES.map(themeKey => {
-                    const def = THEME_DEFINITIONS[themeKey]
-                    const isActive = theme === themeKey
-                    return (
-                      <button
-                        key={themeKey}
-                        title={def.label}
-                        onClick={() => { onSetTheme(themeKey); setSettingsOpen(false) }}
-                        className="rounded-md overflow-hidden transition-all hover:scale-[1.02]"
-                        style={{
-                          outline: isActive ? '2px solid #0ea5e9' : '1px solid transparent',
-                          outlineOffset: 1,
-                        }}
-                      >
-                        <div className="relative h-6 w-full" style={{ backgroundColor: def.preview.bg }}>
-                          {isActive && (
-                            <span className="absolute top-0.5 right-0.5">
-                              <Check size={9} color="#ffffff" strokeWidth={3} />
-                            </span>
-                          )}
-                        </div>
-                        <div
-                          className="h-6 w-full flex items-center px-1.5 gap-1"
-                          style={{ backgroundColor: def.preview.surface }}
-                        >
-                          <span className="text-[8px] font-semibold flex-1 truncate leading-none" style={{ color: def.preview.text }}>
-                            {def.label}
-                          </span>
-                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: def.preview.bg }} />
-                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: def.preview.text }} />
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
+                <ThemePicker
+                  theme={theme}
+                  onSetTheme={t => { onSetTheme(t); setSettingsOpen(false) }}
+                />
               </div>
 
               <div className="mx-3 border-t border-theme" />
@@ -208,14 +175,14 @@ export default function ConnectionScreen({
                     className="relative flex-shrink-0 transition-colors duration-200"
                     style={{
                       width: 28, height: 16, borderRadius: 8,
-                      backgroundColor: autoUpdate ? '#0ea5e9' : 'rgb(var(--border))',
+                      backgroundColor: autoUpdate ? 'rgb(var(--accent))' : 'rgb(var(--border))',
                     }}
                   >
                     <div
                       className="absolute top-0.5 transition-transform duration-200"
                       style={{
                         width: 12, height: 12, borderRadius: '50%',
-                        backgroundColor: '#ffffff',
+                        backgroundColor: 'rgb(var(--accent-fg))',
                         transform: autoUpdate ? 'translateX(14px)' : 'translateX(2px)',
                       }}
                     />
@@ -296,7 +263,7 @@ export default function ConnectionScreen({
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-600/15 border border-brand-500/30 mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent-soft border-accent/30 border bw mb-4">
               <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="3" y="25" width="32" height="9" rx="2.5" fill="rgba(14,165,233,0.12)" stroke="rgba(14,165,233,0.30)" strokeWidth="1.2"/>
                 <rect x="3" y="15" width="32" height="9" rx="2.5" fill="rgba(14,165,233,0.22)" stroke="rgba(14,165,233,0.45)" strokeWidth="1.2"/>
@@ -344,7 +311,7 @@ export default function ConnectionScreen({
                   onClick={() => setRegionOpen((o) => !o)}
                   className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm
                     transition-colors border border-theme focus:outline-none focus:ring-2
-                    focus:ring-brand-500/40 text-1"
+                    focus:ring-accent/40 text-1"
                   style={{ backgroundColor: 'rgb(var(--bg-base))' }}
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -393,7 +360,7 @@ export default function ConnectionScreen({
                             }}
                             className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2
                               ${region === r.value
-                                ? 'bg-brand-500/10 text-brand-600 dark:text-brand-300'
+                                ? 'bg-accent-soft text-accent'
                                 : 'text-2 hover:bg-raised'
                               }`}
                           >
@@ -444,9 +411,9 @@ export default function ConnectionScreen({
             <WifiOff size={13} className="text-4 shrink-0 mt-0.5" />
             <p className="text-xs text-3 leading-relaxed">
               Make sure LocalStack is running —{' '}
-              <code className="text-brand-600 dark:text-brand-400 font-mono">localstack start</code>
+              <code className="text-accent font-mono-theme">localstack start</code>
               {' '}or Docker:{' '}
-              <code className="text-brand-600 dark:text-brand-400 font-mono">docker run -p 4566:4566 localstack/localstack</code>
+              <code className="text-accent font-mono-theme">docker run -p 4566:4566 localstack/localstack</code>
             </p>
           </div>
         </div>

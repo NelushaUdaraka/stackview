@@ -4,13 +4,7 @@ import type { Service, IconMode, AppSettings } from '../../types'
 import { SERVICE_CONFIG } from '../../services/serviceConfig'
 import { AWS_REGIONS } from '../../constants'
 import { AwsServiceIcon } from './AwsServiceIcons'
-
-function hexToRgba(hex: string, alpha: number) {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return `rgba(${r},${g},${b},${alpha})`
-}
+import { svcTint, svcSolid } from '../../services/serviceHue'
 
 interface Props {
   service: Service
@@ -91,9 +85,9 @@ export default function ServiceBand({
               width: 28,
               height: 28,
               borderRadius: 7,
-              backgroundColor: hexToRgba(meta.hex, 0.15),
-              color: meta.hex,
-              border: `1px solid ${hexToRgba(meta.hex, 0.25)}`,
+              backgroundColor: svcTint(meta.hex, 0.15),
+              color: svcSolid(meta.hex),
+              border: `1px solid ${svcTint(meta.hex, 0.25)}`,
             }}
           >
             <Icon size={16} />
@@ -108,8 +102,8 @@ export default function ServiceBand({
         <span
           className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
           style={{
-            color: meta.hex,
-            backgroundColor: hexToRgba(meta.hex, 0.12),
+            color: svcSolid(meta.hex),
+            backgroundColor: svcTint(meta.hex, 0.12),
           }}
         >
           {meta.label}
@@ -120,9 +114,9 @@ export default function ServiceBand({
         <span
           className="shrink-0 text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5"
           style={{
-            color: meta.hex,
-            backgroundColor: hexToRgba(meta.hex, 0.1),
-            border: `1px solid ${hexToRgba(meta.hex, 0.25)}`,
+            color: svcSolid(meta.hex),
+            backgroundColor: svcTint(meta.hex, 0.1),
+            border: `1px solid ${svcTint(meta.hex, 0.25)}`,
           }}
           title={isOverride
             ? `Service region override (global is ${settings.region})`
@@ -131,7 +125,7 @@ export default function ServiceBand({
           {isOverride && (
             <span
               className="w-1.5 h-1.5 rounded-full"
-              style={{ backgroundColor: meta.hex }}
+              style={{ backgroundColor: svcSolid(meta.hex) }}
               title="Override active"
             />
           )}
@@ -229,8 +223,8 @@ export default function ServiceBand({
                           : 'text-2 hover:bg-overlay'
                       }`}
                       style={isActive ? {
-                        backgroundColor: hexToRgba(meta.hex, 0.12),
-                        color: meta.hex,
+                        backgroundColor: svcTint(meta.hex, 0.12),
+                        color: svcSolid(meta.hex),
                       } : undefined}
                     >
                       <span className="truncate">{r.label}</span>

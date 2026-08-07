@@ -7,6 +7,7 @@ import type { LucideIcon } from 'lucide-react'
 import type { AppSettings, Service, IconMode } from '../../types'
 import { AwsServiceIcon } from './AwsServiceIcons'
 import { SERVICE_CONFIG, ALL_SERVICES_ORDERED } from '../../services/serviceConfig'
+import { svcTint, svcSolid } from '../../services/serviceHue'
 
 interface Props {
   settings: AppSettings
@@ -301,7 +302,7 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
                     {/* Top hex accent strip */}
                     <div
                       className={`h-1 w-full shrink-0 ${isHidden ? 'grayscale opacity-50' : ''}`}
-                      style={{ backgroundColor: hex }}
+                      style={{ backgroundColor: svcSolid(hex) }}
                     />
 
                     {/* Card content */}
@@ -326,11 +327,11 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
 
                       <div
                         className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ml-4 mt-1 ${isHidden ? 'grayscale opacity-50' : ''}`}
-                        style={iconMode !== 'aws' ? { backgroundColor: hex + '26' } : undefined}
+                        style={iconMode !== 'aws' ? { backgroundColor: svcTint(hex, 0.15) } : undefined}
                       >
                         {iconMode === 'aws'
                           ? <AwsServiceIcon service={svc.id} size={32} />
-                          : <svc.icon size={20} style={{ color: hex }} />
+                          : <svc.icon size={20} style={{ color: svcSolid(hex) }} />
                         }
                       </div>
 
@@ -362,7 +363,7 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
                   style={{ backgroundColor: 'rgb(var(--bg-base))' }}
                 >
                   {/* Top hex accent strip */}
-                  <div className="h-1 w-full shrink-0" style={{ backgroundColor: hex }} />
+                  <div className="h-1 w-full shrink-0" style={{ backgroundColor: svcSolid(hex) }} />
 
                   {/* Card content */}
                   <div className="p-4 flex flex-col flex-1">
@@ -381,11 +382,11 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
 
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                      style={iconMode !== 'aws' ? { backgroundColor: hex + '26' } : undefined}
+                      style={iconMode !== 'aws' ? { backgroundColor: svcTint(hex, 0.15) } : undefined}
                     >
                       {iconMode === 'aws'
                         ? <AwsServiceIcon service={svc.id} size={32} />
-                        : <svc.icon size={20} style={{ color: hex }} />
+                        : <svc.icon size={20} style={{ color: svcSolid(hex) }} />
                       }
                     </div>
 
