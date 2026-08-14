@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useServiceView } from '../../shells/ServiceViewContext'
 import {
   Trash2, RefreshCw, Send, Inbox, Settings, Info,
   AlertTriangle, Copy, Check, Loader2, Zap,
@@ -32,7 +33,7 @@ export default function QueueDetail({ queue, onDeleted, onPurged, onRefreshAttri
   const [copiedArn, setCopiedArn] = useState(false)
   const [copiedUrl, setCopiedUrl] = useState(false)
 
-  const isFifo = queue.name.endsWith('.fifo')
+  const isFifo = attributes.FifoQueue === 'true' || queue.name.endsWith('.fifo')
 
   const loadAttributes = useCallback(async () => {
     setLoadingAttrs(true)
@@ -147,6 +148,36 @@ export default function QueueDetail({ queue, onDeleted, onPurged, onRefreshAttri
   const msgAvailable = parseInt(attributes.ApproximateNumberOfMessages ?? '0')
   const msgInFlight = parseInt(attributes.ApproximateNumberOfMessagesNotVisible ?? '0')
   const msgDelayed = parseInt(attributes.ApproximateNumberOfMessagesDelayed ?? '0')
+
+  const retentionDays = (parseInt(attributes.MessageRetentionPeriod ?? '345600') / 86400)
+
+  // Describe the selection to whichever shell is mounted: Console renders these as
+  // stat tiles, Slate Split as the docked inspector, Terminal in its status line.
+  useServiceView({
+    title: queue.name,
+    subtitle: attributes.QueueArn,
+    badge: isFifo ? 'FIFO' : undefined,
+    breadcrumb: [queue.name],
+    statusRight: `${msgAvailable} available · ${msgInFlight} in flight`,
+    stats: [
+      { label: 'Available', value: msgAvailable.toLocaleString(), unit: 'messages', tone: 'ok' },
+      { label: 'In flight', value: msgInFlight.toLocaleString(), unit: 'not visible', tone: msgInFlight > 0 ? 'warn' : 'default' },
+      { label: 'Delayed', value: msgDelayed.toLocaleString(), unit: 'queued' },
+      { label: 'Retention', value: retentionDays.toFixed(1), unit: 'days' },
+    ],
+    inspector: [{
+      label: 'Queue config',
+      rows: [
+        { key: 'Type', value: isFifo ? 'FIFO' : 'Standard' },
+        { key: 'Visibility', value: `${attributes.VisibilityTimeout ?? '30'}s` },
+        { key: 'Retention', value: `${retentionDays.toFixed(0)} days` },
+        { key: 'Max size', value: `${Math.round(parseInt(attributes.MaximumMessageSize ?? '262144') / 1024)} KB` },
+        { key: 'Long poll', value: `${attributes.ReceiveMessageWaitTimeSeconds ?? '0'}s` },
+        { key: 'Available', value: msgAvailable.toLocaleString(), tone: 'ok' },
+        { key: 'In flight', value: msgInFlight.toLocaleString(), tone: msgInFlight > 0 ? 'warn' : 'default' },
+      ],
+    }],
+  })
 
   const tabs: { id: ActiveTab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'Overview', icon: <Info size={13} /> },

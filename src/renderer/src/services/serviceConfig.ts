@@ -30,7 +30,15 @@ export interface ServiceMeta {
   }
   /** 0-based position in the default ordered service list */
   order: number
+  /** Grouping used by the shells' category sidebars and service tables */
+  category: ServiceCategory
+  /** One-line capability summary shown in the shells' service tables */
+  capability: string
 }
+
+export type ServiceCategory =
+  | 'Compute' | 'Storage' | 'Messaging' | 'Security'
+  | 'Networking' | 'Observability' | 'Analytics' | 'Management'
 
 export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
   sqs: {
@@ -42,6 +50,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Layers,
     colors: { border: 'hover:border-brand-500/50', icon: 'bg-brand-500/10 text-brand-500', dot: 'bg-brand-500', text: 'text-brand-500' },
     order: 0,
+    category: 'Messaging',
+    capability: 'Message queues, polling, FIFO & DLQ',
   },
   s3: {
     label: 'S3',
@@ -52,6 +62,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: HardDrive,
     colors: { border: 'hover:border-emerald-500/50', icon: 'bg-emerald-500/10 text-emerald-500', dot: 'bg-emerald-500', text: 'text-emerald-500' },
     order: 1,
+    category: 'Storage',
+    capability: 'Buckets, objects, presigned URLs',
   },
   dynamodb: {
     label: 'DynamoDB',
@@ -62,6 +74,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Database,
     colors: { border: 'hover:border-violet-500/50', icon: 'bg-violet-500/10 text-violet-500', dot: 'bg-violet-500', text: 'text-violet-500' },
     order: 2,
+    category: 'Storage',
+    capability: 'Tables, items, scans and indexes',
   },
   lambda: {
     label: 'Lambda',
@@ -72,6 +86,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: TerminalSquare,
     colors: { border: 'hover:border-violet-500/50', icon: 'bg-violet-500/10 text-violet-500', dot: 'bg-violet-500', text: 'text-violet-500' },
     order: 3,
+    category: 'Compute',
+    capability: 'Functions, invocations, packages',
   },
   secretsmanager: {
     label: 'Secrets Manager',
@@ -82,6 +98,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Shield,
     colors: { border: 'hover:border-indigo-500/50', icon: 'bg-indigo-500/10 text-indigo-500', dot: 'bg-indigo-500', text: 'text-indigo-500' },
     order: 4,
+    category: 'Security',
+    capability: 'Secret values and rotation',
   },
   sns: {
     label: 'SNS',
@@ -92,6 +110,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: MessageSquare,
     colors: { border: 'hover:border-pink-500/50', icon: 'bg-pink-500/10 text-pink-500', dot: 'bg-pink-500', text: 'text-pink-500' },
     order: 5,
+    category: 'Messaging',
+    capability: 'Topics, subscriptions, publishing',
   },
   eventbridge: {
     label: 'EventBridge',
@@ -102,6 +122,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Workflow,
     colors: { border: 'hover:border-fuchsia-500/50', icon: 'bg-fuchsia-500/10 text-fuchsia-500', dot: 'bg-fuchsia-500', text: 'text-fuchsia-500' },
     order: 6,
+    category: 'Messaging',
+    capability: 'Buses, rules, targets',
   },
   cloudwatch: {
     label: 'CloudWatch',
@@ -112,6 +134,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Activity,
     colors: { border: 'hover:border-cyan-500/50', icon: 'bg-cyan-500/10 text-cyan-500', dot: 'bg-cyan-500', text: 'text-cyan-500' },
     order: 7,
+    category: 'Observability',
+    capability: 'Log groups, streams, alarms, metrics',
   },
   ssm: {
     label: 'Parameter Store',
@@ -122,6 +146,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: SlidersHorizontal,
     colors: { border: 'hover:border-teal-500/50', icon: 'bg-teal-500/10 text-teal-500', dot: 'bg-teal-500', text: 'text-teal-500' },
     order: 8,
+    category: 'Security',
+    capability: 'Hierarchical config and SecureStrings',
   },
   kms: {
     label: 'KMS',
@@ -132,6 +158,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Key,
     colors: { border: 'hover:border-violet-500/50', icon: 'bg-violet-500/10 text-violet-500', dot: 'bg-violet-500', text: 'text-violet-500' },
     order: 9,
+    category: 'Security',
+    capability: 'Keys, aliases, crypto operations',
   },
   iam: {
     label: 'IAM',
@@ -142,6 +170,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: UserCheck,
     colors: { border: 'hover:border-rose-500/50', icon: 'bg-rose-500/10 text-rose-500', dot: 'bg-rose-500', text: 'text-rose-500' },
     order: 10,
+    category: 'Security',
+    capability: 'Users, roles, groups, policies',
   },
   sts: {
     label: 'STS',
@@ -152,6 +182,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Key,
     colors: { border: 'hover:border-yellow-500/50', icon: 'bg-yellow-500/10 text-yellow-500', dot: 'bg-yellow-500', text: 'text-yellow-500' },
     order: 11,
+    category: 'Security',
+    capability: 'Temporary credentials and identity',
   },
   apigw: {
     label: 'API Gateway',
@@ -162,6 +194,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Network,
     colors: { border: 'hover:border-violet-500/50', icon: 'bg-violet-500/10 text-violet-500', dot: 'bg-violet-500', text: 'text-violet-500' },
     order: 12,
+    category: 'Networking',
+    capability: 'REST APIs, resources, stages',
   },
   cloudformation: {
     label: 'CloudFormation',
@@ -172,6 +206,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: LayoutTemplate,
     colors: { border: 'hover:border-orange-500/50', icon: 'bg-orange-500/10 text-orange-500', dot: 'bg-orange-500', text: 'text-orange-500' },
     order: 13,
+    category: 'Compute',
+    capability: 'Stacks, resources, change sets',
   },
   ses: {
     label: 'SES',
@@ -182,6 +218,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Mail,
     colors: { border: 'hover:border-sky-500/50', icon: 'bg-sky-500/10 text-sky-500', dot: 'bg-sky-500', text: 'text-sky-500' },
     order: 14,
+    category: 'Messaging',
+    capability: 'Identities and formatted email',
   },
   firehose: {
     label: 'Firehose',
@@ -192,6 +230,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Flame,
     colors: { border: 'hover:border-orange-500/50', icon: 'bg-orange-500/10 text-orange-500', dot: 'bg-orange-500', text: 'text-orange-500' },
     order: 15,
+    category: 'Analytics',
+    capability: 'Delivery streams to lakes and stores',
   },
   kinesis: {
     label: 'Kinesis',
@@ -202,6 +242,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Activity,
     colors: { border: 'hover:border-amber-500/50', icon: 'bg-amber-500/10 text-amber-500', dot: 'bg-amber-500', text: 'text-amber-500' },
     order: 16,
+    category: 'Analytics',
+    capability: 'Data streams, shards, records',
   },
   redshift: {
     label: 'Redshift',
@@ -212,6 +254,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Database,
     colors: { border: 'hover:border-red-500/50', icon: 'bg-red-500/10 text-red-500', dot: 'bg-red-500', text: 'text-red-500' },
     order: 17,
+    category: 'Analytics',
+    capability: 'Clusters, warehouses, queries',
   },
   opensearch: {
     label: 'OpenSearch',
@@ -222,6 +266,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: SearchIcon,
     colors: { border: 'hover:border-purple-500/50', icon: 'bg-purple-500/10 text-purple-400', dot: 'bg-purple-500', text: 'text-purple-400' },
     order: 18,
+    category: 'Analytics',
+    capability: 'Domains, indices, search and logs',
   },
   ec2: {
     label: 'EC2',
@@ -232,6 +278,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Server,
     colors: { border: 'hover:border-orange-500/50', icon: 'bg-orange-500/10 text-orange-500', dot: 'bg-orange-500', text: 'text-orange-500' },
     order: 19,
+    category: 'Compute',
+    capability: 'Instances, volumes, security groups',
   },
   transcribe: {
     label: 'Transcribe',
@@ -242,6 +290,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Mic,
     colors: { border: 'hover:border-blue-500/50', icon: 'bg-blue-500/10 text-blue-500', dot: 'bg-blue-500', text: 'text-blue-500' },
     order: 20,
+    category: 'Analytics',
+    capability: 'Speech-to-text transcription jobs',
   },
   scheduler: {
     label: 'Scheduler',
@@ -252,6 +302,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: CalendarClock,
     colors: { border: 'hover:border-amber-500/50', icon: 'bg-amber-500/10 text-amber-500', dot: 'bg-amber-500', text: 'text-amber-500' },
     order: 21,
+    category: 'Messaging',
+    capability: 'One-off and recurring schedules',
   },
   route53: {
     label: 'Route 53',
@@ -262,6 +314,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Globe,
     colors: { border: 'hover:border-blue-400/50', icon: 'bg-blue-400/10 text-blue-400', dot: 'bg-blue-400', text: 'text-blue-400' },
     order: 22,
+    category: 'Networking',
+    capability: 'Hosted zones and DNS records',
   },
   acm: {
     label: 'Certificate Manager',
@@ -272,6 +326,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Shield,
     colors: { border: 'hover:border-teal-500/50', icon: 'bg-teal-500/10 text-teal-500', dot: 'bg-teal-500', text: 'text-teal-500' },
     order: 23,
+    category: 'Security',
+    capability: 'SSL/TLS certificates and validation',
   },
   swf: {
     label: 'SWF',
@@ -282,6 +338,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: GitBranch,
     colors: { border: 'hover:border-green-500/50', icon: 'bg-green-500/10 text-green-500', dot: 'bg-green-500', text: 'text-green-500' },
     order: 24,
+    category: 'Compute',
+    capability: 'Workflow and activity executions',
   },
   sfn: {
     label: 'SFN',
@@ -292,6 +350,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Share2,
     colors: { border: 'hover:border-lime-500/50', icon: 'bg-lime-500/10 text-lime-500', dot: 'bg-lime-500', text: 'text-lime-500' },
     order: 25,
+    category: 'Compute',
+    capability: 'State machines and executions',
   },
   support: {
     label: 'Support',
@@ -302,6 +362,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: LifeBuoy,
     colors: { border: 'hover:border-sky-500/50', icon: 'bg-sky-500/10 text-sky-500', dot: 'bg-sky-500', text: 'text-sky-500' },
     order: 26,
+    category: 'Management',
+    capability: 'Support cases and Trusted Advisor',
   },
   r53resolver: {
     label: 'R53 Resolver',
@@ -312,6 +374,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Waypoints,
     colors: { border: 'hover:border-blue-400/50', icon: 'bg-blue-400/10 text-blue-400', dot: 'bg-blue-400', text: 'text-blue-400' },
     order: 29,
+    category: 'Networking',
+    capability: 'Resolver endpoints and rules',
   },
   awsconfig: {
     label: 'Config',
@@ -322,6 +386,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: ClipboardList,
     colors: { border: 'hover:border-amber-500/50', icon: 'bg-amber-500/10 text-amber-500', dot: 'bg-amber-500', text: 'text-amber-500' },
     order: 28,
+    category: 'Management',
+    capability: 'Recorders, rules, compliance',
   },
   s3control: {
     label: 'S3 Control',
@@ -332,6 +398,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Lock,
     colors: { border: 'hover:border-teal-600/50', icon: 'bg-teal-600/10 text-teal-500', dot: 'bg-teal-600', text: 'text-teal-500' },
     order: 30,
+    category: 'Storage',
+    capability: 'Access points and account settings',
   },
   resourcegroups: {
     label: 'Resource Groups',
@@ -342,6 +410,8 @@ export const SERVICE_CONFIG: Record<Service, ServiceMeta> = {
     icon: Boxes,
     colors: { border: 'hover:border-orange-500/50', icon: 'bg-orange-500/10 text-orange-500', dot: 'bg-orange-500', text: 'text-orange-500' },
     order: 27,
+    category: 'Management',
+    capability: 'Tag-based and query-based groups',
   },
 }
 

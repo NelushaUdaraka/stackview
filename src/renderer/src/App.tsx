@@ -39,6 +39,9 @@ import ServiceBand from './components/common/ServiceBand'
 import UpdateBanner from './components/common/UpdateBanner'
 import type { AppSettings, QueueInfo, AppScreen, Service, AppTab, IconMode, Theme, UpdaterStatus } from './types'
 import { ALL_THEMES, THEME_CSS_VARS, LIGHT_THEMES, DEFAULT_THEME, isTheme } from '../../shared/themes'
+import { SHELLS } from './shells'
+import { ServiceViewProvider } from './shells/ServiceViewContext'
+import { useServiceCounts } from './hooks/useServiceCounts'
 
 let themeStyleTag: HTMLStyleElement | null = null
 
@@ -129,6 +132,10 @@ export default function App() {
       return raw ? JSON.parse(raw) : []
     } catch { return [] }
   })
+
+  // Resource counts for every shell's sidebar and service table. Only fetched once
+  // connected, and re-fetched whenever the user refreshes.
+  const { counts } = useServiceCounts(refreshKey, screen === 'main')
 
   useEffect(() => {
     const init = async () => {
@@ -406,24 +413,28 @@ export default function App() {
     [settings, queues, selectedQueue, refreshQueues, refreshKey]
   )
 
-  const renderLayout = (tab: AppTab): React.ReactElement | null => {
-    if (tab.service === null) {
-      return (
-        <ServiceSelector
-          settings={settings}
-          onSelectService={handleSelectService}
-          onOpenInNewTab={handleOpenInNewTab}
-          favouriteServices={favouriteServices}
-          onToggleFavourite={toggleFavourite}
-          iconMode={iconMode}
-        />
-      )
-    }
-    return LAYOUT_RENDERERS[tab.service](tab)
-  }
+  // The shell decides how a launcher and a service layout are framed; App only
+  // supplies the two slots.
+  const renderLauncher = useCallback((_tab: AppTab): React.ReactElement => (
+    <ServiceSelector
+      settings={settings}
+      onSelectService={handleSelectService}
+      onOpenInNewTab={handleOpenInNewTab}
+      favouriteServices={favouriteServices}
+      onToggleFavourite={toggleFavourite}
+      iconMode={iconMode}
+    />
+  ), [settings, handleSelectService, handleOpenInNewTab, favouriteServices, toggleFavourite, iconMode])
+
+  const renderService = useCallback((tab: AppTab): React.ReactElement | null =>
+    tab.service ? LAYOUT_RENDERERS[tab.service](tab) : null,
+  [LAYOUT_RENDERERS])
+
+  const Shell = SHELLS[theme]
 
   return (
     <ToastProvider>
+    <ServiceViewProvider>
     <div className="h-full bg-app text-1 flex flex-col">
       {screen === 'connection' && (
         <ConnectionScreen
@@ -440,73 +451,48 @@ export default function App() {
         />
       )}
       {screen === 'main' && (
-        <div className="flex-1 flex overflow-hidden min-h-0">
-          <NavRail
-            favouriteServices={favouriteServices}
-            activeService={tabs.find(t => t.id === activeTabId)?.service ?? null}
-            onSelectService={handleNavRailSelect}
-            onOpenInNewTab={handleOpenInNewTab}
-            onToggleFavourite={toggleFavourite}
-            onReorderFavourites={reorderFavourites}
-            settings={settings}
-            theme={theme}
-            onSetTheme={handleSetTheme}
-            iconMode={iconMode}
-            onToggleIconMode={toggleIconMode}
-            onRefresh={handleRefreshActiveTab}
-            refreshing={refreshing}
-            onSwitchService={handleSwitchService}
-            onDisconnect={handleDisconnect}
-            onRegionChange={handleRegionChange}
-            appVersion={appVersion}
-            autoUpdate={autoUpdate}
-            onToggleAutoUpdate={toggleAutoUpdate}
-            updaterStatus={updaterStatus}
-            onCheckForUpdates={handleCheckForUpdates}
-            onInstallUpdate={() => window.electronAPI.installUpdate()}
-          />
-          <div className="flex-1 flex flex-col min-w-0">
-            <TitleBar
-              tabs={tabs}
-              activeTabId={activeTabId}
-              onSwitch={setActiveTabId}
-              onClose={handleCloseTab}
-              onNew={handleNewTab}
-              onOpenInNewTab={handleOpenInNewTab}
-              onReorder={handleReorderTabs}
-            />
-            <div className="flex-1 relative overflow-hidden min-h-0">
-              {tabs.map(tab => (
-                <div
-                  key={tab.id}
-                  className="absolute inset-0"
-                  style={{ display: activeTabId === tab.id ? 'flex' : 'none', flexDirection: 'column' }}
-                >
-                  {tab.service && (
-                    <ServiceBand
-                      service={tab.service}
-                      settings={settings}
-                      effectiveRegion={getServiceRegion(tab.service)}
-                      iconMode={iconMode}
-                      onRefresh={handleRefreshActiveTab}
-                      refreshing={refreshing}
-                      onChangeRegion={(rg) => handleServiceRegionChange(tab.service!, rg)}
-                    />
-                  )}
-                  <div className="flex-1 min-h-0 flex flex-col">
-                    {renderLayout(tab)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <Shell
+          pinnedServices={favouriteServices}
+          activeService={tabs.find(t => t.id === activeTabId)?.service ?? null}
+          onSelectService={handleNavRailSelect}
+          onOpenInNewTab={handleOpenInNewTab}
+          onToggleFavourite={toggleFavourite}
+          onReorderFavourites={reorderFavourites}
+          counts={counts}
+          tabs={tabs}
+          activeTabId={activeTabId}
+          onSwitchTab={setActiveTabId}
+          onCloseTab={handleCloseTab}
+          onNewTab={handleNewTab}
+          onReorderTabs={handleReorderTabs}
+          settings={settings}
+          effectiveRegion={getServiceRegion}
+          onRegionChange={handleRegionChange}
+          onServiceRegionChange={handleServiceRegionChange}
+          onRefresh={handleRefreshActiveTab}
+          refreshing={refreshing}
+          onSwitchService={handleSwitchService}
+          onDisconnect={handleDisconnect}
+          theme={theme}
+          onSetTheme={handleSetTheme}
+          iconMode={iconMode}
+          onToggleIconMode={toggleIconMode}
+          appVersion={appVersion}
+          autoUpdate={autoUpdate}
+          onToggleAutoUpdate={toggleAutoUpdate}
+          updaterStatus={updaterStatus}
+          onCheckForUpdates={handleCheckForUpdates}
+          onInstallUpdate={() => window.electronAPI.installUpdate()}
+          renderLauncher={renderLauncher}
+          renderService={renderService}
+        />
       )}
       <UpdateBanner
         status={updaterStatus}
         onInstall={() => window.electronAPI.installUpdate()}
       />
     </div>
+    </ServiceViewProvider>
     </ToastProvider>
   )
 }
