@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import type { KinesisStream } from '../../types'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   streamName: string
@@ -14,6 +15,17 @@ interface Props {
 }
 
 export default function KinesisStreamDetail({ streamName, onDeleted, endpoint, region }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: streamName,
+    breadcrumb: [streamName],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Stream', value: streamName },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [stream, setStream] = useState<KinesisStream | null>(null)
   const [loading, setLoading] = useState(true)

@@ -6,6 +6,7 @@ import {
 import type { SsmParameter } from '../../types'
 import EditParameterModal from './EditParameterModal'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   param: SsmParameter
@@ -195,6 +196,25 @@ function HistoryTab({ param }: { param: SsmParameter }) {
 
 // ── Main ParameterDetail ─────────────────────────────────────────────────────
 export default function ParameterDetail({ param, onDeleted, onUpdated }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: param.name,
+    subtitle: param.arn,
+    breadcrumb: [param.name],
+    stats: [
+      { label: 'Type', value: String(param.type ?? '—') },
+      { label: 'Version', value: String(param.version ?? '—') },
+      { label: 'Tier', value: String(param.tier ?? '—') },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Name', value: String(param.name ?? '—') },
+      { key: 'Type', value: String(param.type ?? '—') },
+      { key: 'Version', value: String(param.version ?? '—') },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [confirmDelete, setConfirmDelete] = useState(false)

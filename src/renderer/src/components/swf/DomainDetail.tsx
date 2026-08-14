@@ -23,6 +23,7 @@ import RegisterActivityTypeModal from './RegisterActivityTypeModal'
 import StartExecutionModal from './StartExecutionModal'
 import SignalExecutionModal from './SignalExecutionModal'
 import ExecutionHistoryModal from './ExecutionHistoryModal'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 type Tab = 'overview' | 'workflow-types' | 'activity-types' | 'executions'
 
@@ -122,6 +123,23 @@ function ExecStatusBadge({ execution }: { execution: SwfExecution }) {
 // ── Domain Detail ─────────────────────────────────────────────────────────────
 
 export default function DomainDetail({ domain, onDeprecated, showToast }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: domain.name,
+    subtitle: domain.arn,
+    breadcrumb: [domain.name],
+    stats: [
+      { label: 'Status', value: String(domain.status ?? '—'), tone: domain.status === 'REGISTERED' ? 'ok' : 'default' },
+      { label: 'Retention', value: String(domain.workflowExecutionRetentionPeriodInDays ?? '—'), unit: 'days' },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Domain', value: String(domain.name ?? '—') },
+      { key: 'Status', value: String(domain.status ?? '—') },
+    ] }],
+  })
+
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [workflowTypes, setWorkflowTypes] = useState<SwfWorkflowType[]>([])
   const [activityTypes, setActivityTypes] = useState<SwfActivityType[]>([])

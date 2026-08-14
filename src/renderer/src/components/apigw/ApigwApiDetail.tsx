@@ -4,6 +4,7 @@ import {
 } from 'lucide-react'
 import type { ApigwRestApi, ApigwResource, ApigwStage } from '../../types'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   api: ApigwRestApi
@@ -11,6 +12,24 @@ interface Props {
 }
 
 export default function ApigwApiDetail({ api, onBack }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: api.name,
+    subtitle: api.id,
+    breadcrumb: [api.name],
+    stats: [
+      { label: 'API id', value: String(api.id ?? '—') },
+      { label: 'Created', value: api.createdDate ? new Date(api.createdDate).toLocaleDateString() : '—' },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Name', value: String(api.name ?? '—') },
+      { key: 'Id', value: String(api.id ?? '—') },
+      { key: 'Description', value: String(api.description ?? '—') },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [activeTab, setActiveTab] = useState<'Resources' | 'Stages'>('Resources')
   const [loading, setLoading] = useState(false)

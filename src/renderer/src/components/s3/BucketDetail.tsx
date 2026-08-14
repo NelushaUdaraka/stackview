@@ -3,6 +3,7 @@ import { HardDrive, FolderOpen, Settings, Trash2, Check, AlertTriangle, Copy, Lo
 import type { S3BucketInfo } from '../../types'
 import ObjectsPanel from './ObjectsPanel'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   bucket: S3BucketInfo
@@ -19,6 +20,20 @@ function formatDate(iso?: string) {
 }
 
 export default function BucketDetail({ bucket, endpoint, region, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: bucket.name,
+    subtitle: `s3://${bucket.name}`,
+    breadcrumb: [bucket.name],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Bucket', value: String(bucket.name ?? '—') },
+      { key: 'Region', value: String(region ?? '—') },
+      { key: 'Created', value: bucket.creationDate ? new Date(bucket.creationDate).toLocaleDateString() : '—' },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [activeTab, setActiveTab] = useState<Tab>('objects')
   const [confirmDelete, setConfirmDelete] = useState(false)

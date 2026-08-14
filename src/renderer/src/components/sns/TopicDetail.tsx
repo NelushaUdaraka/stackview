@@ -6,6 +6,7 @@ import {
 import type { SnsTopic, SnsSubscription } from '../../types'
 import CreateSubscriptionModal from './CreateSubscriptionModal'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   topic: SnsTopic
@@ -220,6 +221,19 @@ function SubscriptionsTab({ topic }: { topic: SnsTopic }) {
 }
 
 export default function TopicDetail({ topic, onDeleted, onUpdated }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: topic.name,
+    subtitle: topic.arn,
+    breadcrumb: [topic.name],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Topic', value: String(topic.name ?? '—') },
+      { key: 'ARN', value: String(topic.arn ?? '—') },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [activeTab, setActiveTab] = useState<Tab>('publish')
   const [confirmDelete, setConfirmDelete] = useState(false)

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { Trash2, Loader2 } from 'lucide-react'
 import type { ConfigDeliveryChannel } from '../../types'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   channel: ConfigDeliveryChannel
@@ -18,6 +19,20 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
 }
 
 export default function ChannelDetail({ channel, onDeleted, showToast }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: channel.name,
+    subtitle: channel.s3BucketName,
+    breadcrumb: [channel.name],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Channel', value: String(channel.name ?? '—') },
+      { key: 'S3 bucket', value: String(channel.s3BucketName ?? '—') },
+      { key: 'Frequency', value: String(channel.deliveryFrequency ?? '—') },
+    ] }],
+  })
+
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
 

@@ -7,6 +7,7 @@ import type { EbBus } from '../../types'
 import EbRulesList from './EbRulesList'
 import EbPutEvents from './EbPutEvents'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   bus: EbBus
@@ -27,6 +28,19 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function BusDetail({ bus, onRefresh, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: bus.name,
+    subtitle: bus.arn,
+    breadcrumb: [bus.name],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Bus', value: String(bus.name ?? '—') },
+      { key: 'ARN', value: String(bus.arn ?? '—') },
+    ] }],
+  })
+
   const [activeTab, setActiveTab] = useState<Tab>('rules')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)

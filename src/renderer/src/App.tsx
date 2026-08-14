@@ -211,7 +211,10 @@ export default function App() {
 
   const reinitService = useCallback(async (svc: Service, endpoint: string, region: string) => {
     await SERVICE_REINIT_MAP[svc](endpoint, region)
-  }, [])
+    // SQS keeps its queue list in App state, so opening the service has to populate
+    // it — otherwise the layout renders empty until the user hits Refresh.
+    if (svc === 'sqs') await refreshQueues(endpoint, region)
+  }, [refreshQueues])
 
   const getServiceRegion = useCallback(
     (svc: Service) => serviceRegions[svc] ?? settings.region,

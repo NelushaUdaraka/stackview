@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { LifeBuoy, CheckCircle, Loader2, Copy, Check } from 'lucide-react'
 import type { SupportCase } from '../../types'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   supportCase: SupportCase
@@ -45,6 +46,25 @@ function StatusBadge({ status }: { status?: string }) {
 }
 
 export default function CaseDetail({ supportCase, onResolved, showToast }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: supportCase.subject,
+    subtitle: supportCase.displayId,
+    breadcrumb: [supportCase.subject],
+    stats: [
+      { label: 'Status', value: String(supportCase.status ?? '—') },
+      { label: 'Severity', value: String(supportCase.severityCode ?? '—') },
+      { label: 'Service', value: String(supportCase.serviceCode ?? '—') },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Case', value: String(supportCase.displayId ?? '—') },
+      { key: 'Status', value: String(supportCase.status ?? '—') },
+      { key: 'Severity', value: String(supportCase.severityCode ?? '—') },
+    ] }],
+  })
+
   const [confirmResolve, setConfirmResolve] = useState(false)
   const [resolving, setResolving] = useState(false)
 

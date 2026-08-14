@@ -4,6 +4,7 @@ import IndicesPanel from './IndicesPanel'
 import ClusterHealthPanel from './ClusterHealthPanel'
 import type { OpenSearchDomain } from '../../types'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   domainName: string
@@ -25,6 +26,17 @@ function Row({ label, value }: { label: string; value?: string | number }) {
 }
 
 export default function DomainDetail({ domainName, endpoint, region, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: domainName,
+    breadcrumb: [domainName],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Domain', value: domainName },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [domain, setDomain] = useState<OpenSearchDomain | null>(null)
   const [loading, setLoading] = useState(false)

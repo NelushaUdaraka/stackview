@@ -4,6 +4,7 @@ import {
   Tag, FileText, Globe, Clock, AlertTriangle
 } from 'lucide-react'
 import type { AcmCertificate } from '../../types'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   cert: AcmCertificate
@@ -50,6 +51,27 @@ function statusBadgeClass(status?: string): string {
 }
 
 export default function AcmCertificateDetail({ cert, onRefresh, onDeleted, showToast }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: cert.DomainName ?? cert.CertificateArn ?? 'certificate',
+    subtitle: cert.CertificateArn,
+    breadcrumb: [cert.DomainName ?? cert.CertificateArn ?? 'certificate'],
+    stats: [
+      { label: 'Status', value: String(cert.Status ?? '—'), tone: cert.Status === 'ISSUED' ? 'ok' : 'warn' },
+      { label: 'Type', value: String(cert.Type ?? '—') },
+      { label: 'Key algorithm', value: String(cert.KeyAlgorithm ?? '—') },
+      { label: 'In use by', value: String(cert.InUseBy?.length ?? 0), unit: 'resources' },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Domain', value: String(cert.DomainName ?? '—') },
+      { key: 'Status', value: String(cert.Status ?? '—') },
+      { key: 'Type', value: String(cert.Type ?? '—') },
+      { key: 'Not after', value: cert.NotAfter ? new Date(cert.NotAfter).toLocaleDateString() : '—' },
+    ] }],
+  })
+
   const [actioning, setActioning] = useState(false)
   const [showPem, setShowPem] = useState(false)
   const [pemData, setPemData] = useState<{ certificate: string; certificateChain?: string } | null>(null)

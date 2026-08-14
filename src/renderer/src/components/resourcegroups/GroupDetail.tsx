@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Boxes, Trash2, Loader2, Check, Copy, RefreshCw, FileJson, Tag, Settings } from 'lucide-react'
 import type { RgGroup } from '../../types'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   group: RgGroup
@@ -23,6 +24,19 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function GroupDetail({ group, onDeleted, showToast }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: group.name,
+    subtitle: group.groupArn,
+    breadcrumb: [group.name],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Group', value: String(group.name ?? '—') },
+      { key: 'Description', value: String(group.description ?? '—') },
+    ] }],
+  })
+
   const [activeTab, setActiveTab] = useState<Tab>('query')
   const [detail, setDetail] = useState<{
     group: RgGroup; query?: { type: string; query: string }; tags?: Record<string, string>; configuration?: any[]

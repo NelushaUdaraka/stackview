@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Mic, Copy, Check, RefreshCw, Trash2, Loader2, ExternalLink, FileText, Clock, AlertTriangle } from 'lucide-react'
 import type { TranscribeJob } from '../../types'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   job: TranscribeJob
@@ -46,6 +47,25 @@ function statusStyle(status: string): { bg: string; text: string; border: string
 }
 
 export default function TranscribeJobDetail({ job, onRefresh, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: job.jobName,
+    subtitle: job.mediaUri,
+    breadcrumb: [job.jobName],
+    stats: [
+      { label: 'Status', value: String(job.jobStatus ?? '—'), tone: job.jobStatus === 'COMPLETED' ? 'ok' : job.jobStatus === 'FAILED' ? 'danger' : 'warn' },
+      { label: 'Language', value: String(job.languageCode ?? '—') },
+      { label: 'Format', value: String(job.mediaFormat ?? '—') },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Job', value: String(job.jobName ?? '—') },
+      { key: 'Status', value: String(job.jobStatus ?? '—') },
+      { key: 'Language', value: String(job.languageCode ?? '—') },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [actioning, setActioning] = useState(false)
   const [refreshing, setRefreshing] = useState(false)

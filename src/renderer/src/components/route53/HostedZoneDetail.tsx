@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Trash2, Loader2, Plus, RefreshCw } from 'lucide-react'
 import type { Route53HostedZone, Route53RecordSet } from '../../types'
 import CreateRecordModal from './CreateRecordModal'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   zone: Route53HostedZone
@@ -28,6 +29,24 @@ function typeColor(t: string) {
 }
 
 export default function HostedZoneDetail({ zone, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: zone.Name,
+    subtitle: zone.Id,
+    breadcrumb: [zone.Name],
+    stats: [
+      { label: 'Records', value: String(zone.ResourceRecordSetCount ?? 0) },
+      { label: 'Type', value: zone.Config?.PrivateZone ? 'Private' : 'Public' },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Zone', value: String(zone.Name ?? '—') },
+      { key: 'Records', value: String(zone.ResourceRecordSetCount ?? 0) },
+      { key: 'Private', value: zone.Config?.PrivateZone ? 'yes' : 'no' },
+    ] }],
+  })
+
   const [tab, setTab] = useState<Tab>('records')
   const [records, setRecords] = useState<Route53RecordSet[]>([])
   const [loadingRecords, setLoadingRecords] = useState(false)

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Lock, Trash2, Check, Loader2, Copy, FileText, Shield } from 'lucide-react'
 import type { S3ControlAccessPoint } from '../../types'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   accessPoint: S3ControlAccessPoint
@@ -139,6 +140,24 @@ function PolicyTab({ accessPoint }: { accessPoint: S3ControlAccessPoint }) {
 }
 
 export default function AccessPointDetail({ accessPoint, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: accessPoint.name,
+    subtitle: accessPoint.accessPointArn,
+    breadcrumb: [accessPoint.name],
+    stats: [
+      { label: 'Bucket', value: String(accessPoint.bucket ?? '—') },
+      { label: 'Origin', value: String(accessPoint.networkOrigin ?? '—') },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Access point', value: String(accessPoint.name ?? '—') },
+      { key: 'Bucket', value: String(accessPoint.bucket ?? '—') },
+      { key: 'Origin', value: String(accessPoint.networkOrigin ?? '—') },
+    ] }],
+  })
+
   const [activeTab, setActiveTab] = useState<Tab>('details')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)

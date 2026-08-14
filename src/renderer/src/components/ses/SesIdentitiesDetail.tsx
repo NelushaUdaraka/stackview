@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Trash2, Mail, Loader2, Send, CheckCircle2, Copy, Check, Info } from 'lucide-react'
 import type { SesIdentity } from '../../types'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   identity: SesIdentity
@@ -21,6 +22,17 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function SesIdentitiesDetail({ identity, onRefresh, onDeleted, onSendEmail }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: typeof identity === 'string' ? identity : String(identity),
+    breadcrumb: [typeof identity === 'string' ? identity : String(identity)],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Identity', value: typeof identity === 'string' ? identity : String(identity) },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)

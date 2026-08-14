@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Trash2, Database, Loader2, RefreshCw, CheckCircle2, Copy, Check, Info, Server, Cpu, Clock, Shield, Globe } from 'lucide-react'
 import type { RedshiftCluster } from '../../types'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   cluster: RedshiftCluster
@@ -20,6 +21,26 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function RedshiftClusterDetail({ cluster, onRefresh, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: cluster.ClusterIdentifier,
+    subtitle: cluster.Endpoint?.Address,
+    breadcrumb: [String(cluster.ClusterIdentifier ?? '')],
+    stats: [
+      { label: 'Status', value: String(cluster.ClusterStatus ?? '—'), tone: cluster.ClusterStatus === 'available' ? 'ok' : 'warn' },
+      { label: 'Node type', value: String(cluster.NodeType ?? '—') },
+      { label: 'Database', value: String(cluster.DBName ?? '—') },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Cluster', value: String(cluster.ClusterIdentifier ?? '—') },
+      { key: 'Status', value: String(cluster.ClusterStatus ?? '—') },
+      { key: 'Node type', value: String(cluster.NodeType ?? '—') },
+      { key: 'Port', value: String(cluster.Endpoint?.Port ?? '—') },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)

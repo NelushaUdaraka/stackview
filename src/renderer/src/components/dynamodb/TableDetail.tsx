@@ -4,6 +4,7 @@ import { useToastContext } from '../../contexts/ToastContext'
 import type { DynamoItem, DynamoQueryOptions, DynamoStreamShard, DynamoStreamRecord } from '../../types'
 import PutItemModal from './PutItemModal'
 import ViewItemModal from './ViewItemModal'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   tableName: string
@@ -13,6 +14,17 @@ interface Props {
 type Tab = 'items' | 'overview' | 'streams'
 
 export default function TableDetail({ tableName, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: tableName,
+    breadcrumb: [tableName],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Table', value: tableName },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [activeTab, setActiveTab] = useState<Tab>('items')
   const [confirmDelete, setConfirmDelete] = useState(false)

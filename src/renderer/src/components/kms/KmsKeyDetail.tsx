@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { KeyRound, ShieldCheck, ShieldAlert, Loader2, Copy, Check, Clock, Edit2, Play, Square, Settings2, Trash2, Plus } from 'lucide-react'
 import type { KmsKey } from '../../types'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   dataKey: KmsKey
@@ -22,6 +23,24 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function KmsKeyDetail({ dataKey, onRefresh, onDeleted, onEncryptDecrypt, onCreateAlias }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: dataKey.Aliases?.[0] ?? dataKey.KeyId,
+    subtitle: dataKey.Arn,
+    breadcrumb: [dataKey.Aliases?.[0] ?? dataKey.KeyId],
+    stats: [
+      { label: 'State', value: String(dataKey.KeyState ?? '—'), tone: dataKey.Enabled ? 'ok' : 'warn' },
+      { label: 'Aliases', value: String(dataKey.Aliases?.length ?? 0) },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Key id', value: String(dataKey.KeyId ?? '—') },
+      { key: 'State', value: String(dataKey.KeyState ?? '—'), tone: dataKey.Enabled ? 'ok' : 'default' },
+      { key: 'Enabled', value: dataKey.Enabled ? 'yes' : 'no' },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [actioning, setActioning] = useState(false)
 

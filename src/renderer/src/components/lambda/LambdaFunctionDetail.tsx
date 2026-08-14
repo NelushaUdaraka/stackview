@@ -10,6 +10,7 @@ import 'prismjs/components/prism-json'
 import 'prismjs/components/prism-typescript'
 import 'prismjs/components/prism-java'
 import 'prismjs/themes/prism-tomorrow.css'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   lambda: LambdaFunction
@@ -20,6 +21,28 @@ interface Props {
 type Tab = 'overview' | 'test' | 'code'
 
 export default function LambdaFunctionDetail({ lambda, onRefresh, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: lambda.FunctionName,
+    subtitle: lambda.FunctionArn,
+    breadcrumb: [lambda.FunctionName],
+    stats: [
+      { label: 'Runtime', value: String(lambda.Runtime ?? '—') },
+      { label: 'Memory', value: String(lambda.MemorySize ?? '—'), unit: 'MB' },
+      { label: 'Timeout', value: String(lambda.Timeout ?? '—'), unit: 'sec' },
+      { label: 'Code size', value: lambda.CodeSize ? (lambda.CodeSize / 1024).toFixed(0) : '—', unit: 'KB' },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Runtime', value: String(lambda.Runtime ?? '—') },
+      { key: 'Handler', value: String(lambda.Handler ?? '—') },
+      { key: 'Memory', value: `${lambda.MemorySize ?? '—'} MB` },
+      { key: 'Timeout', value: `${lambda.Timeout ?? '—'}s` },
+      { key: 'State', value: String(lambda.State ?? '—'), tone: lambda.State === 'Active' ? 'ok' : 'default' },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [confirmDelete, setConfirmDelete] = useState(false)

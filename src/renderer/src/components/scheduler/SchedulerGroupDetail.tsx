@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import type { EbScheduleGroup, EbSchedule } from '../../types'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   group: EbScheduleGroup
@@ -25,6 +26,17 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function SchedulerGroupDetail({ group, onRefresh, onDeleted, onCreateSchedule }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: group.name ?? 'group',
+    breadcrumb: [group.name ?? 'group'],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Group', value: String(group.name ?? '—') },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [schedules, setSchedules] = useState<EbSchedule[]>([])
   const [loading, setLoading] = useState(false)

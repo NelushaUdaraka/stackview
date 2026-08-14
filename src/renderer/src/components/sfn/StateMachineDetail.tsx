@@ -18,6 +18,7 @@ import type { SfnStateMachine, SfnStateMachineDetail as SfnDetail, SfnExecution 
 import StartExecutionModal from './StartExecutionModal'
 import ExecutionHistoryModal from './ExecutionHistoryModal'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 type Tab = 'overview' | 'executions' | 'definition'
 
@@ -63,6 +64,24 @@ function ExecStatusBadge({ status }: { status: SfnExecution['status'] }) {
 }
 
 export default function StateMachineDetail({ machine, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: machine.name,
+    subtitle: machine.stateMachineArn,
+    breadcrumb: [machine.name],
+    stats: [
+      { label: 'Status', value: String(machine.status ?? '—'), tone: machine.status === 'ACTIVE' ? 'ok' : 'default' },
+      { label: 'Type', value: String(machine.type ?? '—') },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Name', value: String(machine.name ?? '—') },
+      { key: 'Type', value: String(machine.type ?? '—') },
+      { key: 'Status', value: String(machine.status ?? '—') },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [detail, setDetail] = useState<SfnDetail | null>(null)

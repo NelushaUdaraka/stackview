@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Shield, Key, Settings, Trash2, Check, AlertTriangle, Copy, Loader2, Save, Edit2 } from 'lucide-react'
 import type { SecretInfo, SecretValue } from '../../types'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   secret: SecretInfo
@@ -16,6 +17,20 @@ function formatDate(iso?: string) {
 }
 
 export default function SecretDetail({ secret, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: secret.name,
+    subtitle: secret.arn,
+    breadcrumb: [secret.name],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Secret', value: String(secret.name ?? '—') },
+      { key: 'Description', value: String(secret.description ?? '—') },
+      { key: 'Created', value: secret.createdDate ? new Date(secret.createdDate).toLocaleDateString() : '—' },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [activeTab, setActiveTab] = useState<Tab>('value')
   const [confirmDelete, setConfirmDelete] = useState(false)

@@ -7,6 +7,7 @@ import {
 import { getStatusColor } from './CloudFormationSidebar'
 import UpdateStackModal from './UpdateStackModal'
 import { useToastContext } from '../../contexts/ToastContext'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   stackName: string
@@ -23,6 +24,17 @@ const FAILED_STATUSES = [
 ]
 
 export default function StackDetail({ stackName, onDeleted, onUpdated }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: stackName,
+    breadcrumb: [stackName],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Stack', value: stackName },
+    ] }],
+  })
+
   const { showToast } = useToastContext()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [confirmDelete, setConfirmDelete] = useState(false)

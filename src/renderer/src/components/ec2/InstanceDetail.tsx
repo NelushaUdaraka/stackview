@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Play, Square, RotateCcw, Trash2, Loader2, Server, Info, Tag } from 'lucide-react'
 import type { Ec2Instance } from '../../types'
+import { useServiceView } from '../../shells/ServiceViewContext'
 
 interface Props {
   instance: Ec2Instance
@@ -44,6 +45,28 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
 }
 
 export default function InstanceDetail({ instance, onRefresh, onDeleted }: Props) {
+
+  // Publish the selection so the active shell can render it as stat tiles, a docked
+  // inspector or a status line, without this component knowing which shell is mounted.
+  useServiceView({
+    title: instance.InstanceId,
+    subtitle: instance.InstanceType,
+    breadcrumb: [String(instance.InstanceId ?? '')],
+    stats: [
+      { label: 'State', value: String(instance.State?.Name ?? '—'), tone: instance.State?.Name === 'running' ? 'ok' : 'warn' },
+      { label: 'Type', value: String(instance.InstanceType ?? '—') },
+      { label: 'Private IP', value: String(instance.PrivateIpAddress ?? '—') },
+      { label: 'Public IP', value: String(instance.PublicIpAddress ?? '—') },
+    ],
+    inspector: [{ label: 'Details', rows: [
+      { key: 'Instance', value: String(instance.InstanceId ?? '—') },
+      { key: 'State', value: String(instance.State?.Name ?? '—'), tone: instance.State?.Name === 'running' ? 'ok' : 'default' },
+      { key: 'Type', value: String(instance.InstanceType ?? '—') },
+      { key: 'VPC', value: String(instance.VpcId ?? '—') },
+      { key: 'Subnet', value: String(instance.SubnetId ?? '—') },
+    ] }],
+  })
+
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
