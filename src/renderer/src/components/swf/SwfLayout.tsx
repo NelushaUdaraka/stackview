@@ -1,22 +1,22 @@
 import { useState, useCallback, useEffect } from 'react'
 import { GitBranch, Plus } from 'lucide-react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
 import { useToastContext } from '../../contexts/ToastContext'
 import type { AppSettings, SwfDomain } from '../../types'
-import SwfSidebar from './SwfSidebar'
 import DomainDetail from './DomainDetail'
+import {
+  ServiceShell, ResourceRail, Inspector, EmptyState, statusColor, stateOf, type RailItem,
+} from '../common/ui'
 import RegisterDomainModal from './RegisterDomainModal'
 
 interface Props {
   settings: AppSettings
 }
 
-export default function SwfLayout({ settings: _settings }: Props) {
+export default function SwfLayout({ settings }: Props) {
   const [domains, setDomains] = useState<SwfDomain[]>([])
   const [selectedDomain, setSelectedDomain] = useState<SwfDomain | null>(null)
   const [loading, setLoading] = useState(false)
   const [showRegister, setShowRegister] = useState(false)
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 200, max: 480 })
   const { showToast } = useToastContext()
 
   const loadDomains = useCallback(async () => {
@@ -45,72 +45,99 @@ export default function SwfLayout({ settings: _settings }: Props) {
     )
   }, [loadDomains])
 
+  const railItems: RailItem[] = domains.map(d => ({
+    id: d.name,
+    name: d.name,
+    icon: GitBranch,
+    state: d.status === 'REGISTERED' ? 'ok' : 'idle',
+    sub: d.status,
+    meta: d.workflowExecutionRetentionPeriodInDays
+      ? `${d.workflowExecutionRetentionPeriodInDays}d`
+      : undefined,
+    keywords: d.description,
+  }))
+
   return (
-    <div className="flex flex-col h-full bg-app">
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Sidebar */}
-        <div style={{ width: sidebarWidth }} className="flex shrink-0 z-10">
-          <SwfSidebar
-            domains={domains}
-            selectedDomain={selectedDomain}
-            onSelectDomain={setSelectedDomain}
-            onRegisterDomain={() => setShowRegister(true)}
+    <>
+      <ServiceShell
+        rail={
+          <ResourceRail
+            title="DOMAINS"
+            items={railItems}
+            selectedId={selectedDomain?.name ?? null}
+            onSelect={item => setSelectedDomain(domains.find(d => d.name === item.id) ?? null)}
+            icon={GitBranch}
+            searchPlaceholder="Search domains..."
+            onCreate={() => setShowRegister(true)}
+            createLabel="Register Domain"
             loading={loading}
+            emptyLabel="No domains yet"
           />
-        </div>
-
-        {/* Resize handle */}
-        <div
-          onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
-        />
-
-        {/* Main content */}
-        <main className="flex-1 overflow-hidden bg-app">
-          {selectedDomain ? (
-            <DomainDetail
-              key={selectedDomain.name}
-              domain={selectedDomain}
-              onDeprecated={handleDomainDeprecated}
+        }
+        inspector={
+          selectedDomain ? (
+            <Inspector
+              kind="domain"
+              icon={GitBranch}
+              iconColor="#22c55e"
+              title={selectedDomain.name}
+              subtitle={selectedDomain.description || 'Workflow domain'}
+              rows={[
+                { key: 'Status', value: selectedDomain.status, color: statusColor(selectedDomain.status) },
+                {
+                  key: 'Retention',
+                  value: selectedDomain.workflowExecutionRetentionPeriodInDays
+                    ? `${selectedDomain.workflowExecutionRetentionPeriodInDays} days`
+                    : '\u2014',
+                },
+                { key: 'Region', value: settings.region, color: 'rgb(var(--text-2))' },
+                ...(selectedDomain.arn
+                  ? [{ key: 'ARN', value: selectedDomain.arn, color: 'rgb(var(--text-2))' }]
+                  : []),
+              ]}
             />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full gap-4">
-              <div className="p-5 rounded-2xl bg-green-500/10 border border-green-500/20">
-                <GitBranch size={40} className="text-green-500 opacity-50" />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-semibold text-2 mb-1">No domain selected</p>
-                <p className="text-xs text-3">
-                  {loading
-                    ? 'Loading domains…'
-                    : domains.length === 0
-                    ? 'Register a domain to get started'
-                    : 'Select a domain from the sidebar'}
-                </p>
-              </div>
-              {!loading && domains.length === 0 && (
-                <button
-                  onClick={() => setShowRegister(true)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-green-600 hover:bg-green-500 text-white rounded-xl transition-colors"
-                >
-                  <Plus size={14} /> Register Domain
-                </button>
-              )}
-            </div>
-          )}
-        </main>
-      </div>
+          ) : undefined
+        }
+      >
+        {selectedDomain ? (
+          <DomainDetail
+            key={selectedDomain.name}
+            domain={selectedDomain}
+            showToast={showToast}
+            onDeprecated={handleDomainDeprecated}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <EmptyState
+              icon={GitBranch}
+              title={loading ? 'Loading domains\u2026' : 'Select a domain'}
+              hint={
+                domains.length === 0 && !loading
+                  ? 'Register a domain to get started.'
+                  : 'Pick a domain from the rail to manage workflow and activity types.'
+              }
+              action={
+                domains.length === 0 && !loading ? (
+                  <button onClick={() => setShowRegister(true)} className="btn-primary">
+                    Register Domain
+                  </button>
+                ) : undefined
+              }
+            />
+          </div>
+        )}
+      </ServiceShell>
 
       {showRegister && (
         <RegisterDomainModal
           onClose={() => setShowRegister(false)}
+          showToast={showToast}
           onCreated={() => {
             setShowRegister(false)
             loadDomains()
           }}
         />
       )}
-    </div>
+    </>
   )
 }

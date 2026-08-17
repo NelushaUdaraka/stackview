@@ -1,24 +1,20 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
-import { FileText } from 'lucide-react'
+import { FileText, Activity } from 'lucide-react'
 import type { AppSettings, CloudWatchLogGroup } from '../../types'
-import CloudWatchSidebar from './CloudWatchSidebar'
 import CloudWatchLogsView from './CloudWatchLogsView'
+import {
+  ServiceShell, ResourceRail, Inspector, formatBytes, type RailItem,
+} from '../common/ui'
 
 interface Props {
   settings: AppSettings
 }
 
-export default function CloudWatchLayout({
-  settings,
-}: Props) {
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 220, max: 480 })
+export default function CloudWatchLayout({ settings }: Props) {
   const [loading, setLoading] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
-
-  // Resources state
   const [logGroups, setLogGroups] = useState<CloudWatchLogGroup[]>([])
-  const [selectedLogGroup, setSelectedLogGroup] = useState<CloudWatchLogGroup | null>(null)
+  const [selectedName, setSelectedName] = useState<string | null>(null)
   const [showCreateLogGroup, setShowCreateLogGroup] = useState(false)
 
   const loadLogGroups = useCallback(async () => {
@@ -26,68 +22,98 @@ export default function CloudWatchLayout({
     try {
       const res = await window.electronAPI.cloudwatchListLogGroups()
       if (res.success && res.data) {
-        setLogGroups(res.data)
-        if (!selectedLogGroup && res.data.length > 0) {
-          setSelectedLogGroup(res.data[0])
-        }
+        const list: CloudWatchLogGroup[] = res.data
+        setLogGroups(list)
+        setSelectedName(prev =>
+          prev && list.some(g => g.logGroupName === prev) ? prev : (list[0]?.logGroupName ?? null)
+        )
       }
     } finally {
       setLoading(false)
     }
-  }, [selectedLogGroup])
+  }, [])
 
   useEffect(() => {
     const init = async () => {
-      setLoading(true)
-      try {
-        await window.electronAPI.cloudwatchReinit(settings.endpoint, settings.region)
-        await loadLogGroups()
-      } finally {
-        setLoading(false)
-      }
+      await window.electronAPI.cloudwatchReinit(settings.endpoint, settings.region)
+      await loadLogGroups()
     }
     init()
   }, [refreshKey, settings.endpoint, settings.region, loadLogGroups])
 
-  const handleRefresh = useCallback(() => {
-    setRefreshKey(k => k + 1)
-  }, [])
+  const selected = logGroups.find(g => g.logGroupName === selectedName) ?? null
+
+  // `logGroupName` is optional on the SDK shape; a group without one can't be
+  // selected, so it isn't listed.
+  const railItems: RailItem[] = logGroups
+    .filter((g): g is CloudWatchLogGroup & { logGroupName: string } => Boolean(g.logGroupName))
+    .map(g => ({
+      id: g.logGroupName,
+      name: g.logGroupName,
+      icon: FileText,
+      state: 'ok' as const,
+      sub: g.retentionInDays ? `${g.retentionInDays}D RETENTION` : 'NEVER EXPIRES',
+      meta: g.storedBytes != null ? formatBytes(g.storedBytes) : undefined,
+    }))
 
   return (
-    <div className="flex flex-col h-full bg-app overflow-hidden">
-      <div className="flex-1 flex overflow-hidden relative">
-        {/* Unified Sidebar */}
-        <div style={{ width: sidebarWidth }} className="flex shrink-0 z-10">
-          <CloudWatchSidebar
-            logGroups={logGroups}
-            selectedLogGroup={selectedLogGroup}
-            onSelectLogGroup={setSelectedLogGroup}
-            onCreateLogGroup={() => setShowCreateLogGroup(true)}
-            loading={loading}
-          />
-        </div>
-
-        {/* Resize Handle */}
-        <div
-          onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
+    <ServiceShell
+      rail={
+        <ResourceRail
+          title="LOG GROUPS"
+          items={railItems}
+          selectedId={selectedName}
+          onSelect={item => setSelectedName(item.id)}
+          icon={FileText}
+          searchPlaceholder="Search log groups..."
+          onCreate={() => setShowCreateLogGroup(true)}
+          createLabel="Create Log Group"
+          loading={loading}
+          emptyLabel="No log groups"
         />
-
-        {/* Content Area */}
-        <div className="flex-1 h-full overflow-hidden bg-app">
-          <CloudWatchLogsView
-            key={`logs-${selectedLogGroup?.logGroupName || 'none'}-${refreshKey}`}
-            selectedGroup={selectedLogGroup}
-            loading={loading}
-            setLoading={setLoading}
-            onGroupDeleted={() => { setSelectedLogGroup(null); loadLogGroups() }}
-            showCreateModal={showCreateLogGroup}
-            onCloseCreateModal={() => setShowCreateLogGroup(false)}
-            onGroupCreated={loadLogGroups}
+      }
+      inspector={
+        selected ? (
+          <Inspector
+            kind="log group"
+            icon={Activity}
+            iconColor="#06b6d4"
+            title={selected.logGroupName ?? 'Log group'}
+            subtitle="CloudWatch Logs"
+            rows={[
+              {
+                key: 'Retention',
+                value: selected.retentionInDays ? `${selected.retentionInDays} days` : 'Never expires',
+                color: 'rgb(var(--accent))',
+              },
+              {
+                key: 'Stored',
+                value: selected.storedBytes != null ? formatBytes(selected.storedBytes) : '—',
+              },
+              {
+                key: 'Created',
+                value: selected.creationTime ? new Date(selected.creationTime).toLocaleDateString() : '—',
+                color: 'rgb(var(--text-2))',
+              },
+              { key: 'Region', value: settings.region, color: 'rgb(var(--text-2))' },
+            ]}
           />
-        </div>
-      </div>
-    </div>
+        ) : undefined
+      }
+    >
+      <CloudWatchLogsView
+        key={`logs-${selectedName ?? 'none'}-${refreshKey}`}
+        selectedGroup={selected}
+        loading={loading}
+        setLoading={setLoading}
+        onGroupDeleted={() => {
+          setSelectedName(null)
+          setRefreshKey(k => k + 1)
+        }}
+        showCreateModal={showCreateLogGroup}
+        onCloseCreateModal={() => setShowCreateLogGroup(false)}
+        onGroupCreated={loadLogGroups}
+      />
+    </ServiceShell>
   )
 }

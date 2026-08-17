@@ -1,29 +1,31 @@
-import { useEffect, useRef, useState } from 'react'
-import { RefreshCw, Settings, Search as SearchIcon } from 'lucide-react'
+import { useEffect, useRef, useState, useMemo } from 'react'
+import { RefreshCw, Search as SearchIcon, Globe, RotateCcw } from 'lucide-react'
 import type { Service, IconMode, AppSettings } from '../../types'
 import { SERVICE_CONFIG } from '../../services/serviceConfig'
 import { AWS_REGIONS } from '../../constants'
 import { AwsServiceIcon } from './AwsServiceIcons'
-
-function hexToRgba(hex: string, alpha: number) {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return `rgba(${r},${g},${b},${alpha})`
-}
+import { hexAlpha } from './ui'
 
 interface Props {
   service: Service
   settings: AppSettings
-  /** Region currently active for this service (may differ from settings.region) */
+  /** Region currently active for this service — may differ from `settings.region`. */
   effectiveRegion: string
   iconMode: IconMode
   onRefresh: () => void
   refreshing: boolean
-  /** Change the region for this service only */
+  /** Change the region for this service only. */
   onChangeRegion: (region: string) => void
 }
 
+/**
+ * A 32px identity strip above the split: which service you're in, which region
+ * it's pointed at, and a refresh.
+ *
+ * The mock doesn't draw this — it has no per-service region override — but the
+ * feature ships, and the region belongs next to the resource list it governs
+ * rather than buried in global settings.
+ */
 export default function ServiceBand({
   service,
   settings,
@@ -36,210 +38,145 @@ export default function ServiceBand({
   const meta = SERVICE_CONFIG[service]
   const Icon = meta.icon
 
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [regionSearch, setRegionSearch] = useState('')
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const popoverRef = useRef<HTMLDivElement>(null)
-  const cogBtnRef = useRef<HTMLButtonElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
 
-  // Close on outside click
   useEffect(() => {
-    if (!settingsOpen) return
+    if (!open) return
     const onDown = (e: MouseEvent) => {
       const t = e.target as Node
-      if (popoverRef.current?.contains(t)) return
-      if (cogBtnRef.current?.contains(t)) return
-      setSettingsOpen(false)
+      if (popoverRef.current?.contains(t) || btnRef.current?.contains(t)) return
+      setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
     }
     document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
-  }, [settingsOpen])
-
-  // Close on Escape
-  useEffect(() => {
-    if (!settingsOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSettingsOpen(false)
-    }
     document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [settingsOpen])
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
 
-  const filteredRegions = AWS_REGIONS.filter(r =>
-    r.value.toLowerCase().includes(regionSearch.toLowerCase()) ||
-    r.label.toLowerCase().includes(regionSearch.toLowerCase())
-  )
+  const regions = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return AWS_REGIONS
+    return AWS_REGIONS.filter(r => r.value.toLowerCase().includes(q) || r.label.toLowerCase().includes(q))
+  }, [search])
 
   const isOverride = effectiveRegion !== settings.region
 
   return (
-    <div
-      className="shrink-0 flex items-center gap-3 px-4 relative"
-      style={{
-        height: 48,
-        backgroundColor: 'rgb(var(--bg-app))',
-        borderBottom: '1px solid rgb(var(--border))',
-      }}
-    >
-      {/* Icon tile */}
-      <div className="shrink-0">
-        {iconMode === 'aws' ? (
-          <AwsServiceIcon service={service} size={28} />
-        ) : (
-          <div
-            className="flex items-center justify-center"
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 7,
-              backgroundColor: hexToRgba(meta.hex, 0.15),
-              color: meta.hex,
-              border: `1px solid ${hexToRgba(meta.hex, 0.25)}`,
-            }}
-          >
-            <Icon size={16} />
-          </div>
-        )}
-      </div>
+    <div className="shrink-0 h-8 flex items-center gap-2.5 px-3.5 relative surface-panel border-b border-theme">
+      {iconMode === 'aws' ? (
+        <AwsServiceIcon service={service} size={16} />
+      ) : (
+        <Icon size={14} className="shrink-0" style={{ color: meta.hex }} />
+      )}
 
-      {/* Name + label + region */}
-      <div className="flex items-center gap-2 min-w-0">
-        <span className="text-sm font-semibold text-1 truncate">{meta.name}</span>
+      <span className="text-[12.5px] font-bold text-1 truncate">{meta.name}</span>
 
-        <span
-          className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
-          style={{
-            color: meta.hex,
-            backgroundColor: hexToRgba(meta.hex, 0.12),
-          }}
-        >
-          {meta.label}
-        </span>
-
-        <span className="shrink-0 text-3 select-none" aria-hidden>|</span>
-
-        <span
-          className="shrink-0 text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5"
-          style={{
-            color: meta.hex,
-            backgroundColor: hexToRgba(meta.hex, 0.1),
-            border: `1px solid ${hexToRgba(meta.hex, 0.25)}`,
-          }}
-          title={isOverride
-            ? `Service region override (global is ${settings.region})`
-            : 'Active region'}
-        >
-          {isOverride && (
-            <span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ backgroundColor: meta.hex }}
-              title="Override active"
-            />
-          )}
-          {effectiveRegion}
-        </span>
-      </div>
-
-      <div className="flex-1" />
-
-      {/* Refresh */}
-      <button
-        onClick={onRefresh}
-        disabled={refreshing}
-        className="shrink-0 flex items-center gap-1.5 text-xs text-3 hover:text-1 transition-colors disabled:opacity-60"
-        title="Refresh"
+      <span
+        className="badge shrink-0"
+        style={{ backgroundColor: hexAlpha(meta.hex, 0.14), color: meta.hex }}
       >
-        <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
-        <span>Refresh</span>
+        {meta.label}
+      </span>
+
+      <div className="flex-1 min-w-0" />
+
+      <button
+        ref={btnRef}
+        onClick={() => setOpen(o => !o)}
+        className="shrink-0 flex items-center gap-1.5 h-[22px] px-2 rounded-md transition-colors hover:bg-raised"
+        style={{
+          backgroundColor: isOverride ? 'rgb(var(--accent-soft))' : 'rgb(var(--bg-raised))',
+          color: isOverride ? 'rgb(var(--accent))' : 'rgb(var(--text-3))',
+        }}
+        title={isOverride ? `Region override — global is ${settings.region}` : 'Active region'}
+      >
+        <Globe size={11} className="shrink-0" />
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11 }}>{effectiveRegion}</span>
       </button>
 
-      {/* Settings cog */}
-      <button
-        ref={cogBtnRef}
-        onClick={() => setSettingsOpen(o => !o)}
-        className={`shrink-0 flex items-center justify-center w-6 h-6 rounded transition-colors ${
-          settingsOpen ? 'text-1 bg-raised' : 'text-3 hover:text-1 hover:bg-raised'
-        }`}
-        title="Service settings"
-      >
-        <Settings size={13} />
+      <button onClick={onRefresh} disabled={refreshing} className="btn-icon shrink-0" title="Refresh">
+        <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
       </button>
 
-      {/* Settings popover */}
-      {settingsOpen && (
-        <div
-          ref={popoverRef}
-          className="absolute right-3 top-full mt-1 z-50 w-72 rounded-xl shadow-2xl border border-theme overflow-hidden"
-          style={{ backgroundColor: 'rgb(var(--bg-base))' }}
-        >
-          <div className="px-3 py-2.5 border-b border-theme">
-            <p className="text-[10px] font-semibold text-3 uppercase tracking-wider">
-              {meta.label} Settings
-            </p>
+      {open && (
+        <div ref={popoverRef} className="popover absolute right-3 top-full mt-1 z-50 w-72 p-0 overflow-hidden">
+          <div className="px-3 py-2.5 border-b border-theme flex items-center justify-between">
+            <span className="ui-label">{meta.label} REGION</span>
+            {isOverride && (
+              <button
+                onClick={() => {
+                  onChangeRegion(settings.region)
+                  setOpen(false)
+                }}
+                className="flex items-center gap-1 text-[10px] text-3 hover:text-1 transition-colors"
+                title={`Reset to the global region (${settings.region})`}
+              >
+                <RotateCcw size={10} />
+                Reset
+              </button>
+            )}
           </div>
 
-          <div className="px-3 pt-3 pb-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[10px] font-semibold text-3 uppercase tracking-wider">Region</p>
-              {isOverride && (
-                <button
-                  onClick={() => {
-                    onChangeRegion(settings.region)
-                    setSettingsOpen(false)
-                  }}
-                  className="text-[10px] text-3 hover:text-1 underline-offset-2 hover:underline"
-                  title={`Reset to global region (${settings.region})`}
-                >
-                  Reset to global
-                </button>
-              )}
-            </div>
-            <p className="text-[10px] text-3 mb-1.5 leading-snug">
-              Changes the region for {meta.label} only. Other services keep their current region.
+          <div className="px-3 pt-2.5 pb-2">
+            <p className="text-[11px] text-3 leading-snug mb-2">
+              Changes the region for {meta.label} only. Other services keep theirs.
             </p>
-            <div className="relative mb-1.5">
-              <SearchIcon size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-3" />
+            <div className="relative">
+              <SearchIcon size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-4 pointer-events-none" />
               <input
-                type="text"
-                value={regionSearch}
-                onChange={e => setRegionSearch(e.target.value)}
-                placeholder="Search regions..."
-                className="sidebar-search pl-7 text-xs w-full"
                 autoFocus
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search regions..."
+                className="sidebar-search pl-8"
               />
             </div>
-            <div
-              className="max-h-48 overflow-y-auto rounded-lg border border-theme"
-              style={{ backgroundColor: 'rgb(var(--bg-raised))' }}
-            >
-              {filteredRegions.length === 0 ? (
-                <div className="px-2.5 py-3 text-xs text-3 text-center">No regions match</div>
-              ) : (
-                filteredRegions.map(r => {
-                  const isActive = effectiveRegion === r.value
-                  return (
-                    <button
-                      key={r.value}
-                      onClick={() => {
-                        onChangeRegion(r.value)
-                        setSettingsOpen(false)
+          </div>
+
+          <div className="max-h-52 overflow-y-auto border-t border-theme">
+            {regions.length === 0 ? (
+              <div className="px-2.5 py-3.5 text-xs text-3 text-center">No regions match</div>
+            ) : (
+              regions.map(r => {
+                const isActive = effectiveRegion === r.value
+                return (
+                  <button
+                    key={r.value}
+                    onClick={() => {
+                      onChangeRegion(r.value)
+                      setOpen(false)
+                    }}
+                    className="w-full flex items-center gap-2.5 h-[29px] px-3 transition-colors hover:bg-raised"
+                    style={{ backgroundColor: isActive ? 'rgb(var(--accent) / 0.10)' : undefined }}
+                  >
+                    <span
+                      className="w-[104px] shrink-0 text-left"
+                      style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 11,
+                        color: isActive ? 'rgb(var(--accent))' : 'rgb(var(--text-3))',
                       }}
-                      className={`w-full text-left px-2.5 py-1.5 text-xs transition-colors flex items-center justify-between gap-2 ${
-                        isActive
-                          ? 'font-semibold'
-                          : 'text-2 hover:bg-overlay'
-                      }`}
-                      style={isActive ? {
-                        backgroundColor: hexToRgba(meta.hex, 0.12),
-                        color: meta.hex,
-                      } : undefined}
                     >
-                      <span className="truncate">{r.label}</span>
-                      <span className="font-mono text-[10px] text-3 shrink-0">{r.value}</span>
-                    </button>
-                  )
-                })
-              )}
-            </div>
+                      {r.value}
+                    </span>
+                    <span
+                      className="flex-1 min-w-0 text-xs truncate text-left"
+                      style={{ color: isActive ? 'rgb(var(--accent))' : 'rgb(var(--text-2))' }}
+                    >
+                      {r.label}
+                    </span>
+                  </button>
+                )
+              })
+            )}
           </div>
         </div>
       )}

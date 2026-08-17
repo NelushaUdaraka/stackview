@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
 import { useToastContext } from '../../contexts/ToastContext'
 import { AlertTriangle, X, Plus, Loader2, ShieldCheck, Upload } from 'lucide-react'
 import type { AppSettings, AcmCertificate } from '../../types'
-import AcmSidebar from './AcmSidebar'
 import AcmCertificateDetail from './AcmCertificateDetail'
+import {
+  ServiceShell, ResourceRail, Inspector, InspectorSection, EmptyState, statusColor, stateOf,
+  type RailItem,
+} from '../common/ui'
 
 // ── Request Certificate Modal ──────────────────────────────────────────────────
 
@@ -239,13 +241,12 @@ interface Props {
   settings: AppSettings
 }
 
-export default function AcmLayout({ settings: _settings }: Props) {
+export default function AcmLayout({ settings }: Props) {
   const [certificates, setCertificates] = useState<AcmCertificate[]>([])
   const [selectedCert, setSelectedCert] = useState<AcmCertificate | null>(null)
   const [loading, setLoading] = useState(false)
   const [showRequest, setShowRequest] = useState(false)
   const [showImport, setShowImport] = useState(false)
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 220, max: 480 })
   const { showToast } = useToastContext()
 
   const loadCertificates = useCallback(async () => {
@@ -254,7 +255,7 @@ export default function AcmLayout({ settings: _settings }: Props) {
     if (res.success && res.data) {
       setCertificates(res.data)
       if (selectedCert) {
-        const refreshed = res.data.find(c => c.CertificateArn === selectedCert.CertificateArn)
+        const refreshed = res.data.find((c: AcmCertificate) => c.CertificateArn === selectedCert.CertificateArn)
         setSelectedCert(refreshed || null)
       } else if (res.data.length > 0) {
         setSelectedCert(res.data[0])
@@ -273,54 +274,100 @@ export default function AcmLayout({ settings: _settings }: Props) {
     loadCertificates()
   }
 
+  const railItems: RailItem[] = certificates.map(c => ({
+    id: c.CertificateArn,
+    name: c.DomainName,
+    icon: ShieldCheck,
+    state: stateOf(c.Status) ?? 'warn',
+    sub: c.Status?.toUpperCase(),
+    meta: c.Type,
+    keywords: c.SubjectAlternativeNames?.join(' '),
+  }))
+
   return (
-    <div className="flex flex-col h-full bg-app">
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Sidebar */}
-        <div style={{ width: sidebarWidth }} className="flex shrink-0 z-10">
-          <AcmSidebar
-            certificates={certificates}
-            selectedCert={selectedCert}
-            onSelectCert={setSelectedCert}
-            onRequest={() => setShowRequest(true)}
-            onImport={() => setShowImport(true)}
+    <>
+      <ServiceShell
+        rail={
+          <ResourceRail
+            title="CERTIFICATES"
+            items={railItems}
+            selectedId={selectedCert?.CertificateArn ?? null}
+            onSelect={item =>
+              setSelectedCert(certificates.find(c => c.CertificateArn === item.id) ?? null)
+            }
+            icon={ShieldCheck}
+            searchPlaceholder="Search certificates..."
+            onCreate={() => setShowRequest(true)}
+            createLabel="Request Certificate"
             loading={loading}
+            emptyLabel="No certificates yet"
           />
-        </div>
-
-        {/* Resize handle */}
-        <div
-          onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
-        />
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-hidden bg-app">
-          {selectedCert ? (
-            <AcmCertificateDetail
-              cert={selectedCert}
-              onRefresh={loadCertificates}
-              onDeleted={() => { setSelectedCert(null); loadCertificates() }}
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full gap-4">
-              <div className="p-5 rounded-2xl bg-teal-500/10 border border-teal-500/20">
-                <ShieldCheck size={40} className="text-teal-500 opacity-50" />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-semibold text-2 mb-1">No certificate selected</p>
-                <p className="text-xs text-3">{loading ? 'Loading certificates...' : certificates.length === 0 ? 'Request or import a certificate to get started' : 'Select a certificate from the sidebar'}</p>
-              </div>
-              {!loading && certificates.length === 0 && (
-                <button onClick={() => setShowRequest(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-teal-600 hover:bg-teal-500 text-white rounded-xl transition-colors">
-                  <Plus size={14} /> Request Certificate
+        }
+        inspector={
+          selectedCert ? (
+            <Inspector
+              kind="certificate"
+              icon={ShieldCheck}
+              iconColor="#14b8a6"
+              title={selectedCert.DomainName}
+              subtitle={selectedCert.Type || 'Certificate'}
+              rows={[
+                { key: 'Status', value: selectedCert.Status ?? '—', color: statusColor(selectedCert.Status) },
+                { key: 'Type', value: selectedCert.Type ?? '—', color: 'rgb(var(--text-2))' },
+                { key: 'Key algorithm', value: selectedCert.KeyAlgorithm ?? '—' },
+                { key: 'SANs', value: String(selectedCert.SubjectAlternativeNames?.length ?? 0) },
+                { key: 'In use by', value: String(selectedCert.InUseBy?.length ?? 0) },
+                {
+                  key: 'Expires',
+                  value: selectedCert.NotAfter ? new Date(selectedCert.NotAfter).toLocaleDateString() : '—',
+                  color: 'rgb(var(--text-2))',
+                },
+                { key: 'Region', value: settings.region, color: 'rgb(var(--text-2))' },
+              ]}
+            >
+              <InspectorSection title="ADD">
+                <button onClick={() => setShowImport(true)} className="btn-secondary w-full">
+                  <Upload size={12} />
+                  Import Certificate
                 </button>
-              )}
-            </div>
-          )}
-        </main>
-      </div>
+              </InspectorSection>
+            </Inspector>
+          ) : undefined
+        }
+      >
+        {selectedCert ? (
+          <AcmCertificateDetail
+            key={selectedCert.CertificateArn}
+            cert={selectedCert}
+            showToast={showToast}
+            onRefresh={loadCertificates}
+            onDeleted={() => {
+              setSelectedCert(null)
+              loadCertificates()
+            }}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <EmptyState
+              icon={ShieldCheck}
+              title={loading ? 'Loading certificates\u2026' : 'Select a certificate'}
+              hint={
+                certificates.length === 0 && !loading
+                  ? 'Request or import a certificate to get started.'
+                  : 'Pick a certificate from the rail to review its validation and chain.'
+              }
+              action={
+                certificates.length === 0 && !loading ? (
+                  <button onClick={() => setShowRequest(true)} className="btn-primary">
+                    <Plus size={12} />
+                    Request Certificate
+                  </button>
+                ) : undefined
+              }
+            />
+          </div>
+        )}
+      </ServiceShell>
 
       {showRequest && (
         <RequestCertificateModal onClose={() => setShowRequest(false)} onCreated={handleCreated} />
@@ -328,6 +375,6 @@ export default function AcmLayout({ settings: _settings }: Props) {
       {showImport && (
         <ImportCertificateModal onClose={() => setShowImport(false)} onCreated={handleCreated} />
       )}
-    </div>
+    </>
   )
 }

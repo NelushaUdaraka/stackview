@@ -1,12 +1,21 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
 import {
   Copy, Check, AlertTriangle, Loader2, Play, RefreshCw,
-  Fingerprint, Shield, User, Key, Globe, Hash
+  Fingerprint, Shield, User, UserCheck, Users, Key, Globe, Hash
 } from 'lucide-react'
 import type { AppSettings, StsCallerIdentity, StsCredentials, StsAssumedRoleResult, StsFederatedUserResult } from '../../types'
-import StsSidebar from './StsSidebar'
-import type { StsOperation } from './StsSidebar'
+import { ServiceShell, ResourceRail, Inspector, type RailItem } from '../common/ui'
+
+/** The five token operations STS exposes, in the order the rail lists them. */
+export type StsOperation = 'identity' | 'assume-role' | 'session-token' | 'federation-token' | 'web-identity'
+
+const OPS: { id: StsOperation; label: string; icon: typeof Fingerprint; sub: string }[] = [
+  { id: 'identity', label: 'Caller Identity', icon: Fingerprint, sub: 'WHOAMI' },
+  { id: 'assume-role', label: 'Assume Role', icon: UserCheck, sub: 'CROSS-ACCOUNT' },
+  { id: 'session-token', label: 'Session Token', icon: Key, sub: 'TEMPORARY' },
+  { id: 'federation-token', label: 'Federation Token', icon: Users, sub: 'FEDERATED' },
+  { id: 'web-identity', label: 'Web Identity', icon: Globe, sub: 'OIDC' },
+]
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -475,31 +484,52 @@ interface Props {
   settings: AppSettings
 }
 
-export default function StsLayout({ settings: _settings }: Props) {
+export default function StsLayout({ settings }: Props) {
   const [activeOp, setActiveOp] = useState<StsOperation>('identity')
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 200, max: 360 })
+
+  const active = OPS.find(o => o.id === activeOp)!
+
+  const railItems: RailItem[] = OPS.map(op => ({
+    id: op.id,
+    name: op.label,
+    icon: op.icon,
+    sub: op.sub,
+  }))
 
   return (
-    <div className="flex flex-col h-full bg-app text-1">
-      <div className="flex flex-1 overflow-hidden relative">
-        <div style={{ width: sidebarWidth }} className="flex shrink-0 z-10 transition-[width]">
-          <StsSidebar active={activeOp} onSelect={setActiveOp} />
-        </div>
-
-        <div
-          onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20 transition-colors"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
+    <ServiceShell
+      rail={
+        <ResourceRail
+          title="OPERATIONS"
+          items={railItems}
+          selectedId={activeOp}
+          onSelect={item => setActiveOp(item.id as StsOperation)}
+          icon={Key}
+          searchPlaceholder="Search operations..."
+          emptyLabel="No operations"
         />
-
-        <main className="flex-1 overflow-hidden">
-          {activeOp === 'identity'         && <IdentityPanel />}
-          {activeOp === 'assume-role'      && <AssumeRolePanel />}
-          {activeOp === 'session-token'    && <SessionTokenPanel />}
-          {activeOp === 'federation-token' && <FederationTokenPanel />}
-          {activeOp === 'web-identity'     && <WebIdentityPanel />}
-        </main>
-      </div>
-    </div>
+      }
+      inspector={
+        <Inspector
+          kind="sts"
+          icon={active.icon}
+          iconColor="#eab308"
+          title={active.label}
+          subtitle="Security Token Service"
+          sectionTitle="CONTEXT"
+          rows={[
+            { key: 'Operation', value: active.id, color: 'rgb(var(--accent))' },
+            { key: 'Region', value: settings.region, color: 'rgb(var(--text-2))' },
+            { key: 'Endpoint', value: settings.endpoint, color: 'rgb(var(--text-2))' },
+          ]}
+        />
+      }
+    >
+      {activeOp === 'identity' && <IdentityPanel />}
+      {activeOp === 'assume-role' && <AssumeRolePanel />}
+      {activeOp === 'session-token' && <SessionTokenPanel />}
+      {activeOp === 'federation-token' && <FederationTokenPanel />}
+      {activeOp === 'web-identity' && <WebIdentityPanel />}
+    </ServiceShell>
   )
 }

@@ -1,208 +1,236 @@
-import { useState, useCallback, useEffect } from 'react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
+import { useCallback, useEffect, useState } from 'react'
+import { CalendarClock, Plus, Loader2, AlertTriangle } from 'lucide-react'
 import { useToastContext } from '../../contexts/ToastContext'
-import { AlertTriangle, X, CalendarClock, Plus, Loader2 } from 'lucide-react'
 import type { AppSettings, EbScheduleGroup } from '../../types'
-import SchedulerSidebar from './SchedulerSidebar'
 import SchedulerGroupDetail from './SchedulerGroupDetail'
 import CreateScheduleModal from './CreateScheduleModal'
+import {
+  ServiceShell, ResourceRail, Inspector, InspectorSection, EmptyState, Modal, statusColor, stateOf,
+  type RailItem,
+} from '../common/ui'
 
 interface Props {
   settings: AppSettings
 }
 
-// ── Create Group Modal ────────────────────────────────────────────────────────
-
-interface CreateGroupModalProps {
-  onClose: () => void
-  onCreated: (group: EbScheduleGroup) => void
-}
-
-function CreateGroupModal({ onClose, onCreated }: CreateGroupModalProps) {
-  const [name, setName] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
-
-  const handleSubmit = async () => {
-    if (!name.trim()) return
-    setError('')
-    setSubmitting(true)
-    const res = await window.electronAPI.schedulerCreateGroup(name.trim())
-    setSubmitting(false)
-    if (res.success) {
-      onCreated({ name: name.trim(), arn: res.data || '', state: 'ACTIVE' })
-    } else {
-      setError(res.error || 'Failed to create group')
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
-      <div className="w-full max-w-sm rounded-2xl border border-theme shadow-2xl overflow-hidden" style={{ backgroundColor: 'rgb(var(--bg-base))' }}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-theme">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-500/15">
-              <CalendarClock size={16} className="text-amber-500" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-1">New Schedule Group</h2>
-              <p className="text-[10px] text-3">EventBridge Scheduler</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="btn-ghost !p-1.5 rounded-lg"><X size={16} /></button>
-        </div>
-        <div className="p-5 space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-2 mb-1.5">Group Name *</label>
-            <input
-              value={name}
-              onChange={e => setName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-              placeholder="my-schedule-group"
-              className="input-base w-full text-sm"
-              autoFocus
-            />
-          </div>
-          {error && (
-            <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2 text-xs text-red-500">
-              <AlertTriangle size={13} className="shrink-0" /> {error}
-            </div>
-          )}
-        </div>
-        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-theme bg-raised/30">
-          <button onClick={onClose} className="btn-ghost text-sm font-semibold">Cancel</button>
-          <button
-            onClick={handleSubmit}
-            disabled={!name.trim() || submitting}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-amber-600 hover:bg-amber-500 text-white rounded-xl transition-colors disabled:opacity-40"
-          >
-            {submitting && <Loader2 size={14} className="animate-spin" />}
-            <Plus size={14} /> Create Group
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── Layout ────────────────────────────────────────────────────────────────────
-
 export default function SchedulerLayout({ settings }: Props) {
+  const { showToast } = useToastContext()
   const [groups, setGroups] = useState<EbScheduleGroup[]>([])
-  const [selectedGroup, setSelectedGroup] = useState<EbScheduleGroup | null>(null)
+  const [selectedName, setSelectedName] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showCreateGroup, setShowCreateGroup] = useState(false)
   const [showCreateSchedule, setShowCreateSchedule] = useState(false)
+  // Bumped to force the detail view to refetch its schedules after a create.
   const [detailKey, setDetailKey] = useState(0)
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 220, max: 480 })
-  const { showToast } = useToastContext()
 
   const loadGroups = useCallback(async () => {
     setLoading(true)
-    const res = await window.electronAPI.schedulerListGroups()
-    if (res.success && res.data) {
-      const groupList = res.data as EbScheduleGroup[]
-      setGroups(groupList)
-      // Auto-select default group or first
-      if (!selectedGroup) {
-        const def = groupList.find(g => g.name === 'default') || groupList[0]
-        if (def) setSelectedGroup(def)
-      } else {
-        const refreshed = groupList.find(g => g.name === selectedGroup.name)
-        setSelectedGroup(refreshed || groupList[0] || null)
+    try {
+      const res = await window.electronAPI.schedulerListGroups()
+      if (res.success && res.data) {
+        const list = res.data as EbScheduleGroup[]
+        setGroups(list)
+        setSelectedName(prev => {
+          if (prev && list.some(g => g.name === prev)) return prev
+          return list.find(g => g.name === 'default')?.name ?? list[0]?.name ?? null
+        })
+      } else if (!res.success) {
+        showToast('error', res.error || 'Failed to load schedule groups')
       }
-    } else if (!res.success) {
-      showToast('error', res.error || 'Failed to load schedule groups')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
-  }, [selectedGroup, showToast])
+  }, [showToast])
 
-  useEffect(() => { loadGroups() }, [])
-
-  const handleGroupCreated = (group: EbScheduleGroup) => {
-    showToast('success', `Group "${group.name}" created`)
-    setShowCreateGroup(false)
+  useEffect(() => {
     loadGroups()
-    setSelectedGroup(group)
-  }
+  }, [loadGroups])
 
-  const handleScheduleCreated = () => {
-    setShowCreateSchedule(false)
-    setDetailKey(k => k + 1)
-    loadGroups()
-  }
+  const selected = groups.find(g => g.name === selectedName) ?? null
 
-  const handleGroupDeleted = () => {
-    showToast('success', `Group deleted`)
-    setSelectedGroup(null)
-    loadGroups()
-  }
+  const railItems: RailItem[] = groups.map(g => ({
+    id: g.name,
+    name: g.name,
+    icon: CalendarClock,
+    state: stateOf(g.state) ?? 'ok',
+    sub: g.name === 'default' ? 'MANAGED' : (g.state ?? 'ACTIVE').toUpperCase(),
+    meta: g.creationDate ? new Date(g.creationDate).toLocaleDateString() : undefined,
+  }))
 
   return (
-    <div className="flex flex-col h-full bg-app">
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Sidebar */}
-        <div style={{ width: sidebarWidth }} className="flex shrink-0 z-10">
-          <SchedulerSidebar
-            groups={groups}
-            selectedGroup={selectedGroup}
-            onSelectGroup={setSelectedGroup}
-            onCreateGroup={() => setShowCreateGroup(true)}
+    <>
+      <ServiceShell
+        rail={
+          <ResourceRail
+            title="SCHEDULE GROUPS"
+            items={railItems}
+            selectedId={selectedName}
+            onSelect={item => setSelectedName(item.id)}
+            icon={CalendarClock}
+            searchPlaceholder="Search groups..."
+            onCreate={() => setShowCreateGroup(true)}
+            createLabel="Create Group"
             loading={loading}
+            emptyLabel="No schedule groups"
           />
-        </div>
-
-        {/* Resize handle */}
-        <div
-          onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
-        />
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-hidden bg-app">
-          {selectedGroup ? (
-            <SchedulerGroupDetail
-              key={`${selectedGroup.name}-${detailKey}`}
-              group={selectedGroup}
-              onRefresh={loadGroups}
-              onDeleted={handleGroupDeleted}
-              onCreateSchedule={() => setShowCreateSchedule(true)}
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full gap-4">
-              <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-                <CalendarClock size={40} className="text-amber-500 opacity-50" />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-semibold text-2 mb-1">No group selected</p>
-                <p className="text-xs text-3">{loading ? 'Loading groups...' : groups.length === 0 ? 'Create a schedule group to get started' : 'Select a schedule group from the sidebar'}</p>
-              </div>
-              {!loading && groups.length === 0 && (
-                <button onClick={() => setShowCreateGroup(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-amber-600 hover:bg-amber-500 text-white rounded-xl transition-colors">
-                  <Plus size={14} /> Create Group
+        }
+        inspector={
+          selected ? (
+            <Inspector
+              kind="group"
+              icon={CalendarClock}
+              iconColor="#f59e0b"
+              title={selected.name}
+              subtitle={selected.name === 'default' ? 'Managed default group' : 'Custom schedule group'}
+              sectionTitle="GROUP"
+              rows={[
+                { key: 'State', value: selected.state ?? 'ACTIVE', color: statusColor(selected.state) },
+                {
+                  key: 'Created',
+                  value: selected.creationDate ? new Date(selected.creationDate).toLocaleDateString() : '—',
+                  color: 'rgb(var(--text-2))',
+                },
+                { key: 'Region', value: settings.region, color: 'rgb(var(--text-2))' },
+                { key: 'ARN', value: selected.arn, color: 'rgb(var(--text-2))' },
+              ]}
+            >
+              <InspectorSection title="ACTIONS">
+                <button onClick={() => setShowCreateSchedule(true)} className="btn-primary w-full">
+                  <Plus size={12} />
+                  New Schedule
                 </button>
-              )}
-            </div>
-          )}
-        </main>
-      </div>
+              </InspectorSection>
+            </Inspector>
+          ) : undefined
+        }
+      >
+        {selected ? (
+          <SchedulerGroupDetail
+            key={`${selected.name}-${detailKey}`}
+            group={selected}
+            onRefresh={loadGroups}
+            onDeleted={() => {
+              showToast('success', 'Group deleted')
+              setSelectedName(null)
+              loadGroups()
+            }}
+            onCreateSchedule={() => setShowCreateSchedule(true)}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <EmptyState
+              icon={CalendarClock}
+              title={loading ? 'Loading groups…' : 'Select a group'}
+              hint={
+                groups.length === 0 && !loading
+                  ? 'Create a schedule group to get started.'
+                  : 'Pick a group from the rail to manage its schedules.'
+              }
+              action={
+                groups.length === 0 && !loading ? (
+                  <button onClick={() => setShowCreateGroup(true)} className="btn-primary">
+                    <Plus size={12} />
+                    Create Group
+                  </button>
+                ) : undefined
+              }
+            />
+          </div>
+        )}
+      </ServiceShell>
 
-      {/* Modals */}
       {showCreateGroup && (
         <CreateGroupModal
           onClose={() => setShowCreateGroup(false)}
-          onCreated={handleGroupCreated}
+          onCreated={group => {
+            showToast('success', `Group "${group.name}" created`)
+            setShowCreateGroup(false)
+            loadGroups()
+            setSelectedName(group.name)
+          }}
         />
       )}
       {showCreateSchedule && (
         <CreateScheduleModal
           groups={groups}
-          defaultGroup={selectedGroup}
+          defaultGroup={selected}
           onClose={() => setShowCreateSchedule(false)}
-          onCreated={handleScheduleCreated}
+          onCreated={() => {
+            setShowCreateSchedule(false)
+            setDetailKey(k => k + 1)
+            loadGroups()
+          }}
         />
       )}
-    </div>
+    </>
+  )
+}
+
+function CreateGroupModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void
+  onCreated: (group: EbScheduleGroup) => void
+}) {
+  const [name, setName] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  const submit = async () => {
+    if (!name.trim()) return
+    setError('')
+    setSubmitting(true)
+    const res = await window.electronAPI.schedulerCreateGroup(name.trim())
+    setSubmitting(false)
+    if (res.success) onCreated({ name: name.trim(), arn: res.data || '', state: 'ACTIVE' })
+    else setError(res.error || 'Failed to create group')
+  }
+
+  return (
+    <Modal
+      title="Create Schedule Group"
+      onClose={onClose}
+      width={420}
+      footer={
+        <>
+          <button onClick={onClose} className="btn-ghost">
+            Cancel
+          </button>
+          <button onClick={submit} disabled={!name.trim() || submitting} className="btn-primary">
+            {submitting && <Loader2 size={13} className="animate-spin" />}
+            Create Group
+          </button>
+        </>
+      }
+    >
+      <div className="p-4">
+        <div className="ui-label mb-2">GROUP NAME</div>
+        <input
+          autoFocus
+          value={name}
+          onChange={e => setName(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && name.trim() && submit()}
+          placeholder="nightly-jobs"
+          className="input-base"
+          style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}
+        />
+        <p className="text-[11px] text-4 mt-1.5">Groups organise schedules and can be deleted together.</p>
+
+        {error && (
+          <div
+            className="mt-3 flex items-center gap-2 rounded-[7px] px-2.5 py-2 text-[11.5px]"
+            style={{
+              backgroundColor: 'rgb(var(--danger) / 0.10)',
+              border: '1px solid rgb(var(--danger) / 0.35)',
+              color: 'rgb(var(--danger))',
+            }}
+          >
+            <AlertTriangle size={13} className="shrink-0" />
+            {error}
+          </div>
+        )}
+      </div>
+    </Modal>
   )
 }

@@ -1,124 +1,134 @@
-import { useState, useEffect } from 'react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
-import { SlidersHorizontal, Plus } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { SlidersHorizontal } from 'lucide-react'
 import type { AppSettings, SsmParameter } from '../../types'
-import ParameterStoreSidebar from './ParameterStoreSidebar'
 import ParameterDetail from './ParameterDetail'
 import CreateParameterModal from './CreateParameterModal'
+import { ServiceShell, ResourceRail, Inspector, EmptyState, type RailItem } from '../common/ui'
 
 interface Props {
   settings: AppSettings
 }
 
-export default function ParameterStoreLayout({
-  settings,
-}: Props) {
+export default function ParameterStoreLayout({ settings }: Props) {
   const [parameters, setParameters] = useState<SsmParameter[]>([])
-  const [selectedParam, setSelectedParam] = useState<SsmParameter | null>(null)
+  const [selectedName, setSelectedName] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 180, max: 480 })
 
-  const loadParams = async () => {
+  const loadParams = useCallback(async () => {
     setLoading(true)
-    const res = await window.electronAPI.ssmListParameters()
-    if (res.success && res.data) {
-      // Sort alphabetically by name
-      const sorted = res.data.sort((a, b) => a.name.localeCompare(b.name))
-      setParameters(sorted)
-      // If a parameter is currently selected, update its reference to the fresh object
-      if (selectedParam) {
-        const fresh = sorted.find(p => p.name === selectedParam.name)
-        if (fresh) setSelectedParam(fresh)
-        else setSelectedParam(null)
+    try {
+      const res = await window.electronAPI.ssmListParameters()
+      if (res.success && res.data) {
+        const sorted = [...res.data].sort((a, b) => a.name.localeCompare(b.name))
+        setParameters(sorted)
+        // Keep the selection only while the parameter still exists.
+        setSelectedName(prev => (prev && sorted.some(p => p.name === prev) ? prev : null))
       }
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
-  }
+  }, [])
 
-  useEffect(() => { loadParams() }, [])
+  useEffect(() => {
+    loadParams()
+  }, [loadParams])
 
-  const handleRefresh = async () => {
-    await loadParams()
-  }
+  const selected = parameters.find(p => p.name === selectedName) ?? null
 
-  const handleCreated = async (name: string) => {
-    setShowCreateModal(false)
-    await loadParams()
-    const found = parameters.find(p => p.name === name) || { name, type: 'String' } // fallback if re-fetch race
-    setSelectedParam(found as SsmParameter)
-  }
-
-  const handleDeleted = async () => {
-    setSelectedParam(null)
-    await loadParams()
-  }
+  const railItems: RailItem[] = parameters.map(p => ({
+    id: p.name,
+    name: p.name,
+    icon: SlidersHorizontal,
+    state: p.type === 'SecureString' ? 'warn' : 'ok',
+    sub: p.type.toUpperCase(),
+    meta: p.version != null ? `v${p.version}` : undefined,
+    keywords: p.description,
+  }))
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Sidebar */}
-        <div className="flex shrink-0 z-10" style={{ width: sidebarWidth }}>
-          <ParameterStoreSidebar
-            parameters={parameters}
-            selectedParam={selectedParam}
-            onSelectParam={setSelectedParam}
-            onCreateParam={() => setShowCreateModal(true)}
+    <>
+      <ServiceShell
+        rail={
+          <ResourceRail
+            title="PARAMETERS"
+            items={railItems}
+            selectedId={selectedName}
+            onSelect={item => setSelectedName(item.id)}
+            icon={SlidersHorizontal}
+            searchPlaceholder="Search by path..."
+            onCreate={() => setShowCreateModal(true)}
+            createLabel="Create Parameter"
             loading={loading}
+            emptyLabel="No parameters yet"
           />
-        </div>
-
-        {/* Resize handle */}
-        <div
-          onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
-        />
-
-        {/* Main content */}
-        <main className="flex-1 overflow-hidden bg-app">
-          {selectedParam ? (
-            <ParameterDetail
-              key={selectedParam.name}
-              param={selectedParam}
-              onDeleted={handleDeleted}
-              onUpdated={handleRefresh}
+        }
+        inspector={
+          selected ? (
+            <Inspector
+              kind="parameter"
+              icon={SlidersHorizontal}
+              iconColor="#14b8a6"
+              title={selected.name}
+              subtitle={selected.description || selected.type}
+              rows={[
+                {
+                  key: 'Type',
+                  value: selected.type,
+                  color: selected.type === 'SecureString' ? 'rgb(var(--accent))' : 'rgb(var(--text-1))',
+                },
+                { key: 'Version', value: selected.version != null ? `v${selected.version}` : '—' },
+                { key: 'Tier', value: selected.tier ?? 'Standard', color: 'rgb(var(--text-2))' },
+                { key: 'Data type', value: selected.dataType ?? 'text', color: 'rgb(var(--text-2))' },
+                {
+                  key: 'Modified',
+                  value: selected.lastModifiedDate
+                    ? new Date(selected.lastModifiedDate).toLocaleDateString()
+                    : '—',
+                  color: 'rgb(var(--text-2))',
+                },
+                { key: 'Region', value: settings.region, color: 'rgb(var(--text-2))' },
+              ]}
             />
-          ) : (
-            <ParametersEmptyState onCreate={() => setShowCreateModal(true)} />
-          )}
-        </main>
-      </div>
+          ) : undefined
+        }
+      >
+        {selected ? (
+          <ParameterDetail
+            key={selected.name}
+            param={selected}
+            onDeleted={async () => {
+              setSelectedName(null)
+              await loadParams()
+            }}
+            onUpdated={loadParams}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <EmptyState
+              icon={SlidersHorizontal}
+              title="Select a parameter"
+              hint="Pick a parameter from the rail to read its value and version history."
+              action={
+                <button onClick={() => setShowCreateModal(true)} className="btn-primary">
+                  Create Parameter
+                </button>
+              }
+            />
+          </div>
+        )}
+      </ServiceShell>
 
       {showCreateModal && (
         <CreateParameterModal
           onClose={() => setShowCreateModal(false)}
-          onCreated={handleCreated}
-          showToast={(type, text) => console.log(type, text) /* layout level toast or let modal handle its own */}
+          onCreated={async (name: string) => {
+            setShowCreateModal(false)
+            await loadParams()
+            setSelectedName(name)
+          }}
         />
       )}
-    </div>
-  )
-}
-
-function ParametersEmptyState({ onCreate }: { onCreate: () => void }) {
-  return (
-    <div className="flex flex-col items-center justify-center h-full text-center p-8">
-      <div className="w-20 h-20 rounded-2xl border flex items-center justify-center mb-5 border-theme" style={{ backgroundColor: 'rgb(var(--bg-raised))' }}>
-        <SlidersHorizontal size={32} className="text-4" />
-      </div>
-      <h3 className="text-base font-semibold text-2 mb-2">Select a parameter to view</h3>
-      <p className="text-sm text-3 mb-6 max-w-xs leading-relaxed">
-        Choose a parameter from the sidebar to view its value, history, and metadata.
-      </p>
-      <button
-        onClick={onCreate}
-        className="btn-primary gap-2"
-        style={{ backgroundColor: 'rgb(13 148 136)' }} // teal-600
-      >
-        <Plus size={15} />
-        Create Parameter
-      </button>
-    </div>
+    </>
   )
 }

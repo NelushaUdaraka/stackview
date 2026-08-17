@@ -2,12 +2,12 @@ import { app, shell, BrowserWindow, ipcMain, nativeTheme, dialog } from "electro
 import { join } from "path";
 import Store from "electron-store";
 import { autoUpdater } from "electron-updater";
-import type { UpdaterStatus } from "../../shared/types";
+import type { UpdaterStatus } from "../shared/types";
 
 import { registerSqsHandlers } from "./handlers/sqsHandlers";
 import { registerS3Handlers } from "./handlers/s3Handlers";
 import { registerSecretsManagerHandlers } from "./handlers/secretsManagerHandlers";
-import { registerDynamoDbHandlers } from "./handlers/dynamoDbHandlers";
+import { registerDynamoDbHandlers } from "./handlers/dynamodbHandlers";
 import { registerCloudFormationHandlers } from "./handlers/cloudFormationHandlers";
 import { registerSsmHandlers } from "./handlers/ssmHandlers";
 import { registerSnsHandlers } from "./handlers/snsHandlers";
@@ -35,7 +35,7 @@ import { registerResourceGroupsHandlers } from "./handlers/resourceGroupsHandler
 import { registerConfigHandlers } from "./handlers/configHandlers";
 import { registerR53ResolverHandlers } from "./handlers/r53resolverHandlers";
 import { registerS3ControlHandlers } from "./handlers/s3ControlHandlers";
-import type { Theme } from "../../shared/themes";
+import { DEFAULT_THEME, THEME_IS_DARK, type Theme } from "../shared/themes";
 
 const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
 
@@ -49,7 +49,7 @@ const store = new Store<{
   defaults: {
     endpoint: "http://localhost:4566",
     region: "ap-southeast-2",
-    theme: "dark",
+    theme: DEFAULT_THEME,
     iconMode: "lucide",
     autoUpdate: true,
   },
@@ -147,7 +147,7 @@ ipcMain.handle("window:isMaximized", () => mainWindow?.isMaximized() ?? false);
 ipcMain.handle("theme:get", () => store.get("theme"));
 ipcMain.handle("theme:set", (_event, theme: Theme) => {
   store.set("theme", theme);
-  nativeTheme.themeSource = theme === 'light' ? 'light' : 'dark';
+  nativeTheme.themeSource = THEME_IS_DARK[theme] ? 'dark' : 'light';
 });
 
 // --- Icon mode ---

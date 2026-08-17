@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
-import { Lock, Plus } from 'lucide-react'
+import { Lock, Globe, Settings } from 'lucide-react'
 import type { AppSettings, S3ControlAccessPoint, S3ControlMRAP } from '../../types'
-import S3ControlSidebar, { type SidebarSection } from './S3ControlSidebar'
 import AccessPointDetail from './AccessPointDetail'
+import {
+  ServiceShell, ResourceRail, SubviewTabs, Inspector, EmptyState as UiEmptyState,
+  statusColor, type RailItem, type Subview,
+} from '../common/ui'
+
+/** Which family of S3 Control resources the rail is listing. */
+export type SidebarSection = 'accesspoints' | 'mraps'
 import MRAPDetail from './MRAPDetail'
 import AccountSettingsPanel from './AccountSettingsPanel'
 import CreateAccessPointModal from './CreateAccessPointModal'
@@ -13,7 +18,7 @@ interface Props {
   settings: AppSettings
 }
 
-export default function S3ControlLayout({ settings: _settings }: Props) {
+export default function S3ControlLayout({ settings }: Props) {
   const [section, setSection] = useState<SidebarSection>('accesspoints')
   const [accessPoints, setAccessPoints] = useState<S3ControlAccessPoint[]>([])
   const [mraps, setMraps] = useState<S3ControlMRAP[]>([])
@@ -25,14 +30,13 @@ export default function S3ControlLayout({ settings: _settings }: Props) {
   const [showCreateAP, setShowCreateAP] = useState(false)
   const [showCreateMRAP, setShowCreateMRAP] = useState(false)
 
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 220, max: 520 })
 
   const loadAccessPoints = async () => {
     setLoadingAPs(true)
     try {
       const res = await window.electronAPI.s3controlListAccessPoints()
       if (res.success && res.data) {
-        setAccessPoints(res.data.sort((a, b) => a.name.localeCompare(b.name)))
+        setAccessPoints([...res.data].sort((a: S3ControlAccessPoint, b: S3ControlAccessPoint) => a.name.localeCompare(b.name)))
       }
     } finally {
       setLoadingAPs(false)
@@ -44,7 +48,7 @@ export default function S3ControlLayout({ settings: _settings }: Props) {
     try {
       const res = await window.electronAPI.s3controlListMRAPs()
       if (res.success && res.data) {
-        setMraps(res.data.sort((a, b) => a.name.localeCompare(b.name)))
+        setMraps([...res.data].sort((a: S3ControlMRAP, b: S3ControlMRAP) => a.name.localeCompare(b.name)))
       }
     } finally {
       setLoadingMRAPs(false)
@@ -84,108 +88,173 @@ export default function S3ControlLayout({ settings: _settings }: Props) {
     setSelectedMRAP(null)
   }
 
+  const SECTIONS: Subview<SidebarSection>[] = [
+    { id: 'accesspoints', label: 'Access Points', icon: Lock, count: accessPoints.length },
+    { id: 'mraps', label: 'Multi-Region', icon: Globe, count: mraps.length },
+  ]
+
+  const railItems: RailItem[] = [
+    { id: '__account__', name: 'Account Settings', icon: Settings, sub: 'PUBLIC ACCESS BLOCK' },
+    ...(section === 'accesspoints'
+      ? accessPoints.map(ap => ({
+          id: ap.name,
+          name: ap.name,
+          icon: Lock,
+          state: 'ok' as const,
+          sub: ap.networkOrigin?.toUpperCase() ?? 'ACCESS POINT',
+          meta: ap.bucket,
+          keywords: `${ap.alias ?? ''} ${ap.vpcId ?? ''}`,
+        }))
+      : mraps.map(m => ({
+          id: m.name,
+          name: m.name,
+          icon: Globe,
+          state: 'ok' as const,
+          sub: m.status?.toUpperCase() ?? 'MRAP',
+          meta: m.regions?.length ? `${m.regions.length} regions` : undefined,
+          keywords: m.alias,
+        }))),
+  ]
+
+  const selectedRailId = showAccountSettings
+    ? '__account__'
+    : section === 'accesspoints'
+      ? (selectedAP?.name ?? null)
+      : (selectedMRAP?.name ?? null)
+
   const renderMain = () => {
     if (showAccountSettings) {
       return <AccountSettingsPanel onClose={() => setShowAccountSettings(false)} />
     }
     if (section === 'accesspoints' && selectedAP) {
-      return (
-        <AccessPointDetail
-          key={selectedAP.name}
-          accessPoint={selectedAP}
-          onDeleted={handleAPDeleted}
-        />
-      )
+      return <AccessPointDetail key={selectedAP.name} accessPoint={selectedAP} onDeleted={handleAPDeleted} />
     }
     if (section === 'mraps' && selectedMRAP) {
+      return <MRAPDetail key={selectedMRAP.name} mrap={selectedMRAP} onDeleted={handleMRAPDeleted} />
+    }
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <UiEmptyState
+          icon={section === 'accesspoints' ? Lock : Globe}
+          title={section === 'accesspoints' ? 'Select an access point' : 'Select a multi-region access point'}
+          hint="Pick one from the rail, or open Account Settings for the public access block."
+          action={
+            <button
+              onClick={() => (section === 'accesspoints' ? setShowCreateAP(true) : setShowCreateMRAP(true))}
+              className="btn-primary"
+            >
+              {section === 'accesspoints' ? 'Create Access Point' : 'Create MRAP'}
+            </button>
+          }
+        />
+      </div>
+    )
+  }
+
+  const inspector = (() => {
+    if (section === 'accesspoints' && selectedAP && !showAccountSettings) {
       return (
-        <MRAPDetail
-          key={selectedMRAP.name}
-          mrap={selectedMRAP}
-          onDeleted={handleMRAPDeleted}
+        <Inspector
+          kind="access point"
+          icon={Lock}
+          iconColor="#0d9488"
+          title={selectedAP.name}
+          subtitle={selectedAP.bucket}
+          rows={[
+            { key: 'Bucket', value: selectedAP.bucket, color: 'rgb(var(--accent))' },
+            { key: 'Network', value: selectedAP.networkOrigin ?? '\u2014' },
+            { key: 'VPC', value: selectedAP.vpcId ?? '\u2014', color: 'rgb(var(--text-2))' },
+            { key: 'Alias', value: selectedAP.alias ?? '\u2014', color: 'rgb(var(--text-2))' },
+            { key: 'Region', value: settings.region, color: 'rgb(var(--text-2))' },
+          ]}
         />
       )
     }
-    return <EmptyState onCreate={() => section === 'accesspoints' ? setShowCreateAP(true) : setShowCreateMRAP(true)} section={section} />
-  }
+    if (section === 'mraps' && selectedMRAP && !showAccountSettings) {
+      return (
+        <Inspector
+          kind="mrap"
+          icon={Globe}
+          iconColor="#0d9488"
+          title={selectedMRAP.name}
+          subtitle={selectedMRAP.alias || 'Multi-region access point'}
+          rows={[
+            { key: 'Status', value: selectedMRAP.status ?? '\u2014', color: statusColor(selectedMRAP.status) },
+            { key: 'Regions', value: String(selectedMRAP.regions?.length ?? 0) },
+            { key: 'Alias', value: selectedMRAP.alias ?? '\u2014', color: 'rgb(var(--text-2))' },
+            {
+              key: 'Created',
+              value: selectedMRAP.createdAt ? new Date(selectedMRAP.createdAt).toLocaleDateString() : '\u2014',
+              color: 'rgb(var(--text-2))',
+            },
+          ]}
+        />
+      )
+    }
+    return undefined
+  })()
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex flex-1 overflow-hidden relative">
-        <div className="flex shrink-0 z-10" style={{ width: sidebarWidth }}>
-          <S3ControlSidebar
-            section={section}
-            onSectionChange={setSection}
-            accessPoints={accessPoints}
-            mraps={mraps}
-            selectedAP={selectedAP}
-            selectedMRAP={selectedMRAP}
-            onSelectAP={handleSelectAP}
-            onSelectMRAP={handleSelectMRAP}
-            onCreateAP={() => setShowCreateAP(true)}
-            onCreateMRAP={() => setShowCreateMRAP(true)}
-            onOpenAccountSettings={handleOpenAccountSettings}
-            showAccountSettings={showAccountSettings}
-            loadingAPs={loadingAPs}
-            loadingMRAPs={loadingMRAPs}
-          />
-        </div>
-
-        <div
-          onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
+    <>
+      <div className="shrink-0 px-5 pt-3 border-b border-theme bg-app">
+        <SubviewTabs
+          views={SECTIONS}
+          active={section}
+          onChange={next => {
+            setSection(next)
+            setShowAccountSettings(false)
+          }}
         />
-
-        <main className="flex-1 overflow-hidden bg-app">
-          {renderMain()}
-        </main>
       </div>
+
+      <ServiceShell
+        rail={
+          <ResourceRail
+            title={section === 'accesspoints' ? 'ACCESS POINTS' : 'MULTI-REGION'}
+            items={railItems}
+            selectedId={selectedRailId}
+            onSelect={item => {
+              if (item.id === '__account__') {
+                handleOpenAccountSettings()
+              } else if (section === 'accesspoints') {
+                const ap = accessPoints.find(a => a.name === item.id)
+                if (ap) handleSelectAP(ap)
+              } else {
+                const m = mraps.find(x => x.name === item.id)
+                if (m) handleSelectMRAP(m)
+              }
+            }}
+            icon={section === 'accesspoints' ? Lock : Globe}
+            searchPlaceholder={section === 'accesspoints' ? 'Search access points...' : 'Search MRAPs...'}
+            onCreate={() => (section === 'accesspoints' ? setShowCreateAP(true) : setShowCreateMRAP(true))}
+            createLabel={section === 'accesspoints' ? 'Create Access Point' : 'Create MRAP'}
+            loading={section === 'accesspoints' ? loadingAPs : loadingMRAPs}
+            emptyLabel={section === 'accesspoints' ? 'No access points' : 'No MRAPs'}
+          />
+        }
+        inspector={inspector}
+      >
+        {renderMain()}
+      </ServiceShell>
 
       {showCreateAP && (
         <CreateAccessPointModal
           onClose={() => setShowCreateAP(false)}
-          onCreated={async () => {
+          onCreated={() => {
             setShowCreateAP(false)
-            await loadAccessPoints()
+            loadAccessPoints()
           }}
         />
       )}
-
       {showCreateMRAP && (
         <CreateMRAPModal
           onClose={() => setShowCreateMRAP(false)}
-          onCreated={async () => {
+          onCreated={() => {
             setShowCreateMRAP(false)
-            await loadMRAPs()
+            loadMRAPs()
           }}
         />
       )}
-    </div>
-  )
-}
-
-function EmptyState({ onCreate, section }: { onCreate: () => void; section: SidebarSection }) {
-  return (
-    <div className="flex flex-col items-center justify-center h-full text-center p-8">
-      <div
-        className="w-20 h-20 rounded-2xl border border-theme flex items-center justify-center mb-5"
-        style={{ backgroundColor: 'rgb(var(--bg-raised))' }}
-      >
-        <Lock size={32} className="text-4" />
-      </div>
-      <h3 className="text-base font-semibold text-2 mb-2">
-        {section === 'accesspoints' ? 'Select an Access Point' : 'Select a Multi-Region Access Point'}
-      </h3>
-      <p className="text-sm text-3 mb-6 max-w-xs leading-relaxed">
-        {section === 'accesspoints'
-          ? 'Choose an access point from the sidebar to view its configuration and manage policies.'
-          : 'Choose a multi-region access point from the sidebar to view its details and manage routing policies.'}
-      </p>
-      <button onClick={onCreate} className="btn-primary gap-2" style={{ backgroundColor: 'rgb(13 148 136)' }}>
-        <Plus size={15} />
-        {section === 'accesspoints' ? 'Create Access Point' : 'Create MRAP'}
-      </button>
-    </div>
+    </>
   )
 }

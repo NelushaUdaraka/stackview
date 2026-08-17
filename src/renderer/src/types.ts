@@ -273,14 +273,18 @@ export interface KmsAlias {
   targetKeyId: string
 }
 
+/**
+ * Mirrors what `kmsService.listKeysWithAliases` actually returns — camelCase,
+ * with aliases already joined onto the key. Not the raw AWS SDK `KeyMetadata`.
+ */
 export interface KmsKey {
-  KeyId: string
-  Arn: string
-  Description?: string
-  CreationDate?: Date
-  Enabled?: boolean
-  KeyState?: string
-  Aliases?: string[]
+  keyId: string
+  arn: string
+  description?: string
+  state: string
+  creationDate?: string
+  deletionDate?: string
+  aliases: KmsAlias[]
 }
 
 export interface KinesisStream {

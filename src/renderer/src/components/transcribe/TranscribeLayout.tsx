@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
 import { useToastContext } from '../../contexts/ToastContext'
 import { AlertTriangle, X, Plus, Loader2, Mic } from 'lucide-react'
 import type { AppSettings, TranscribeJob } from '../../types'
-import TranscribeSidebar from './TranscribeSidebar'
 import TranscribeJobDetail from './TranscribeJobDetail'
+import {
+  ServiceShell, ResourceRail, Inspector, EmptyState, statusColor, stateOf, type RailItem,
+} from '../common/ui'
 
 const LANGUAGE_CODES = [
   'en-US', 'en-GB', 'en-AU', 'en-IN', 'es-US', 'es-ES', 'fr-FR', 'fr-CA',
@@ -159,7 +160,6 @@ export default function TranscribeLayout({ settings }: Props) {
   const [selectedJob, setSelectedJob] = useState<TranscribeJob | null>(null)
   const [loading, setLoading] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 220, max: 480 })
   const { showToast } = useToastContext()
 
   const loadJobs = useCallback(async () => {
@@ -168,7 +168,7 @@ export default function TranscribeLayout({ settings }: Props) {
     if (res.success && res.data) {
       setJobs(res.data)
       if (selectedJob) {
-        const refreshed = res.data.find(j => j.jobName === selectedJob.jobName)
+        const refreshed = res.data.find((j: TranscribeJob) => j.jobName === selectedJob.jobName)
         setSelectedJob(refreshed || null)
       } else if (res.data.length > 0) {
         setSelectedJob(res.data[0])
@@ -197,64 +197,94 @@ export default function TranscribeLayout({ settings }: Props) {
     }
   }
 
+  const railItems: RailItem[] = jobs.map(j => ({
+    id: j.jobName,
+    name: j.jobName,
+    icon: Mic,
+    state: stateOf(j.jobStatus) ?? 'warn',
+    sub: j.jobStatus?.toUpperCase(),
+    meta: j.languageCode,
+    keywords: j.mediaUri,
+  }))
+
   return (
-    <div className="flex flex-col h-full bg-app">
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Sidebar */}
-        <div style={{ width: sidebarWidth }} className="flex shrink-0 z-10">
-          <TranscribeSidebar
-            jobs={jobs}
-            selectedJob={selectedJob}
-            onSelectJob={setSelectedJob}
-            onCreateJob={() => setShowCreate(true)}
+    <>
+      <ServiceShell
+        rail={
+          <ResourceRail
+            title="TRANSCRIPTION JOBS"
+            items={railItems}
+            selectedId={selectedJob?.jobName ?? null}
+            onSelect={item => setSelectedJob(jobs.find(j => j.jobName === item.id) ?? null)}
+            icon={Mic}
+            searchPlaceholder="Search jobs..."
+            onCreate={() => setShowCreate(true)}
+            createLabel="Start Job"
             loading={loading}
+            emptyLabel="No transcription jobs"
           />
-        </div>
-
-        {/* Resize handle */}
-        <div
-          onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
-        />
-
-        {/* Main content */}
-        <main className="flex-1 overflow-hidden bg-app">
-          {selectedJob ? (
-            <TranscribeJobDetail
-              key={selectedJob.jobName}
-              job={selectedJob}
-              onRefresh={handleRefreshJob}
-              onDeleted={() => { setSelectedJob(null); loadJobs() }}
+        }
+        inspector={
+          selectedJob ? (
+            <Inspector
+              kind="job"
+              icon={Mic}
+              iconColor="#3b82f6"
+              title={selectedJob.jobName}
+              subtitle={selectedJob.languageCode || 'Transcription job'}
+              rows={[
+                { key: 'Status', value: selectedJob.jobStatus, color: statusColor(selectedJob.jobStatus) },
+                { key: 'Language', value: selectedJob.languageCode ?? '—', color: 'rgb(var(--text-2))' },
+                { key: 'Format', value: selectedJob.mediaFormat ?? '—', color: 'rgb(var(--text-2))' },
+                {
+                  key: 'Created',
+                  value: selectedJob.creationTime
+                    ? new Date(selectedJob.creationTime).toLocaleString()
+                    : '—',
+                  color: 'rgb(var(--text-2))',
+                },
+                ...(selectedJob.failureReason
+                  ? [{ key: 'Failure', value: selectedJob.failureReason, color: 'rgb(var(--danger))' }]
+                  : []),
+              ]}
             />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full gap-4">
-              <div className="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-                <Mic size={40} className="text-blue-500 opacity-50" />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-semibold text-2 mb-1">No job selected</p>
-                <p className="text-xs text-3">{loading ? 'Loading transcription jobs...' : jobs.length === 0 ? 'Start a transcription job to get started' : 'Select a job from the sidebar'}</p>
-              </div>
-              {!loading && jobs.length === 0 && (
-                <button
-                  onClick={() => setShowCreate(true)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors"
-                >
-                  <Plus size={14} /> Start Transcription Job
-                </button>
-              )}
-            </div>
-          )}
-        </main>
-      </div>
+          ) : undefined
+        }
+      >
+        {selectedJob ? (
+          <TranscribeJobDetail
+            key={selectedJob.jobName}
+            job={selectedJob}
+            onRefresh={handleRefreshJob}
+            onDeleted={() => {
+              setSelectedJob(null)
+              loadJobs()
+            }}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <EmptyState
+              icon={Mic}
+              title={loading ? 'Loading jobs…' : 'Select a job'}
+              hint={
+                jobs.length === 0 && !loading
+                  ? 'Start a transcription job to get started.'
+                  : 'Pick a job from the rail to read its transcript.'
+              }
+              action={
+                jobs.length === 0 && !loading ? (
+                  <button onClick={() => setShowCreate(true)} className="btn-primary">
+                    <Plus size={12} />
+                    Start Transcription Job
+                  </button>
+                ) : undefined
+              }
+            />
+          </div>
+        )}
+      </ServiceShell>
 
-      {showCreate && (
-        <CreateJobModal
-          onClose={() => setShowCreate(false)}
-          onCreated={handleJobCreated}
-        />
-      )}
-    </div>
+      {showCreate && <CreateJobModal onClose={() => setShowCreate(false)} onCreated={handleJobCreated} />}
+    </>
   )
 }

@@ -7,11 +7,11 @@ interface Props {
   onInstall: () => void
 }
 
+/** Corner card announcing a downloaded update, dismissible for the session. */
 export default function UpdateBanner({ status, onInstall }: Props) {
   // Session-only dismiss, keyed by version so a new version re-arms the card.
   const [dismissedVersion, setDismissedVersion] = useState<string | undefined>(undefined)
 
-  // Re-arm when a different version becomes ready.
   useEffect(() => {
     if (status.status !== 'ready') return
     if (dismissedVersion && status.version && dismissedVersion !== status.version) {
@@ -24,21 +24,22 @@ export default function UpdateBanner({ status, onInstall }: Props) {
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 w-80 rounded-xl shadow-2xl border border-emerald-500/30 overflow-hidden animate-in slide-in-from-right-4 duration-300"
-      style={{ backgroundColor: 'rgb(var(--bg-base))' }}
+      className="fixed bottom-5 right-5 z-50 w-80 overflow-hidden card"
+      style={{
+        borderColor: 'rgb(var(--ok) / 0.35)',
+        boxShadow: '0 24px 60px rgba(0,0,0,.45)',
+        animation: 'stackview-fade-in 0.2s ease-out',
+      }}
     >
       <div className="flex items-stretch">
-        {/* Left accent bar */}
-        <div className="w-1 shrink-0 bg-emerald-500" />
+        <div className="w-1 shrink-0" style={{ backgroundColor: 'rgb(var(--ok))' }} />
 
-        <div className="flex-1 px-4 py-3.5 min-w-0">
+        <div className="flex-1 px-3.5 py-3 min-w-0">
           <div className="flex items-start gap-2.5">
-            <CheckCircle2 size={15} className="shrink-0 text-emerald-500 mt-0.5" />
+            <CheckCircle2 size={15} className="shrink-0 mt-0.5" style={{ color: 'rgb(var(--ok))' }} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-1 leading-snug">
-                Update ready to install
-              </p>
-              <p className="text-xs text-3 mt-0.5 truncate">
+              <p className="text-[13px] font-bold text-1 leading-snug">Update ready to install</p>
+              <p className="text-[11.5px] text-3 mt-0.5 truncate">
                 {status.version
                   ? `StackView v${status.version} is downloaded and ready.`
                   : 'A new version is downloaded and ready.'}
@@ -55,17 +56,11 @@ export default function UpdateBanner({ status, onInstall }: Props) {
           </div>
 
           <div className="flex items-center gap-2 mt-3">
-            <button
-              onClick={onInstall}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
-            >
+            <button onClick={onInstall} className="btn-primary flex-1">
               <Download size={13} />
               Install &amp; Restart
             </button>
-            <button
-              onClick={() => setDismissedVersion(status.version ?? 'unknown')}
-              className="px-3 py-2 text-xs font-medium text-3 hover:text-1 hover:bg-raised rounded-lg transition-colors"
-            >
+            <button onClick={() => setDismissedVersion(status.version ?? 'unknown')} className="btn-ghost">
               Later
             </button>
           </div>

@@ -1,164 +1,222 @@
-import { useState, useEffect, useRef } from 'react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
-import { LayoutTemplate, Plus, ArrowUpRight } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { LayoutTemplate, ArrowUpRight, Filter } from 'lucide-react'
 import type { AppSettings } from '../../types'
-import CloudFormationSidebar from './CloudFormationSidebar'
 import StackDetail from './StackDetail'
 import CreateStackModal from './CreateStackModal'
 import CloudFormationExportsView from './CloudFormationExportsView'
+import {
+  ServiceShell, ResourceRail, Inspector, EmptyState, SubviewTabs, statusColor, stateOf,
+  type RailItem, type Subview,
+} from '../common/ui'
 
 type MainView = 'stacks' | 'exports'
+
+const VIEWS: Subview<MainView>[] = [
+  { id: 'stacks', label: 'Stacks', icon: LayoutTemplate },
+  { id: 'exports', label: 'Exports', icon: ArrowUpRight },
+]
+
+/** Statuses worth filtering to — the rest are transient or rare. */
+const FILTERS = [
+  'CREATE_COMPLETE',
+  'UPDATE_COMPLETE',
+  'ROLLBACK_COMPLETE',
+  'CREATE_FAILED',
+  'DELETE_FAILED',
+]
 
 interface Props {
   settings: AppSettings
 }
 
-export default function CloudFormationLayout({
-  settings,
-}: Props) {
+interface Stack {
+  StackName: string
+  StackStatus?: string
+  CreationTime?: string
+  Description?: string
+  [key: string]: unknown
+}
+
+export default function CloudFormationLayout({ settings }: Props) {
   const [mainView, setMainView] = useState<MainView>('stacks')
-  const [stacks, setStacks] = useState<any[]>([])
+  const [stacks, setStacks] = useState<Stack[]>([])
   const [selectedStack, setSelectedStack] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string[]>([])
+  const [filterOpen, setFilterOpen] = useState(false)
+
+  // The poll below reads the filter without re-subscribing when it changes.
   const statusFilterRef = useRef<string[]>([])
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 200, max: 500 })
+  useEffect(() => {
+    statusFilterRef.current = statusFilter
+  }, [statusFilter])
 
-  useEffect(() => { statusFilterRef.current = statusFilter }, [statusFilter])
-
-  const loadStacks = async (filter?: string[]) => {
+  const loadStacks = useCallback(async (filter?: string[]) => {
     setLoading(true)
     try {
       const result = await window.electronAPI.cfnListStacks(filter ?? statusFilterRef.current)
-      if (result.success && result.data) setStacks(result.data)
+      if (result.success && result.data) setStacks(result.data as Stack[])
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  useEffect(() => { loadStacks() }, [])
-
-  // Auto-poll every 5 seconds while any stack is IN_PROGRESS
   useEffect(() => {
-    const hasInProgress = stacks.some(s =>
-      typeof s.StackStatus === 'string' && s.StackStatus.includes('IN_PROGRESS')
-    )
+    loadStacks()
+  }, [loadStacks])
+
+  // Poll while anything is mid-deploy so the rail reflects progress.
+  useEffect(() => {
+    const hasInProgress = stacks.some(s => s.StackStatus?.includes('IN_PROGRESS'))
     if (!hasInProgress) return
     const timer = setInterval(async () => {
       const result = await window.electronAPI.cfnListStacks(statusFilterRef.current)
-      if (result.success && result.data) setStacks(result.data)
+      if (result.success && result.data) setStacks(result.data as Stack[])
     }, 5000)
     return () => clearInterval(timer)
   }, [stacks])
 
-  const handleFilterChange = (filter: string[]) => {
-    setStatusFilter(filter)
-    loadStacks(filter)
-  }
+  const selected = stacks.find(s => s.StackName === selectedStack) ?? null
 
-  const handleStackCreated = async () => {
-    setShowCreateModal(false)
-    await loadStacks()
-  }
+  const railItems: RailItem[] = stacks.map(s => ({
+    id: s.StackName,
+    name: s.StackName,
+    icon: LayoutTemplate,
+    state: stateOf(s.StackStatus) ?? 'idle',
+    sub: s.StackStatus ?? 'UNKNOWN',
+    meta: s.CreationTime ? new Date(s.CreationTime).toLocaleDateString() : undefined,
+    keywords: s.Description,
+  }))
 
-  const handleStackDeleted = async () => {
-    setSelectedStack(null)
-    await loadStacks()
+  if (mainView === 'exports') {
+    return (
+      <div className="flex-1 min-h-0 flex flex-col bg-app">
+        <div className="shrink-0 px-5 pt-3 border-b border-theme">
+          <SubviewTabs views={VIEWS} active={mainView} onChange={setMainView} />
+        </div>
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <CloudFormationExportsView />
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Nav tabs: Stacks | Exports */}
-      <div className="flex items-center gap-0 shrink-0 border-b border-theme px-4" style={{ backgroundColor: 'rgb(var(--bg-base))' }}>
-        <button
-          onClick={() => setMainView('stacks')}
-          className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors
-            ${mainView === 'stacks' ? 'border-orange-500 text-orange-600 dark:text-orange-300' : 'border-transparent text-3 hover:text-1'}`}
-        >
-          <LayoutTemplate size={13} /> Stacks
-        </button>
-        <button
-          onClick={() => setMainView('exports')}
-          className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors
-            ${mainView === 'exports' ? 'border-orange-500 text-orange-600 dark:text-orange-300' : 'border-transparent text-3 hover:text-1'}`}
-        >
-          <ArrowUpRight size={13} /> Exports
-        </button>
+    <>
+      <div className="shrink-0 px-5 pt-3 border-b border-theme bg-app">
+        <SubviewTabs views={VIEWS} active={mainView} onChange={setMainView} />
       </div>
 
-      {mainView === 'exports' ? (
-        <div className="flex-1 overflow-hidden">
-          <CloudFormationExportsView />
-        </div>
-      ) : (
-        <div className="flex flex-1 overflow-hidden">
-          <div className="flex shrink-0" style={{ width: sidebarWidth }}>
-            <CloudFormationSidebar
-              stacks={stacks}
-              selectedStack={selectedStack}
-              onSelectStack={setSelectedStack}
-              onCreateStack={() => setShowCreateModal(true)}
-              onFilterChange={handleFilterChange}
-              statusFilter={statusFilter}
-              loading={loading}
+      <ServiceShell
+        rail={
+          <ResourceRail
+            title="STACKS"
+            items={railItems}
+            selectedId={selectedStack}
+            onSelect={item => setSelectedStack(item.id)}
+            icon={LayoutTemplate}
+            searchPlaceholder="Search stacks..."
+            onCreate={() => setShowCreateModal(true)}
+            createLabel="Create Stack"
+            loading={loading}
+            emptyLabel="No stacks yet"
+            headerAction={
+              <button
+                onClick={() => setFilterOpen(o => !o)}
+                className="transition-colors"
+                style={{ color: statusFilter.length ? 'rgb(var(--accent))' : 'rgb(var(--text-3))' }}
+                title="Filter by status"
+              >
+                <Filter size={13} />
+              </button>
+            }
+          >
+            {filterOpen && (
+              <div className="shrink-0 px-3 py-2.5 border-b border-theme surface-wash">
+                <div className="ui-label-dim mb-2">STATUS</div>
+                <div className="flex flex-wrap gap-1">
+                  {FILTERS.map(f => {
+                    const on = statusFilter.includes(f)
+                    return (
+                      <button
+                        key={f}
+                        onClick={() => {
+                          const next = on ? statusFilter.filter(s => s !== f) : [...statusFilter, f]
+                          setStatusFilter(next)
+                          loadStacks(next)
+                        }}
+                        className={`chip h-[22px] text-[10px] ${on ? 'chip-active' : ''}`}
+                      >
+                        {f}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </ResourceRail>
+        }
+        inspector={
+          selected ? (
+            <Inspector
+              kind="stack"
+              icon={LayoutTemplate}
+              iconColor="#f97316"
+              title={selected.StackName}
+              subtitle={selected.Description || 'CloudFormation stack'}
+              rows={[
+                {
+                  key: 'Status',
+                  value: selected.StackStatus ?? '—',
+                  color: statusColor(selected.StackStatus),
+                },
+                {
+                  key: 'Created',
+                  value: selected.CreationTime ? new Date(selected.CreationTime).toLocaleDateString() : '—',
+                  color: 'rgb(var(--text-2))',
+                },
+                { key: 'Region', value: settings.region, color: 'rgb(var(--text-2))' },
+              ]}
+            />
+          ) : undefined
+        }
+      >
+        {selectedStack ? (
+          <StackDetail
+            key={selectedStack}
+            stackName={selectedStack}
+            onDeleted={async () => {
+              setSelectedStack(null)
+              await loadStacks()
+            }}
+            onUpdated={loadStacks}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <EmptyState
+              icon={LayoutTemplate}
+              title="Select a stack"
+              hint="Pick a stack from the rail to review its resources, events and template."
+              action={
+                <button onClick={() => setShowCreateModal(true)} className="btn-primary">
+                  Create Stack
+                </button>
+              }
             />
           </div>
-
-          {/* Resize handle */}
-          <div
-            onMouseDown={handleResizeStart}
-            className="w-1 shrink-0 cursor-col-resize relative select-none"
-            style={{ backgroundColor: 'rgb(var(--border))' }}
-            title="Drag to resize"
-          />
-
-          <main className="flex-1 overflow-hidden bg-app">
-            {selectedStack ? (
-              <StackDetail
-                key={selectedStack}
-                stackName={selectedStack}
-                onDeleted={handleStackDeleted}
-                onUpdated={loadStacks}
-              />
-            ) : (
-              <CfnEmptyState onCreateStack={() => setShowCreateModal(true)} />
-            )}
-          </main>
-        </div>
-      )}
+        )}
+      </ServiceShell>
 
       {showCreateModal && (
         <CreateStackModal
           onClose={() => setShowCreateModal(false)}
-          onCreated={handleStackCreated}
+          onCreated={async () => {
+            setShowCreateModal(false)
+            await loadStacks()
+          }}
         />
       )}
-    </div>
-  )
-}
-
-function CfnEmptyState({ onCreateStack }: { onCreateStack: () => void }) {
-  return (
-    <div className="flex flex-col items-center justify-center h-full text-center p-8">
-      <div
-        className="w-20 h-20 rounded-2xl border flex items-center justify-center mb-5 border-theme"
-        style={{ backgroundColor: 'rgb(var(--bg-raised))' }}
-      >
-        <LayoutTemplate size={32} className="text-4" />
-      </div>
-      <h3 className="text-base font-semibold text-2 mb-2">Select a stack to get started</h3>
-      <p className="text-sm text-3 mb-6 max-w-xs leading-relaxed">
-        Choose a stack from the sidebar to view its resources, events, and template.
-      </p>
-      <button
-        onClick={onCreateStack}
-        className="btn-primary gap-2 text-white"
-        style={{ backgroundColor: 'rgb(249 115 22)' }}
-      >
-        <Plus size={15} />
-        Create New Stack
-      </button>
-    </div>
+    </>
   )
 }

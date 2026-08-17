@@ -4,7 +4,7 @@ import {
   LayoutTemplate, Trash2, Check, AlertTriangle, Loader2,
   Package, Clock, FileCode, BarChart3, Copy, CheckCircle2, Edit3
 } from 'lucide-react'
-import { getStatusColor } from './CloudFormationSidebar'
+import { statusBadgeClass } from '../common/ui'
 import UpdateStackModal from './UpdateStackModal'
 import { useToastContext } from '../../contexts/ToastContext'
 
@@ -238,7 +238,7 @@ function OverviewTab({ stackName, showToast }: { stackName: string, showToast: a
           </div>
           <div>
             <p className="text-[10px] text-3 mb-0.5">Status</p>
-            <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${getStatusColor(stack.StackStatus ?? '')}`}>{stack.StackStatus}</span>
+            <span className={statusBadgeClass(stack.StackStatus)}>{stack.StackStatus}</span>
           </div>
           {stack.StackStatusReason && (
             <div>
@@ -354,7 +354,7 @@ function ResourcesTab({ stackName, showToast }: { stackName: string, showToast: 
                   </div>
                 </td>
                 <td className="px-4 py-2">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${getStatusColor(r.ResourceStatus ?? '')}`}>{r.ResourceStatus}</span>
+                  <span className={statusBadgeClass(r.ResourceStatus)}>{r.ResourceStatus}</span>
                 </td>
               </tr>
             ))}
@@ -411,7 +411,7 @@ function EventsTab({ stackName, showToast }: { stackName: string, showToast: any
                 <td className="px-4 py-2 text-xs font-mono text-1">{e.LogicalResourceId}</td>
                 <td className="px-4 py-2 text-xs text-2">{e.ResourceType}</td>
                 <td className="px-4 py-2">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${getStatusColor(e.ResourceStatus ?? '')}`}>{e.ResourceStatus}</span>
+                  <span className={statusBadgeClass(e.ResourceStatus)}>{e.ResourceStatus}</span>
                 </td>
                 <td className="px-4 py-2 text-xs text-3 max-w-[240px]" title={e.ResourceStatusReason}>
                   <span className={`${e.ResourceStatus?.includes('FAILED') ? 'text-red-500' : ''} leading-snug block`}>

@@ -1,9 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
 import { useToastContext } from '../../contexts/ToastContext'
-import { AlertTriangle, X, Plus, Loader2, User, Users, Shield, FileText } from 'lucide-react'
+import { AlertTriangle, X, Plus, Loader2, User, Users, UserCheck, Shield, FileText } from 'lucide-react'
 import type { AppSettings, IamUser, IamRole, IamGroup, IamPolicy } from '../../types'
-import IamSidebar from './IamSidebar'
+import { ServiceShell, ResourceRail, Inspector, type RailItem } from '../common/ui'
 import IamUsersList from './IamUsersList'
 import IamRolesList from './IamRolesList'
 import IamGroupsList from './IamGroupsList'
@@ -401,7 +400,6 @@ export default function IamLayout({ settings }: Props) {
   const [showCreateRole, setShowCreateRole] = useState(false)
   const [showCreatePolicy, setShowCreatePolicy] = useState(false)
 
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 220, max: 480 })
   const { showToast } = useToastContext()
 
   // Fetches
@@ -469,37 +467,66 @@ export default function IamLayout({ settings }: Props) {
     else showToast('error', res.error || 'Failed to delete role')
   }
 
+  // IAM's rail lists identity categories rather than instances — the resources
+  // themselves are shown in the table on the right.
+  const railItems: RailItem[] = [
+    { id: 'Users', name: 'Users', icon: User, sub: 'IDENTITIES', meta: String(users.length) },
+    { id: 'Groups', name: 'Groups', icon: Users, sub: 'MEMBERSHIP', meta: String(groups.length) },
+    { id: 'Roles', name: 'Roles', icon: UserCheck, sub: 'ASSUMABLE', meta: String(roles.length) },
+    { id: 'Policies', name: 'Policies', icon: FileText, sub: policyScope.toUpperCase(), meta: String(policies.length) },
+  ]
+
+  const createFor: Record<string, () => void> = {
+    Users: () => setShowCreateUser(true),
+    Groups: () => setShowCreateGroup(true),
+    Roles: () => setShowCreateRole(true),
+    Policies: () => setShowCreatePolicy(true),
+  }
+
   return (
-    <div className="flex flex-col h-full bg-app text-1">
-      <div className="flex flex-1 overflow-hidden relative">
-        <div style={{ width: sidebarWidth }} className="flex shrink-0 z-10 transition-[width]">
-          <IamSidebar
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            counts={{ users: users.length, groups: groups.length, roles: roles.length, policies: policies.length }}
+    <>
+      <ServiceShell
+        rail={
+          <ResourceRail
+            title="IAM"
+            items={railItems}
+            selectedId={activeTab}
+            onSelect={item => setActiveTab(item.id as typeof activeTab)}
+            searchPlaceholder="Search categories..."
+            onCreate={createFor[activeTab]}
+            createLabel={`New ${activeTab.replace(/s$/, '')}`}
+            emptyLabel="No categories"
           />
-        </div>
-
-        <div
-          onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20 transition-colors"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
-        />
-
-        <main className="flex-1 overflow-hidden">
-          {activeTab === 'Users' && <IamUsersList users={users} loading={loading} allGroups={groups} showToast={showToast} onCreateClick={() => setShowCreateUser(true)} onDelete={handleUserDelete} />}
-          {activeTab === 'Groups' && <IamGroupsList groups={groups} loading={loading} allUsers={users} showToast={showToast} onCreateClick={() => setShowCreateGroup(true)} onDelete={handleGroupDelete} />}
-          {activeTab === 'Roles' && <IamRolesList roles={roles} loading={loading} onCreateClick={() => setShowCreateRole(true)} onDelete={handleRoleDelete} />}
-          {activeTab === 'Policies' && <IamPoliciesList policies={policies} loading={loading} scope={policyScope} setScope={setPolicyScope} onCreateClick={() => setShowCreatePolicy(true)} />}
-        </main>
-      </div>
+        }
+        inspector={
+          <Inspector
+            kind="account"
+            icon={UserCheck}
+            iconColor="#f43f5e"
+            title="Identity & Access"
+            subtitle={settings.region}
+            sectionTitle="TOTALS"
+            rows={[
+              { key: 'Users', value: String(users.length) },
+              { key: 'Groups', value: String(groups.length) },
+              { key: 'Roles', value: String(roles.length) },
+              { key: 'Policies', value: String(policies.length) },
+              { key: 'Policy scope', value: policyScope, color: 'rgb(var(--accent))' },
+              { key: 'Region', value: settings.region, color: 'rgb(var(--text-2))' },
+            ]}
+          />
+        }
+      >
+        {activeTab === 'Users' && <IamUsersList users={users} loading={loading} allGroups={groups} showToast={showToast} onCreateClick={() => setShowCreateUser(true)} onDelete={handleUserDelete} />}
+        {activeTab === 'Groups' && <IamGroupsList groups={groups} loading={loading} allUsers={users} showToast={showToast} onCreateClick={() => setShowCreateGroup(true)} onDelete={handleGroupDelete} />}
+        {activeTab === 'Roles' && <IamRolesList roles={roles} loading={loading} onCreateClick={() => setShowCreateRole(true)} onDelete={handleRoleDelete} />}
+        {activeTab === 'Policies' && <IamPoliciesList policies={policies} loading={loading} scope={policyScope} setScope={setPolicyScope} onCreateClick={() => setShowCreatePolicy(true)} />}
+      </ServiceShell>
 
       {showCreateUser && <CreateUserModal onClose={() => setShowCreateUser(false)} onCreated={() => { setShowCreateUser(false); loadUsers() }} showToast={showToast} allGroups={groups} />}
       {showCreateGroup && <CreateGroupModal onClose={() => setShowCreateGroup(false)} onCreated={() => { setShowCreateGroup(false); loadGroups() }} showToast={showToast} allUsers={users} />}
       {showCreateRole && <CreateRoleModal onClose={() => setShowCreateRole(false)} onCreated={() => { setShowCreateRole(false); loadRoles() }} showToast={showToast} />}
       {showCreatePolicy && <CreatePolicyModal onClose={() => setShowCreatePolicy(false)} onCreated={() => { setShowCreatePolicy(false); loadPolicies() }} showToast={showToast} />}
-
-      <ToastContainer toasts={toasts} />
-    </div>
+    </>
   )
 }

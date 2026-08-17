@@ -1,430 +1,355 @@
-export const THEME_DEFINITIONS = {
-  light:            { label: 'Light',          preview: { bg: '#ffffff', surface: '#f1f5f9', text: '#0f172a' } },
-  'quiet-light':    { label: 'Quiet Light',    preview: { bg: '#f5f5f5', surface: '#efefef', text: '#333333' } },
-  'solarized-light':{ label: 'Solarized Light',preview: { bg: '#fdf6e3', surface: '#eee8d5', text: '#586e75' } },
-  'tokyo-day':      { label: 'Tokyo Day',      preview: { bg: '#e1e2e7', surface: '#d5d6db', text: '#343e58' } },
-  dark:             { label: 'Dark',           preview: { bg: '#090909', surface: '#121212', text: '#fafafa' } },
-  midnight:         { label: 'Midnight',       preview: { bg: '#0f172a', surface: '#1e293b', text: '#f1f5f9' } },
-  abyss:            { label: 'Abyss',          preview: { bg: '#000c18', surface: '#00152c', text: '#6688cc' } },
-  nord:             { label: 'Nord',           preview: { bg: '#242936', surface: '#2e3440', text: '#eceff4' } },
-  mocha:            { label: 'Mocha',          preview: { bg: '#181825', surface: '#1e1e2e', text: '#cdd6f4' } },
-  macchiato:        { label: 'Macchiato',      preview: { bg: '#1e2030', surface: '#363a4f', text: '#cad3f5' } },
-  solarized:        { label: 'Solarized',      preview: { bg: '#073642', surface: '#134350', text: '#fdf6e3' } },
-  dracula:          { label: 'Dracula',        preview: { bg: '#282a36', surface: '#343746', text: '#f8f8f2' } },
-  gruvbox:          { label: 'Gruvbox',        preview: { bg: '#282828', surface: '#3c3836', text: '#ebdbb2' } },
-  kimbie:           { label: 'Kimbie Dark',    preview: { bg: '#221a0f', surface: '#2c2316', text: '#d3af86' } },
-  monokai:          { label: 'Monokai',        preview: { bg: '#272822', surface: '#32332c', text: '#f8f8f2' } },
-  'monokai-dimmed': { label: 'Monokai Dimmed', preview: { bg: '#1e1e1a', surface: '#282823', text: '#c5c5be' } },
-  red:              { label: 'Red',            preview: { bg: '#390000', surface: '#4a0808', text: '#f8f8f8' } },
-  'tokyo-night':    { label: 'Tokyo Night',    preview: { bg: '#1a1b2e', surface: '#24283b', text: '#c0caf5' } },
-  'tokyo-storm':    { label: 'Tokyo Storm',    preview: { bg: '#24283b', surface: '#292e42', text: '#c0caf5' } },
-  'rose-pine':      { label: 'Rose Pine',      preview: { bg: '#191724', surface: '#1f1d2e', text: '#e0def4' } },
-  frappe:           { label: 'Frappé',         preview: { bg: '#303446', surface: '#414559', text: '#c6d0f5' } },
-  ayu:              { label: 'Ayu',            preview: { bg: '#1c2433', surface: '#1f2d3d', text: '#e6e1cf' } },
-  everforest:       { label: 'Everforest',     preview: { bg: '#272e33', surface: '#2e383c', text: '#d3c6aa' } },
-  kanagawa:         { label: 'Kanagawa',       preview: { bg: '#1f1f28', surface: '#2a2a37', text: '#dcd7ba' } },
-  'one-dark':       { label: 'One Dark',       preview: { bg: '#282c34', surface: '#2c313c', text: '#abb2bf' } },
-  'night-owl':      { label: 'Night Owl',      preview: { bg: '#011627', surface: '#0d2035', text: '#d6deeb' } },
-  'tomorrow-blue':  { label: 'Tomorrow Blue',  preview: { bg: '#002451', surface: '#003064', text: '#ffffff' } },
-  synthwave:        { label: 'Synthwave',      preview: { bg: '#1a1139', surface: '#241650', text: '#fefefe' } },
-  horizon:          { label: 'Horizon',        preview: { bg: '#1c1e26', surface: '#232530', text: '#d5d8da' } },
-  moonlight:        { label: 'Moonlight',      preview: { bg: '#1e2030', surface: '#222436', text: '#c8d3f5' } },
-} as const
+/**
+ * StackView theming — the "Slate Split" design.
+ *
+ * Every theme is the *same design*. The surface roles, their relationships and
+ * the density they imply are fixed; only the colors change. A theme declares a
+ * compact palette below and the CSS custom properties that components actually
+ * read are derived from it — so adding a theme is one entry, never a block of
+ * hand-written variables that can drift out of step with the others.
+ *
+ * Surface ramp, darkest-reading to lightest-reading (inverted for light themes):
+ *
+ *   chrome   panels — nav rail, sidebars, inspector, table headers, inputs
+ *   app      content — the main working surface, sits *above* chrome
+ *   raised   hover and selected rows, chips, secondary buttons
+ *   overlay  one step further — pressed states, wells nested inside raised
+ *   border   hairlines that separate regions
+ *   hair     brighter than border, for dividers that must read as a line
+ */
 
-export type Theme = keyof typeof THEME_DEFINITIONS
+export interface ThemePalette {
+  label: string
+  /** Drives `nativeTheme.themeSource` and the light/dark state-color defaults. */
+  dark: boolean
+  chrome: string
+  app: string
+  raised: string
+  overlay: string
+  border: string
+  hair: string
+  /** Primary text. */
+  t1: string
+  /** Secondary text — labels, inactive tabs. */
+  t2: string
+  /** Tertiary text — captions, placeholders. */
+  t3: string
+  /** Quaternary text — disabled, gutter numbers. */
+  t4: string
+  /** Primary action color. Also the "warn"/pending state in status mappings. */
+  accent: string
+  ok: string
+  warn: string
+  danger: string
+}
 
-export const ALL_THEMES = Object.keys(THEME_DEFINITIONS) as Theme[]
+export const THEME_PALETTES = {
+  'slate-split': {
+    label: 'Slate Split', dark: true,
+    chrome: '#15171a', app: '#1b1d21', raised: '#22252a', overlay: '#2b2f35',
+    border: '#32363d', hair: '#3f444c',
+    t1: '#eef1f5', t2: '#a8b0bd', t3: '#7d8592', t4: '#5d6470',
+    accent: '#e0993e', ok: '#5bc98f', warn: '#e0993e', danger: '#e05b4e',
+  },
 
-/** CSS custom-property values for each theme, keyed by property name. */
-export const THEME_CSS_VARS: Record<Theme, Record<string, string>> = {
   light: {
-    '--bg-app':          '248 250 252',
-    '--bg-base':         '255 255 255',
-    '--bg-raised':       '241 245 249',
-    '--bg-overlay':      '226 232 240',
-    '--border':          '226 232 240',
-    '--border-sub':      '241 245 249',
-    '--text-1':          '15 23 42',
-    '--text-2':          '71 85 105',
-    '--text-3':          '100 116 139',
-    '--text-4':          '148 163 184',
-    '--scrollbar-thumb': '#cbd5e1',
-  },
-  dark: {
-    '--bg-app':          '0 0 0',
-    '--bg-base':         '9 9 9',
-    '--bg-raised':       '18 18 18',
-    '--bg-overlay':      '28 28 28',
-    '--border':          '28 28 28',
-    '--border-sub':      '18 18 18',
-    '--text-1':          '250 250 250',
-    '--text-2':          '163 163 163',
-    '--text-3':          '115 115 115',
-    '--text-4':          '82 82 82',
-    '--scrollbar-thumb': '#333333',
-  },
-  midnight: {
-    '--bg-app':          '2 6 23',
-    '--bg-base':         '15 23 42',
-    '--bg-raised':       '30 41 59',
-    '--bg-overlay':      '51 65 85',
-    '--border':          '30 41 59',
-    '--border-sub':      '15 23 42',
-    '--text-1':          '241 245 249',
-    '--text-2':          '148 163 184',
-    '--text-3':          '100 116 139',
-    '--text-4':          '71 85 105',
-    '--scrollbar-thumb': '#334155',
-  },
-  nord: {
-    '--bg-app':          '19 23 34',
-    '--bg-base':         '36 41 54',
-    '--bg-raised':       '46 52 64',
-    '--bg-overlay':      '59 66 82',
-    '--border':          '59 66 82',
-    '--border-sub':      '46 52 64',
-    '--text-1':          '236 239 244',
-    '--text-2':          '216 222 233',
-    '--text-3':          '129 161 193',
-    '--text-4':          '76 86 106',
-    '--scrollbar-thumb': '#4c566a',
-  },
-  mocha: {
-    '--bg-app':          '17 17 27',
-    '--bg-base':         '24 24 37',
-    '--bg-raised':       '30 30 46',
-    '--bg-overlay':      '49 50 68',
-    '--border':          '49 50 68',
-    '--border-sub':      '30 30 46',
-    '--text-1':          '205 214 244',
-    '--text-2':          '166 173 200',
-    '--text-3':          '108 112 134',
-    '--text-4':          '88 91 112',
-    '--scrollbar-thumb': '#585b70',
-  },
-  macchiato: {
-    '--bg-app':          '24 25 38',
-    '--bg-base':         '30 32 48',
-    '--bg-raised':       '54 58 79',
-    '--bg-overlay':      '73 77 100',
-    '--border':          '73 77 100',
-    '--border-sub':      '54 58 79',
-    '--text-1':          '202 211 245',
-    '--text-2':          '165 173 203',
-    '--text-3':          '110 115 141',
-    '--text-4':          '73 77 100',
-    '--scrollbar-thumb': '#5b6078',
-  },
-  solarized: {
-    '--bg-app':          '0 43 54',
-    '--bg-base':         '7 54 66',
-    '--bg-raised':       '19 67 80',
-    '--bg-overlay':      '35 83 96',
-    '--border':          '35 83 96',
-    '--border-sub':      '7 54 66',
-    '--text-1':          '253 246 227',
-    '--text-2':          '238 232 213',
-    '--text-3':          '147 161 161',
-    '--text-4':          '88 110 117',
-    '--scrollbar-thumb': '#586e75',
-  },
-  dracula: {
-    '--bg-app':          '30 31 41',
-    '--bg-base':         '40 42 54',
-    '--bg-raised':       '52 55 70',
-    '--bg-overlay':      '68 71 90',
-    '--border':          '68 71 90',
-    '--border-sub':      '52 55 70',
-    '--text-1':          '248 248 242',
-    '--text-2':          '189 147 249',
-    '--text-3':          '98 114 164',
-    '--text-4':          '68 71 90',
-    '--scrollbar-thumb': '#44475a',
-  },
-  gruvbox: {
-    '--bg-app':          '29 32 33',
-    '--bg-base':         '40 40 40',
-    '--bg-raised':       '60 56 54',
-    '--bg-overlay':      '80 73 69',
-    '--border':          '80 73 69',
-    '--border-sub':      '60 56 54',
-    '--text-1':          '235 219 178',
-    '--text-2':          '213 196 161',
-    '--text-3':          '146 131 116',
-    '--text-4':          '102 92 84',
-    '--scrollbar-thumb': '#504945',
-  },
-  'tokyo-night': {
-    '--bg-app':          '22 22 30',
-    '--bg-base':         '26 27 46',
-    '--bg-raised':       '36 40 59',
-    '--bg-overlay':      '41 46 66',
-    '--border':          '41 46 66',
-    '--border-sub':      '36 40 59',
-    '--text-1':          '192 202 245',
-    '--text-2':          '169 177 214',
-    '--text-3':          '122 131 179',
-    '--text-4':          '65 72 104',
-    '--scrollbar-thumb': '#414868',
-  },
-  'rose-pine': {
-    '--bg-app':          '15 13 23',
-    '--bg-base':         '25 23 36',
-    '--bg-raised':       '31 29 46',
-    '--bg-overlay':      '38 35 58',
-    '--border':          '38 35 58',
-    '--border-sub':      '31 29 46',
-    '--text-1':          '224 222 244',
-    '--text-2':          '196 167 231',
-    '--text-3':          '144 140 170',
-    '--text-4':          '78 75 102',
-    '--scrollbar-thumb': '#4e4b66',
-  },
-  frappe: {
-    '--bg-app':          '35 38 52',
-    '--bg-base':         '48 52 70',
-    '--bg-raised':       '65 69 89',
-    '--bg-overlay':      '81 87 109',
-    '--border':          '81 87 109',
-    '--border-sub':      '65 69 89',
-    '--text-1':          '198 208 245',
-    '--text-2':          '165 173 206',
-    '--text-3':          '115 121 148',
-    '--text-4':          '81 87 109',
-    '--scrollbar-thumb': '#626880',
-  },
-  ayu: {
-    '--bg-app':          '14 17 22',
-    '--bg-base':         '28 36 51',
-    '--bg-raised':       '31 45 61',
-    '--bg-overlay':      '38 57 74',
-    '--border':          '38 57 74',
-    '--border-sub':      '31 45 61',
-    '--text-1':          '230 225 207',
-    '--text-2':          '181 183 179',
-    '--text-3':          '100 108 121',
-    '--text-4':          '56 67 82',
-    '--scrollbar-thumb': '#384352',
-  },
-  everforest: {
-    '--bg-app':          '30 35 38',
-    '--bg-base':         '39 46 51',
-    '--bg-raised':       '46 56 60',
-    '--bg-overlay':      '55 65 69',
-    '--border':          '55 65 69',
-    '--border-sub':      '46 56 60',
-    '--text-1':          '211 198 170',
-    '--text-2':          '133 146 137',
-    '--text-3':          '82 92 98',
-    '--text-4':          '61 72 77',
-    '--scrollbar-thumb': '#3d484d',
-  },
-  kanagawa: {
-    '--bg-app':          '22 22 29',
-    '--bg-base':         '31 31 40',
-    '--bg-raised':       '42 42 55',
-    '--bg-overlay':      '54 54 70',
-    '--border':          '54 54 70',
-    '--border-sub':      '42 42 55',
-    '--text-1':          '220 215 186',
-    '--text-2':          '200 192 147',
-    '--text-3':          '114 113 105',
-    '--text-4':          '84 84 109',
-    '--scrollbar-thumb': '#54546d',
-  },
-  'one-dark': {
-    '--bg-app':          '33 37 43',
-    '--bg-base':         '40 44 52',
-    '--bg-raised':       '44 49 60',
-    '--bg-overlay':      '56 62 74',
-    '--border':          '56 62 74',
-    '--border-sub':      '44 49 60',
-    '--text-1':          '171 178 191',
-    '--text-2':          '157 165 180',
-    '--text-3':          '99 109 131',
-    '--text-4':          '59 64 72',
-    '--scrollbar-thumb': '#4b5263',
-  },
-  'night-owl': {
-    '--bg-app':          '1 22 39',
-    '--bg-base':         '13 32 53',
-    '--bg-raised':       '11 41 66',
-    '--bg-overlay':      '19 47 76',
-    '--border':          '19 47 76',
-    '--border-sub':      '11 41 66',
-    '--text-1':          '214 222 235',
-    '--text-2':          '130 170 255',
-    '--text-3':          '92 117 140',
-    '--text-4':          '29 59 83',
-    '--scrollbar-thumb': '#1d3b53',
-  },
-  synthwave: {
-    '--bg-app':          '20 9 42',
-    '--bg-base':         '26 17 57',
-    '--bg-raised':       '36 22 80',
-    '--bg-overlay':      '50 29 102',
-    '--border':          '50 29 102',
-    '--border-sub':      '36 22 80',
-    '--text-1':          '255 255 255',
-    '--text-2':          '249 126 114',
-    '--text-3':          '132 139 189',
-    '--text-4':          '75 59 110',
-    '--scrollbar-thumb': '#3d1f6d',
-  },
-  horizon: {
-    '--bg-app':          '22 20 31',
-    '--bg-base':         '28 30 38',
-    '--bg-raised':       '35 37 48',
-    '--bg-overlay':      '46 48 64',
-    '--border':          '46 48 64',
-    '--border-sub':      '35 37 48',
-    '--text-1':          '213 216 218',
-    '--text-2':          '185 188 196',
-    '--text-3':          '132 135 147',
-    '--text-4':          '78 79 92',
-    '--scrollbar-thumb': '#383a4a',
-  },
-  moonlight: {
-    '--bg-app':          '25 26 42',
-    '--bg-base':         '30 32 48',
-    '--bg-raised':       '34 36 54',
-    '--bg-overlay':      '47 51 84',
-    '--border':          '47 51 84',
-    '--border-sub':      '34 36 54',
-    '--text-1':          '200 211 245',
-    '--text-2':          '169 184 232',
-    '--text-3':          '122 136 207',
-    '--text-4':          '68 74 115',
-    '--scrollbar-thumb': '#3b4261',
+    label: 'Light', dark: false,
+    chrome: '#f4f7fa', app: '#ffffff', raised: '#e9eef4', overlay: '#dde5ee',
+    border: '#d8e0ea', hair: '#c3cdd9',
+    t1: '#0f172a', t2: '#475569', t3: '#64748b', t4: '#94a3b8',
+    accent: '#0284c7', ok: '#15803d', warn: '#b45309', danger: '#b91c1c',
   },
   'quiet-light': {
-    '--bg-app':          '242 242 242',
-    '--bg-base':         '250 250 250',
-    '--bg-raised':       '236 236 236',
-    '--bg-overlay':      '224 224 224',
-    '--border':          '208 208 208',
-    '--border-sub':      '224 224 224',
-    '--text-1':          '51 51 51',
-    '--text-2':          '85 85 85',
-    '--text-3':          '119 119 119',
-    '--text-4':          '170 170 170',
-    '--scrollbar-thumb': '#c0c0c0',
+    label: 'Quiet Light', dark: false,
+    chrome: '#f0f0f0', app: '#fafafa', raised: '#e6e6e6', overlay: '#dbdbdb',
+    border: '#d0d0d0', hair: '#bcbcbc',
+    t1: '#333333', t2: '#555555', t3: '#777777', t4: '#aaaaaa',
+    accent: '#4b83cd', ok: '#448c27', warn: '#a67f0a', danger: '#a31515',
   },
   'solarized-light': {
-    '--bg-app':          '253 246 227',
-    '--bg-base':         '238 232 213',
-    '--bg-raised':       '228 221 200',
-    '--bg-overlay':      '216 209 186',
-    '--border':          '200 193 170',
-    '--border-sub':      '216 209 186',
-    '--text-1':          '88 110 117',
-    '--text-2':          '101 123 131',
-    '--text-3':          '131 148 150',
-    '--text-4':          '147 161 161',
-    '--scrollbar-thumb': '#b8b09e',
+    label: 'Solarized Light', dark: false,
+    chrome: '#f2ecd9', app: '#fdf6e3', raised: '#e8e1cb', overlay: '#ddd6bd',
+    border: '#cec7ae', hair: '#b9b299',
+    t1: '#586e75', t2: '#657b83', t3: '#839496', t4: '#93a1a1',
+    accent: '#b58900', ok: '#859900', warn: '#cb4b16', danger: '#dc322f',
   },
   'tokyo-day': {
-    '--bg-app':          '213 214 219',
-    '--bg-base':         '225 226 231',
-    '--bg-raised':       '234 235 240',
-    '--bg-overlay':      '205 206 214',
-    '--border':          '188 190 202',
-    '--border-sub':      '205 206 214',
-    '--text-1':          '52 62 88',
-    '--text-2':          '97 114 176',
-    '--text-3':          '130 143 183',
-    '--text-4':          '169 177 214',
-    '--scrollbar-thumb': '#b0b5cc',
+    label: 'Tokyo Day', dark: false,
+    chrome: '#dfe0e6', app: '#e9eaef', raised: '#d5d6dd', overlay: '#c9cad3',
+    border: '#bcbeca', hair: '#a8abbb',
+    t1: '#343e58', t2: '#4c5a87', t3: '#6172b0', t4: '#8990b8',
+    accent: '#2e7de9', ok: '#587539', warn: '#8c6c3e', danger: '#f52a65',
+  },
+
+  dark: {
+    label: 'Dark', dark: true,
+    chrome: '#0d0d0d', app: '#131313', raised: '#1e1e1e', overlay: '#272727',
+    border: '#2c2c2c', hair: '#3d3d3d',
+    t1: '#fafafa', t2: '#a3a3a3', t3: '#737373', t4: '#525252',
+    accent: '#e0993e', ok: '#5bc98f', warn: '#e0993e', danger: '#e05b4e',
+  },
+  midnight: {
+    label: 'Midnight', dark: true,
+    chrome: '#0b1220', app: '#0f172a', raised: '#1e293b', overlay: '#293548',
+    border: '#334155', hair: '#44536b',
+    t1: '#f1f5f9', t2: '#94a3b8', t3: '#64748b', t4: '#475569',
+    accent: '#38bdf8', ok: '#4ade80', warn: '#fbbf24', danger: '#f87171',
   },
   abyss: {
-    '--bg-app':          '0 6 18',
-    '--bg-base':         '0 12 24',
-    '--bg-raised':       '6 18 40',
-    '--bg-overlay':      '10 30 64',
-    '--border':          '18 52 110',
-    '--border-sub':      '10 30 64',
-    '--text-1':          '102 136 204',
-    '--text-2':          '82 110 176',
-    '--text-3':          '56 80 132',
-    '--text-4':          '18 52 110',
-    '--scrollbar-thumb': '#0a1e40',
+    label: 'Abyss', dark: true,
+    chrome: '#000814', app: '#000f22', raised: '#06182f', overlay: '#0d2748',
+    border: '#1a3d70', hair: '#27528f',
+    t1: '#6688cc', t2: '#5779b8', t3: '#425f94', t4: '#2f4670',
+    accent: '#2f7fd1', ok: '#46a758', warn: '#d9a441', danger: '#d84a4a',
+  },
+  nord: {
+    label: 'Nord', dark: true,
+    chrome: '#242933', app: '#2e3440', raised: '#3b4252', overlay: '#434c5e',
+    border: '#4c566a', hair: '#5c6b81',
+    t1: '#eceff4', t2: '#d8dee9', t3: '#a3b1c2', t4: '#7b899c',
+    accent: '#88c0d0', ok: '#a3be8c', warn: '#ebcb8b', danger: '#bf616a',
+  },
+  mocha: {
+    label: 'Mocha', dark: true,
+    chrome: '#181825', app: '#1e1e2e', raised: '#313244', overlay: '#45475a',
+    border: '#45475a', hair: '#585b70',
+    t1: '#cdd6f4', t2: '#a6adc8', t3: '#7f849c', t4: '#6c7086',
+    accent: '#cba6f7', ok: '#a6e3a1', warn: '#f9e2af', danger: '#f38ba8',
+  },
+  macchiato: {
+    label: 'Macchiato', dark: true,
+    chrome: '#1e2030', app: '#24273a', raised: '#363a4f', overlay: '#494d64',
+    border: '#494d64', hair: '#5b6078',
+    t1: '#cad3f5', t2: '#a5adcb', t3: '#8087a2', t4: '#6e738d',
+    accent: '#c6a0f6', ok: '#a6da95', warn: '#eed49f', danger: '#ed8796',
+  },
+  frappe: {
+    label: 'Frappé', dark: true,
+    chrome: '#292c3c', app: '#303446', raised: '#414559', overlay: '#51576d',
+    border: '#51576d', hair: '#626880',
+    t1: '#c6d0f5', t2: '#a5adce', t3: '#838ba7', t4: '#737994',
+    accent: '#ca9ee6', ok: '#a6d189', warn: '#e5c890', danger: '#e78284',
+  },
+  solarized: {
+    label: 'Solarized', dark: true,
+    chrome: '#002b36', app: '#073642', raised: '#134350', overlay: '#235360',
+    border: '#2c5c68', hair: '#3d6d78',
+    t1: '#fdf6e3', t2: '#eee8d5', t3: '#93a1a1', t4: '#657b83',
+    accent: '#b58900', ok: '#859900', warn: '#cb4b16', danger: '#dc322f',
+  },
+  dracula: {
+    label: 'Dracula', dark: true,
+    chrome: '#21222c', app: '#282a36', raised: '#343746', overlay: '#44475a',
+    border: '#44475a', hair: '#565a70',
+    t1: '#f8f8f2', t2: '#c9c6dd', t3: '#8f8ba8', t4: '#6272a4',
+    accent: '#bd93f9', ok: '#50fa7b', warn: '#f1fa8c', danger: '#ff5555',
+  },
+  gruvbox: {
+    label: 'Gruvbox', dark: true,
+    chrome: '#1d2021', app: '#282828', raised: '#3c3836', overlay: '#504945',
+    border: '#504945', hair: '#665c54',
+    t1: '#ebdbb2', t2: '#d5c4a1', t3: '#a89984', t4: '#7c6f64',
+    accent: '#fabd2f', ok: '#b8bb26', warn: '#fe8019', danger: '#fb4934',
   },
   kimbie: {
-    '--bg-app':          '24 18 10',
-    '--bg-base':         '34 26 15',
-    '--bg-raised':       '44 35 22',
-    '--bg-overlay':      '58 46 30',
-    '--border':          '78 62 42',
-    '--border-sub':      '58 46 30',
-    '--text-1':          '211 175 134',
-    '--text-2':          '180 148 108',
-    '--text-3':          '134 105 72',
-    '--text-4':          '90 68 44',
-    '--scrollbar-thumb': '#4a3320',
+    label: 'Kimbie Dark', dark: true,
+    chrome: '#1c150c', app: '#221a0f', raised: '#2c2316', overlay: '#3a2e1e',
+    border: '#4e3e2a', hair: '#63503a',
+    t1: '#d3af86', t2: '#b4946c', t3: '#8a6f4c', t4: '#6b543a',
+    accent: '#f79a32', ok: '#889b4a', warn: '#f79a32', danger: '#dc3958',
   },
   monokai: {
-    '--bg-app':          '30 30 28',
-    '--bg-base':         '39 40 34',
-    '--bg-raised':       '50 51 44',
-    '--bg-overlay':      '62 64 56',
-    '--border':          '75 76 67',
-    '--border-sub':      '62 64 56',
-    '--text-1':          '248 248 242',
-    '--text-2':          '212 211 186',
-    '--text-3':          '148 146 123',
-    '--text-4':          '99 98 82',
-    '--scrollbar-thumb': '#49483e',
+    label: 'Monokai', dark: true,
+    chrome: '#1e1e1c', app: '#272822', raised: '#32332c', overlay: '#3e4038',
+    border: '#4b4c43', hair: '#5f6055',
+    t1: '#f8f8f2', t2: '#d4d3ba', t3: '#94927b', t4: '#75715e',
+    accent: '#e6db74', ok: '#a6e22e', warn: '#fd971f', danger: '#f92672',
   },
   'monokai-dimmed': {
-    '--bg-app':          '22 22 20',
-    '--bg-base':         '30 30 26',
-    '--bg-raised':       '40 40 35',
-    '--bg-overlay':      '52 52 46',
-    '--border':          '64 64 56',
-    '--border-sub':      '52 52 46',
-    '--text-1':          '197 197 190',
-    '--text-2':          '165 165 158',
-    '--text-3':          '120 120 114',
-    '--text-4':          '78 78 72',
-    '--scrollbar-thumb': '#444440',
+    label: 'Monokai Dimmed', dark: true,
+    chrome: '#161614', app: '#1e1e1a', raised: '#282823', overlay: '#34342e',
+    border: '#40403a', hair: '#52524a',
+    t1: '#c5c5be', t2: '#a5a59e', t3: '#787872', t4: '#4e4e48',
+    accent: '#6e9cbe', ok: '#9aa83a', warn: '#d08770', danger: '#c76b6b',
   },
   red: {
-    '--bg-app':          '32 0 0',
-    '--bg-base':         '57 0 0',
-    '--bg-raised':       '74 8 8',
-    '--bg-overlay':      '90 16 16',
-    '--border':          '110 28 28',
-    '--border-sub':      '90 16 16',
-    '--text-1':          '248 248 248',
-    '--text-2':          '220 200 200',
-    '--text-3':          '170 140 140',
-    '--text-4':          '120 90 90',
-    '--scrollbar-thumb': '#6e1c1c',
+    label: 'Red', dark: true,
+    chrome: '#200000', app: '#390000', raised: '#4a0808', overlay: '#5a1010',
+    border: '#6e1c1c', hair: '#8a2c2c',
+    t1: '#f8f8f8', t2: '#dcc8c8', t3: '#aa8c8c', t4: '#785a5a',
+    accent: '#ffab70', ok: '#7fd67f', warn: '#ffab70', danger: '#ff6b6b',
+  },
+  'tokyo-night': {
+    label: 'Tokyo Night', dark: true,
+    chrome: '#16161e', app: '#1a1b26', raised: '#24283b', overlay: '#292e42',
+    border: '#3b4261', hair: '#4c5478',
+    t1: '#c0caf5', t2: '#a9b1d6', t3: '#7a83b3', t4: '#565f89',
+    accent: '#7aa2f7', ok: '#9ece6a', warn: '#e0af68', danger: '#f7768e',
   },
   'tokyo-storm': {
-    '--bg-app':          '31 35 53',
-    '--bg-base':         '36 40 59',
-    '--bg-raised':       '41 46 66',
-    '--bg-overlay':      '47 52 80',
-    '--border':          '47 52 80',
-    '--border-sub':      '41 46 66',
-    '--text-1':          '192 202 245',
-    '--text-2':          '169 177 214',
-    '--text-3':          '122 131 179',
-    '--text-4':          '65 72 104',
-    '--scrollbar-thumb': '#3b4261',
+    label: 'Tokyo Storm', dark: true,
+    chrome: '#1f2335', app: '#24283b', raised: '#292e42', overlay: '#2f3450',
+    border: '#3b4261', hair: '#4c5478',
+    t1: '#c0caf5', t2: '#a9b1d6', t3: '#7a83b3', t4: '#565f89',
+    accent: '#7aa2f7', ok: '#9ece6a', warn: '#e0af68', danger: '#f7768e',
+  },
+  'rose-pine': {
+    label: 'Rose Pine', dark: true,
+    chrome: '#16141f', app: '#191724', raised: '#1f1d2e', overlay: '#26233a',
+    border: '#35314d', hair: '#4a4463',
+    t1: '#e0def4', t2: '#c4bfe0', t3: '#908caa', t4: '#6e6a86',
+    accent: '#ebbcba', ok: '#9ccfd8', warn: '#f6c177', danger: '#eb6f92',
+  },
+  ayu: {
+    label: 'Ayu', dark: true,
+    chrome: '#131721', app: '#1c2433', raised: '#253044', overlay: '#2e3c53',
+    border: '#38455e', hair: '#4a5872',
+    t1: '#e6e1cf', t2: '#b5b7b3', t3: '#8a8f97', t4: '#5c6673',
+    accent: '#ffb454', ok: '#b8cc52', warn: '#ffb454', danger: '#ff3333',
+  },
+  everforest: {
+    label: 'Everforest', dark: true,
+    chrome: '#232a2e', app: '#2d353b', raised: '#343f44', overlay: '#3d484d',
+    border: '#475258', hair: '#56646c',
+    t1: '#d3c6aa', t2: '#9da9a0', t3: '#7a8478', t4: '#5c6a72',
+    accent: '#a7c080', ok: '#a7c080', warn: '#dbbc7f', danger: '#e67e80',
+  },
+  kanagawa: {
+    label: 'Kanagawa', dark: true,
+    chrome: '#16161d', app: '#1f1f28', raised: '#2a2a37', overlay: '#363646',
+    border: '#44444f', hair: '#54546d',
+    t1: '#dcd7ba', t2: '#c8c093', t3: '#938f7f', t4: '#727169',
+    accent: '#7e9cd8', ok: '#98bb6c', warn: '#ffa066', danger: '#e82424',
+  },
+  'one-dark': {
+    label: 'One Dark', dark: true,
+    chrome: '#21252b', app: '#282c34', raised: '#2c313c', overlay: '#383e4a',
+    border: '#454b56', hair: '#5a616e',
+    t1: '#d7dae0', t2: '#abb2bf', t3: '#828997', t4: '#5c6370',
+    accent: '#61afef', ok: '#98c379', warn: '#e5c07b', danger: '#e06c75',
+  },
+  'night-owl': {
+    label: 'Night Owl', dark: true,
+    chrome: '#011627', app: '#0d2035', raised: '#0b2942', overlay: '#132f4c',
+    border: '#1f3f5f', hair: '#2d5478',
+    t1: '#d6deeb', t2: '#a3b3cc', t3: '#5c758c', t4: '#44607a',
+    accent: '#82aaff', ok: '#addb67', warn: '#ecc48d', danger: '#ef5350',
   },
   'tomorrow-blue': {
-    '--bg-app':          '0 20 52',
-    '--bg-base':         '0 36 81',
-    '--bg-raised':       '0 48 100',
-    '--bg-overlay':      '0 63 143',
-    '--border':          '0 78 160',
-    '--border-sub':      '0 63 143',
-    '--text-1':          '255 255 255',
-    '--text-2':          '187 205 232',
-    '--text-3':          '114 133 183',
-    '--text-4':          '60 90 150',
-    '--scrollbar-thumb': '#003f8f',
+    label: 'Tomorrow Blue', dark: true,
+    chrome: '#002451', app: '#003064', raised: '#003f8f', overlay: '#0050ad',
+    border: '#0057b8', hair: '#1a6fd0',
+    t1: '#ffffff', t2: '#bbdaff', t3: '#8098c8', t4: '#5a76ad',
+    accent: '#ffc58f', ok: '#d1f1a9', warn: '#ffc58f', danger: '#ff9da4',
   },
+  synthwave: {
+    label: 'Synthwave', dark: true,
+    chrome: '#14092a', app: '#1a1139', raised: '#241650', overlay: '#321d66',
+    border: '#40277f', hair: '#543399',
+    t1: '#ffffff', t2: '#cdc7e0', t3: '#848bbd', t4: '#615891',
+    accent: '#ff7edb', ok: '#72f1b8', warn: '#fede5d', danger: '#fe4450',
+  },
+  horizon: {
+    label: 'Horizon', dark: true,
+    chrome: '#16141f', app: '#1c1e26', raised: '#232530', overlay: '#2e3040',
+    border: '#3b3d4d', hair: '#4e4f5c',
+    t1: '#d5d8da', t2: '#b9bcc4', t3: '#848793', t4: '#6a6c78',
+    accent: '#fab795', ok: '#29d398', warn: '#fac29a', danger: '#e95678',
+  },
+  moonlight: {
+    label: 'Moonlight', dark: true,
+    chrome: '#191a2a', app: '#212337', raised: '#2f334d', overlay: '#383c5a',
+    border: '#444a73', hair: '#545c85',
+    t1: '#c8d3f5', t2: '#a9b8e8', t3: '#7a88cf', t4: '#5c6796',
+    accent: '#c099ff', ok: '#c3e88d', warn: '#ffc777', danger: '#ff757f',
+  },
+} as const satisfies Record<string, ThemePalette>
+
+export type Theme = keyof typeof THEME_PALETTES
+
+export const ALL_THEMES = Object.keys(THEME_PALETTES) as Theme[]
+
+/** The palette the app opens with, and the fallback for an unrecognised saved value. */
+export const DEFAULT_THEME: Theme = 'slate-split'
+
+// ── Derivation ──────────────────────────────────────────────────────────────
+
+function channels(hex: string): [number, number, number] {
+  return [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ]
 }
+
+/** `"238 241 245"` — the space-separated form `rgb(var(--x) / <alpha>)` needs. */
+function triplet(hex: string): string {
+  return channels(hex).join(' ')
+}
+
+/** Relative luminance, good enough for picking readable text over a fill. */
+function luminance(hex: string): number {
+  const [r, g, b] = channels(hex).map(c => {
+    const s = c / 255
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+function mix(a: string, b: string, t: number): string {
+  const [ar, ag, ab] = channels(a)
+  const [br, bg, bb] = channels(b)
+  const at = (x: number, y: number) => Math.round(x + (y - x) * t)
+  return [at(ar, br), at(ag, bg), at(ab, bb)].join(' ')
+}
+
+function varsFor(p: ThemePalette): Record<string, string> {
+  return {
+    '--bg-app': triplet(p.app),
+    '--bg-base': triplet(p.chrome),
+    '--bg-raised': triplet(p.raised),
+    '--bg-overlay': triplet(p.overlay),
+
+    '--border': triplet(p.border),
+    // Row separators inside a list read as a tint of the surface, not a line.
+    '--border-sub': triplet(p.raised),
+    '--hair': triplet(p.hair),
+
+    '--text-1': triplet(p.t1),
+    '--text-2': triplet(p.t2),
+    '--text-3': triplet(p.t3),
+    '--text-4': triplet(p.t4),
+
+    '--accent': triplet(p.accent),
+    // The flat chip fill behind accent text — accent bled into the panel tone.
+    '--accent-soft': mix(p.chrome, p.accent, 0.18),
+    // Text/icons sitting *on* a solid accent fill.
+    '--accent-contrast': luminance(p.accent) > 0.45 ? triplet(p.chrome) : '255 255 255',
+
+    '--ok': triplet(p.ok),
+    '--warn': triplet(p.warn),
+    '--danger': triplet(p.danger),
+
+    '--scrollbar-thumb': triplet(p.hair),
+  }
+}
+
+/** CSS custom-property values for each theme, keyed by property name. */
+export const THEME_CSS_VARS: Record<Theme, Record<string, string>> = Object.fromEntries(
+  ALL_THEMES.map(t => [t, varsFor(THEME_PALETTES[t])])
+) as Record<Theme, Record<string, string>>
+
+/** Label + swatch colors for the theme picker. */
+export const THEME_DEFINITIONS: Record<
+  Theme,
+  { label: string; preview: { bg: string; surface: string; text: string; accent: string } }
+> = Object.fromEntries(
+  ALL_THEMES.map(t => {
+    const p = THEME_PALETTES[t]
+    return [t, { label: p.label, preview: { bg: p.app, surface: p.chrome, text: p.t1, accent: p.accent } }]
+  })
+) as Record<Theme, { label: string; preview: { bg: string; surface: string; text: string; accent: string } }>
+
+/** Whether a theme reads as dark — drives `nativeTheme.themeSource` in the main process. */
+export const THEME_IS_DARK: Record<Theme, boolean> = Object.fromEntries(
+  ALL_THEMES.map(t => [t, THEME_PALETTES[t].dark])
+) as Record<Theme, boolean>

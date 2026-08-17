@@ -1,24 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
+import { useState, useEffect, useCallback } from 'react'
+import { Database } from 'lucide-react'
 import { useToastContext } from '../../contexts/ToastContext'
-import { AppSettings, RedshiftCluster } from '../../types'
-import RedshiftSidebar from './RedshiftSidebar'
+import type { AppSettings, RedshiftCluster } from '../../types'
 import RedshiftClusterDetail from './RedshiftClusterDetail'
 import CreateRedshiftClusterModal from './CreateRedshiftClusterModal'
-import { AlertCircle } from 'lucide-react'
+import {
+  ServiceShell, ResourceRail, Inspector, EmptyState, statusColor, stateOf, type RailItem,
+} from '../common/ui'
 
-interface RedshiftLayoutProps {
+interface Props {
   settings: AppSettings
 }
 
-const RedshiftLayout: React.FC<RedshiftLayoutProps> = ({
-  settings,
-}) => {
+export default function RedshiftLayout({ settings }: Props) {
   const [loading, setLoading] = useState(false)
   const [clusters, setClusters] = useState<RedshiftCluster[]>([])
-  const [selectedCluster, setSelectedCluster] = useState<RedshiftCluster | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 220, max: 480 })
   const { showToast } = useToastContext()
 
   const loadClusters = useCallback(async () => {
@@ -26,78 +24,107 @@ const RedshiftLayout: React.FC<RedshiftLayoutProps> = ({
     try {
       const res = await window.electronAPI.redshiftListClusters()
       if (res.success && res.data) {
-        setClusters(res.data)
-        if (selectedCluster) {
-          const refreshed = res.data.find(c => c.ClusterIdentifier === selectedCluster.ClusterIdentifier)
-          setSelectedCluster(refreshed || null)
-        } else if (res.data.length > 0 && !selectedCluster) {
-          setSelectedCluster(res.data[0])
-        }
+        const list: RedshiftCluster[] = res.data
+        setClusters(list)
+        setSelectedId(prev =>
+          prev && list.some(c => c.ClusterIdentifier === prev)
+            ? prev
+            : (list[0]?.ClusterIdentifier ?? null)
+        )
       } else {
         showToast('error', res.error || 'Failed to list clusters')
       }
-    } catch (err: any) {
-      showToast('error', err.message)
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : String(err))
     } finally {
       setLoading(false)
     }
-  }, [selectedCluster, showToast])
+  }, [showToast])
 
   useEffect(() => {
     loadClusters()
-  }, [])
+  }, [loadClusters])
+
+  const selected = clusters.find(c => c.ClusterIdentifier === selectedId) ?? null
+
+  // The SDK types every field as optional; a cluster with no identifier can't
+  // be addressed, so it isn't listed.
+  const railItems: RailItem[] = clusters
+    .filter((c): c is RedshiftCluster & { ClusterIdentifier: string } => Boolean(c.ClusterIdentifier))
+    .map(c => ({
+      id: c.ClusterIdentifier,
+      name: c.ClusterIdentifier,
+      icon: Database,
+      state: stateOf(c.ClusterStatus) ?? 'warn',
+      sub: c.ClusterStatus?.toUpperCase(),
+      meta: c.NodeType,
+    }))
 
   return (
-    <div className="flex flex-col h-full bg-app overflow-hidden">
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Sidebar */}
-        <div style={{ width: sidebarWidth }} className="flex shrink-0 z-10">
-          <RedshiftSidebar
-            clusters={clusters}
-            selectedCluster={selectedCluster}
-            onSelectCluster={setSelectedCluster}
-            onCreateCluster={() => setShowCreateModal(true)}
+    <>
+      <ServiceShell
+        rail={
+          <ResourceRail
+            title="CLUSTERS"
+            items={railItems}
+            selectedId={selectedId}
+            onSelect={item => setSelectedId(item.id)}
+            icon={Database}
+            searchPlaceholder="Search clusters..."
+            onCreate={() => setShowCreateModal(true)}
+            createLabel="Create Cluster"
             loading={loading}
+            emptyLabel="No clusters yet"
           />
-        </div>
-
-        {/* Resize Handle */}
-        <div 
-          onMouseDown={handleResizeStart} 
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20" 
-          style={{ backgroundColor: 'rgb(var(--border))' }}
-        />
-
-        {/* Content */}
-        <main className="flex-1 overflow-hidden bg-app">
-          {selectedCluster ? (
-            <RedshiftClusterDetail
-              cluster={selectedCluster}
-              onRefresh={loadClusters}
-              onDeleted={() => {
-                setSelectedCluster(null)
-                loadClusters()
-              }}
+        }
+        inspector={
+          selected ? (
+            <Inspector
+              kind="cluster"
+              icon={Database}
+              iconColor="#ef4444"
+              title={selected.ClusterIdentifier ?? 'Cluster'}
+              subtitle={selected.NodeType}
+              rows={[
+                {
+                  key: 'Status',
+                  value: selected.ClusterStatus ?? '—',
+                  color: statusColor(selected.ClusterStatus),
+                },
+                { key: 'Node type', value: selected.NodeType ?? '—', color: 'rgb(var(--text-2))' },
+                { key: 'Nodes', value: String(selected.NumberOfNodes ?? '—') },
+                { key: 'Database', value: selected.DBName ?? '—', color: 'rgb(var(--text-2))' },
+                { key: 'Region', value: settings.region, color: 'rgb(var(--text-2))' },
+              ]}
             />
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center text-3 space-y-4">
-              <div className="w-16 h-16 rounded-3xl bg-raised flex items-center justify-center border border-theme">
-                <AlertCircle size={32} className="text-4" />
-              </div>
-              <div className="text-center">
-                <h3 className="text-lg font-bold text-1">No Cluster Selected</h3>
-                <p className="text-sm">Select a cluster from the sidebar or create a new one</p>
-              </div>
-              <button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-6 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition-all shadow-lg active:scale-95"
-        >
-          Create Redshift Cluster
-        </button>
-            </div>
-          )}
-        </main>
-      </div>
+          ) : undefined
+        }
+      >
+        {selected ? (
+          <RedshiftClusterDetail
+            key={selected.ClusterIdentifier}
+            cluster={selected}
+            onRefresh={loadClusters}
+            onDeleted={() => {
+              setSelectedId(null)
+              loadClusters()
+            }}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <EmptyState
+              icon={Database}
+              title={loading ? 'Loading clusters…' : 'Select a cluster'}
+              hint="Pick a cluster from the rail to inspect its nodes and endpoint."
+              action={
+                <button onClick={() => setShowCreateModal(true)} className="btn-primary">
+                  Create Cluster
+                </button>
+              }
+            />
+          </div>
+        )}
+      </ServiceShell>
 
       {showCreateModal && (
         <CreateRedshiftClusterModal
@@ -108,8 +135,6 @@ const RedshiftLayout: React.FC<RedshiftLayoutProps> = ({
           }}
         />
       )}
-    </div>
+    </>
   )
 }
-
-export default RedshiftLayout

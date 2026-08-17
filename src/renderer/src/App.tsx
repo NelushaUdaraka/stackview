@@ -34,20 +34,21 @@ import AwsConfigLayout from './components/awsconfig/AwsConfigLayout'
 import R53ResolverLayout from './components/r53resolver/R53ResolverLayout'
 import S3ControlLayout from './components/s3control/S3ControlLayout'
 import TitleBar from './components/common/TitleBar'
-import NavRail from './components/common/NavRail'
+import AppMenu from './components/common/AppMenu'
+import SettingsModal from './components/common/SettingsModal'
 import ServiceBand from './components/common/ServiceBand'
 import UpdateBanner from './components/common/UpdateBanner'
 import type { AppSettings, QueueInfo, AppScreen, Service, AppTab, IconMode, Theme, UpdaterStatus } from './types'
-import { ALL_THEMES, THEME_CSS_VARS } from '../../shared/themes'
+import { ALL_THEMES, THEME_CSS_VARS, THEME_IS_DARK, DEFAULT_THEME } from '../../shared/themes'
 
 let themeStyleTag: HTMLStyleElement | null = null
 
 function applyTheme(t: Theme) {
   const root = document.documentElement
 
-  // Keep .dark class in sync for Tailwind's dark: variant utilities
-  if (t === 'dark') root.classList.add('dark')
-  else root.classList.remove('dark')
+  // Keep .dark in sync for Tailwind's dark: variant. Every theme declares
+  // whether it reads as dark, so this is no longer a check against one name.
+  root.classList.toggle('dark', THEME_IS_DARK[t])
 
   // Inject variables into a dedicated <style> tag that sits after all
   // other stylesheets — guaranteed to win the cascade regardless of @layer ordering.
@@ -109,10 +110,12 @@ export default function App() {
   })
   const [queues, setQueues] = useState<QueueInfo[]>([])
   const [selectedQueue, setSelectedQueue] = useState<QueueInfo | null>(null)
-  const [theme, setThemeState] = useState<Theme>('dark')
+  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME)
   const [iconMode, setIconModeState] = useState<IconMode>('lucide')
   const [refreshKey, setRefreshKey] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   // Per-service region overrides — when unset for a service, settings.region is used.
   const [serviceRegions, setServiceRegions] = useState<Partial<Record<Service, string>>>({})
   const [appVersion, setAppVersion] = useState('')
@@ -135,7 +138,7 @@ export default function App() {
         window.electronAPI.getAutoUpdate(),
       ])
       setSettings(savedSettings)
-      const resolved: Theme = ALL_THEMES.includes(savedTheme as Theme) ? savedTheme as Theme : 'dark'
+      const resolved: Theme = ALL_THEMES.includes(savedTheme as Theme) ? savedTheme as Theme : DEFAULT_THEME
       setThemeState(resolved)
       applyTheme(resolved)
       setIconModeState(savedIconMode)
@@ -229,11 +232,6 @@ export default function App() {
     })
   }, [])
 
-  const reorderFavourites = useCallback((services: Service[]) => {
-    setFavouriteServices(services)
-    localStorage.setItem('stackview:favourites', JSON.stringify(services))
-  }, [])
-
   const handleSelectService = useCallback(
     (svc: Service) => {
       reinitService(svc, settings.endpoint, getServiceRegion(svc))
@@ -255,19 +253,6 @@ export default function App() {
       setActiveTabId(id)
     },
     [settings, reinitService, tabs, getServiceRegion]
-  )
-
-  const handleNavRailSelect = useCallback(
-    (svc: Service) => {
-      const existing = tabs.find(t => t.service === svc)
-      if (existing) {
-        setActiveTabId(existing.id)
-      } else {
-        reinitService(svc, settings.endpoint, getServiceRegion(svc))
-        setTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, service: svc } : t))
-      }
-    },
-    [settings, reinitService, tabs, activeTabId, getServiceRegion]
   )
 
   const handleCloseTab = useCallback((tabId: string) => {
@@ -434,67 +419,74 @@ export default function App() {
         />
       )}
       {screen === 'main' && (
-        <div className="flex-1 flex overflow-hidden min-h-0">
-          <NavRail
-            favouriteServices={favouriteServices}
-            activeService={tabs.find(t => t.id === activeTabId)?.service ?? null}
-            onSelectService={handleNavRailSelect}
+        <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
+          <TitleBar
+            tabs={tabs}
+            activeTabId={activeTabId}
+            onSwitch={setActiveTabId}
+            onClose={handleCloseTab}
+            onNew={handleNewTab}
             onOpenInNewTab={handleOpenInNewTab}
-            onToggleFavourite={toggleFavourite}
-            onReorderFavourites={reorderFavourites}
-            settings={settings}
-            theme={theme}
-            onSetTheme={handleSetTheme}
-            iconMode={iconMode}
-            onToggleIconMode={toggleIconMode}
-            onRefresh={handleRefreshActiveTab}
-            refreshing={refreshing}
-            onSwitchService={handleSwitchService}
-            onDisconnect={handleDisconnect}
-            onRegionChange={handleRegionChange}
-            appVersion={appVersion}
-            autoUpdate={autoUpdate}
-            onToggleAutoUpdate={toggleAutoUpdate}
-            updaterStatus={updaterStatus}
-            onCheckForUpdates={handleCheckForUpdates}
-            onInstallUpdate={() => window.electronAPI.installUpdate()}
+            onReorder={handleReorderTabs}
+            onOpenMenu={() => setMenuOpen(o => !o)}
+            menuOpen={menuOpen}
           />
-          <div className="flex-1 flex flex-col min-w-0">
-            <TitleBar
-              tabs={tabs}
-              activeTabId={activeTabId}
-              onSwitch={setActiveTabId}
-              onClose={handleCloseTab}
-              onNew={handleNewTab}
-              onOpenInNewTab={handleOpenInNewTab}
-              onReorder={handleReorderTabs}
+
+          {menuOpen && (
+            <AppMenu
+              onClose={() => setMenuOpen(false)}
+              onShowServices={handleSwitchService}
+              onNewTab={handleNewTab}
+              onRefresh={handleRefreshActiveTab}
+              refreshing={refreshing}
+              onOpenSettings={() => setSettingsOpen(true)}
+              onDisconnect={handleDisconnect}
             />
-            <div className="flex-1 relative overflow-hidden min-h-0">
-              {tabs.map(tab => (
-                <div
-                  key={tab.id}
-                  className="absolute inset-0"
-                  style={{ display: activeTabId === tab.id ? 'flex' : 'none', flexDirection: 'column' }}
-                >
-                  {tab.service && (
-                    <ServiceBand
-                      service={tab.service}
-                      settings={settings}
-                      effectiveRegion={getServiceRegion(tab.service)}
-                      iconMode={iconMode}
-                      onRefresh={handleRefreshActiveTab}
-                      refreshing={refreshing}
-                      onChangeRegion={(rg) => handleServiceRegionChange(tab.service!, rg)}
-                    />
-                  )}
-                  <div className="flex-1 min-h-0 flex flex-col">
-                    {renderLayout(tab)}
-                  </div>
+          )}
+
+          <div className="flex-1 relative overflow-hidden min-h-0">
+            {tabs.map(tab => (
+              <div
+                key={tab.id}
+                className="absolute inset-0"
+                style={{ display: activeTabId === tab.id ? 'flex' : 'none', flexDirection: 'column' }}
+              >
+                {tab.service && (
+                  <ServiceBand
+                    service={tab.service}
+                    settings={settings}
+                    effectiveRegion={getServiceRegion(tab.service)}
+                    iconMode={iconMode}
+                    onRefresh={handleRefreshActiveTab}
+                    refreshing={refreshing}
+                    onChangeRegion={(rg) => handleServiceRegionChange(tab.service!, rg)}
+                  />
+                )}
+                <div className="flex-1 min-h-0 flex flex-col">
+                  {renderLayout(tab)}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
+      )}
+
+      {settingsOpen && (
+        <SettingsModal
+          onClose={() => setSettingsOpen(false)}
+          settings={settings}
+          onRegionChange={handleRegionChange}
+          theme={theme}
+          onSetTheme={handleSetTheme}
+          iconMode={iconMode}
+          onToggleIconMode={toggleIconMode}
+          appVersion={appVersion}
+          autoUpdate={autoUpdate}
+          onToggleAutoUpdate={toggleAutoUpdate}
+          updaterStatus={updaterStatus}
+          onCheckForUpdates={handleCheckForUpdates}
+          onInstallUpdate={() => window.electronAPI.installUpdate()}
+        />
       )}
       <UpdateBanner
         status={updaterStatus}

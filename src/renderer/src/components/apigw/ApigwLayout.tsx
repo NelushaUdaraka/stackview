@@ -1,9 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useResizableSidebar } from '../../hooks/useResizableSidebar'
 import { useToastContext } from '../../contexts/ToastContext'
-import { AlertTriangle, X, Plus, Loader2, Network } from 'lucide-react'
+import { AlertTriangle, X, Plus, Loader2, Network, Globe, PlayCircle, Key } from 'lucide-react'
 import type { AppSettings, ApigwRestApi } from '../../types'
-import ApigwSidebar from './ApigwSidebar'
+import { ServiceShell, ResourceRail, Inspector, EmptyState, type RailItem } from '../common/ui'
 import ApigwApisList from './ApigwApisList'
 import ApigwApiDetail from './ApigwApiDetail'
 
@@ -96,7 +95,6 @@ export default function ApigwLayout({ settings }: Props) {
   const [loading, setLoading] = useState(false)
   const [showCreateApi, setShowCreateApi] = useState(false)
   const [selectedApi, setSelectedApi] = useState<ApigwRestApi | null>(null)
-  const { sidebarWidth, handleResizeStart } = useResizableSidebar({ min: 220, max: 480 })
   const { showToast } = useToastContext()
 
   const loadApis = useCallback(async () => {
@@ -122,55 +120,95 @@ export default function ApigwLayout({ settings }: Props) {
     }
   }, [showToast, selectedApi, loadApis])
 
+  const railItems: RailItem[] = [
+    { id: 'APIs', name: 'REST APIs', icon: Network, sub: 'DEPLOYED', meta: String(apis.length) },
+    { id: 'CustomDomains', name: 'Custom Domains', icon: Globe, sub: 'UNAVAILABLE' },
+    { id: 'UsagePlans', name: 'Usage Plans', icon: PlayCircle, sub: 'UNAVAILABLE' },
+    { id: 'ApiKeys', name: 'API Keys', icon: Key, sub: 'UNAVAILABLE' },
+  ]
+
   return (
-    <div className="flex flex-col h-full bg-app text-1">
-      <div className="flex flex-1 overflow-hidden relative">
-        <div style={{ width: sidebarWidth }} className="flex shrink-0 z-10 transition-[width]">
-          <ApigwSidebar
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            counts={{ apis: apis.length }}
+    <>
+      <ServiceShell
+        rail={
+          <ResourceRail
+            title="API GATEWAY"
+            items={railItems}
+            selectedId={activeTab}
+            onSelect={item => {
+              setActiveTab(item.id as typeof activeTab)
+              setSelectedApi(null)
+            }}
+            searchPlaceholder="Search sections..."
+            onCreate={activeTab === 'APIs' ? () => setShowCreateApi(true) : undefined}
+            createLabel="Create API"
+            emptyLabel="No sections"
           />
-        </div>
+        }
+        inspector={
+          <Inspector
+            kind="rest api"
+            icon={Network}
+            iconColor="#8b5cf6"
+            title={selectedApi?.name ?? 'API Gateway'}
+            subtitle={selectedApi?.description || `${apis.length} REST APIs`}
+            sectionTitle={selectedApi ? 'API' : 'TOTALS'}
+            rows={
+              selectedApi
+                ? [
+                    { key: 'ID', value: selectedApi.id, color: 'rgb(var(--accent))' },
+                    { key: 'Name', value: selectedApi.name, color: 'rgb(var(--text-2))' },
+                    { key: 'Region', value: settings.region, color: 'rgb(var(--text-2))' },
+                  ]
+                : [
+                    { key: 'REST APIs', value: String(apis.length) },
+                    { key: 'Region', value: settings.region, color: 'rgb(var(--accent))' },
+                    { key: 'Endpoint', value: settings.endpoint, color: 'rgb(var(--text-2))' },
+                  ]
+            }
+          />
+        }
+      >
+        {activeTab === 'APIs' && !selectedApi && (
+          <ApigwApisList
+            apis={apis}
+            loading={loading}
+            onCreateClick={() => setShowCreateApi(true)}
+            onDelete={handleDeleteApi}
+            onSelect={api => setSelectedApi(api)}
+          />
+        )}
 
-        <div
-          onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20 transition-colors"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
-        />
+        {activeTab === 'APIs' && selectedApi && (
+          <ApigwApiDetail
+            api={selectedApi}
+            onBack={() => {
+              setSelectedApi(null)
+              loadApis()
+            }}
+          />
+        )}
 
-        <main className="flex-1 overflow-hidden flex flex-col">
-          {activeTab === 'APIs' && !selectedApi && (
-            <ApigwApisList
-              apis={apis}
-              loading={loading}
-              onCreateClick={() => setShowCreateApi(true)}
-              onDelete={handleDeleteApi}
-              onSelect={api => setSelectedApi(api)}
+        {activeTab !== 'APIs' && (
+          <div className="flex-1 flex items-center justify-center">
+            <EmptyState
+              icon={Network}
+              title="Not available locally"
+              hint="LocalStack does not emulate this part of API Gateway."
             />
-          )}
-
-          {activeTab === 'APIs' && selectedApi && (
-            <ApigwApiDetail
-              api={selectedApi}
-              onBack={() => { setSelectedApi(null); loadApis() }}
-            />
-          )}
-
-          {activeTab !== 'APIs' && (
-             <div className="flex-1 flex flex-col items-center justify-center text-3 gap-3">
-               <span className="text-sm font-medium">This feature is not yet available in the local viewer.</span>
-             </div>
-          )}
-        </main>
-      </div>
+          </div>
+        )}
+      </ServiceShell>
 
       {showCreateApi && (
         <CreateApiModal
           onClose={() => setShowCreateApi(false)}
-          onCreated={() => { setShowCreateApi(false); loadApis() }}
+          onCreated={() => {
+            setShowCreateApi(false)
+            loadApis()
+          }}
         />
       )}
-    </div>
+    </>
   )
 }
