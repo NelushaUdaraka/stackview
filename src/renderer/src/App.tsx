@@ -357,7 +357,7 @@ export default function App() {
           queues={queues}
           selectedQueue={selectedQueue}
           onSelectQueue={setSelectedQueue}
-          onQueuesChanged={() => refreshQueues()}
+          onQueuesChanged={() => refreshQueues(settings.endpoint, getServiceRegion('sqs'))}
         />
       ),
       s3:             (tab) => <S3Layout             key={`${tab.id}-${refreshKey}`} settings={settings} />,
@@ -397,7 +397,7 @@ export default function App() {
       r53resolver:    (tab) => <R53ResolverLayout    key={`${tab.id}-${refreshKey}`} settings={settings} />,
       s3control:      (tab) => <S3ControlLayout      key={`${tab.id}-${refreshKey}`} settings={settings} />,
     }),
-    [settings, queues, selectedQueue, refreshQueues, refreshKey]
+    [settings, queues, selectedQueue, refreshQueues, refreshKey, getServiceRegion]
   )
 
   const renderLayout = (tab: AppTab): React.ReactElement | null => {
