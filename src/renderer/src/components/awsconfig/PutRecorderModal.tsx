@@ -28,7 +28,7 @@ export default function PutRecorderModal({ onSaved, onClose, showToast }: Props)
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div className="bg-base border border-theme rounded-xl shadow-xl w-[480px] max-h-[80vh] flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme">
           <h2 className="text-sm font-semibold text-1">Add Configuration Recorder</h2>

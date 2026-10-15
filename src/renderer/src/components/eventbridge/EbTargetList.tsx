@@ -158,7 +158,7 @@ export default function EbTargetList({ busName, ruleName }: Props) {
                 </div>
                 {t.input && (
                   <div className="mt-2.5 pt-2.5 border-t border-theme/50 flex flex-col gap-1.5">
-                    <span className="text-[9px] text-4 font-bold uppercase tracking-widest ml-1">Static Payload</span>
+                    <span className="text-[10px] text-4 font-bold uppercase tracking-widest ml-1">Static Payload</span>
                     <pre className="text-[10px] font-mono text-2 p-3 bg-base/80 rounded-lg overflow-x-auto border border-theme leading-relaxed">
                       {t.input}
                     </pre>

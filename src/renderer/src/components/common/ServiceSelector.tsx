@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react'
 import {
-  ChevronRight, X, Pencil, Check, GripVertical,
-  EyeOff, Eye, RotateCcw, Search, ExternalLink, Star
+  X, Pencil, Check, GripVertical,
+  EyeOff, Eye, RotateCcw, Search, ExternalLink, Star, ArrowRight
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { AppSettings, Service, IconMode } from '../../types'
@@ -50,11 +50,19 @@ function savePrefs(prefs: ServicePrefs) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs))
 }
 
+function hexToRgba(hex: string, alpha: number) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
+
 export default function ServiceSelector({ settings, onSelectService, onOpenInNewTab, favouriteServices, onToggleFavourite, iconMode }: Props) {
   const [editMode, setEditMode] = useState(false)
   const [prefs, setPrefs] = useState<ServicePrefs>(loadPrefs)
   const [search, setSearch] = useState('')
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; service: Service } | null>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
 
   // Drag state — using state (not refs) so re-renders happen for visual feedback
   const [dragIndex, setDragIndex] = useState<number | null>(null)
@@ -99,9 +107,30 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
   useEffect(() => {
     if (!contextMenu) return
     const dismiss = () => setContextMenu(null)
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setContextMenu(null) }
     window.addEventListener('mousedown', dismiss)
-    return () => window.removeEventListener('mousedown', dismiss)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('mousedown', dismiss)
+      window.removeEventListener('keydown', onKey)
+    }
   }, [contextMenu])
+
+  // "/" focuses the search box (ignored while typing in another field)
+  useEffect(() => {
+    if (editMode) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return
+      const el = e.target as HTMLElement | null
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return
+      const input = searchRef.current
+      if (!input || input.offsetParent === null) return // tab not visible
+      e.preventDefault()
+      input.focus()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [editMode])
 
   const updatePrefs = useCallback((newPrefs: ServicePrefs) => {
     setPrefs(newPrefs)
@@ -182,25 +211,45 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
     updatePrefs({ order: [...ALL_SERVICES_ORDERED], hidden: [] })
   }
 
+  const iconTile = (id: Service, Icon: LucideIcon, hex: string, dimmed = false) => (
+    <div
+      className={`w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 ${dimmed ? 'grayscale opacity-50' : ''}`}
+      style={iconMode !== 'aws' ? {
+        backgroundColor: hexToRgba(hex, 0.14),
+        boxShadow: `inset 0 0 0 1px ${hexToRgba(hex, 0.22)}`,
+      } : undefined}
+    >
+      {iconMode === 'aws'
+        ? <AwsServiceIcon service={id} size={32} />
+        : <Icon size={19} style={{ color: hex }} />
+      }
+    </div>
+  )
+
   return (
     <div className="flex flex-col h-full">
       {/* Body */}
-      <div className="flex-1 overflow-y-auto flex flex-col bg-app px-6 py-5">
+      <div className="flex-1 overflow-y-auto flex flex-col bg-app px-6 py-6">
         <div className="w-full flex flex-col">
 
           {/* Header — full-width toolbar */}
-          <div className="mb-5 shrink-0 flex items-center justify-between gap-4">
+          <div className="mb-6 shrink-0 flex items-end justify-between gap-4 flex-wrap">
             {/* Left: title + connection info */}
             <div className="min-w-0">
-              <h1 className="text-xl font-bold text-1 mb-1.5">Select a Service</h1>
+              <div className="flex items-baseline gap-2.5 mb-2">
+                <h1 className="text-xl font-semibold tracking-tight text-1">Services</h1>
+                <span className="text-xs text-3">{visibleServices.length} services</span>
+              </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="badge badge-gray font-mono text-[11px]">{settings.endpoint}</span>
-                <span className="text-4 text-xs select-none">·</span>
-                <span className="badge badge-gray font-mono text-[11px]">{settings.region}</span>
+                <span className="badge-gray font-mono text-[11px] gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden />
+                  {settings.endpoint}
+                </span>
+                <span className="badge-gray font-mono text-[11px]">{settings.region}</span>
                 {editMode && (
-                  <span className="text-[11px] text-4 leading-relaxed">
-                    <span className="font-bold text-fuchsia-500">Drag</span> to reorder · click <span className="font-bold">eye</span> to hide
-                    {prefs.hidden.length > 0 && <span className="opacity-60"> · {prefs.hidden.length} hidden</span>}
+                  <span className="text-[11px] text-3 leading-relaxed">
+                    Drag cards to reorder · use the eye to hide
+                    {prefs.hidden.length > 0 && <span className="text-4"> · {prefs.hidden.length} hidden</span>}
                   </span>
                 )}
               </div>
@@ -210,19 +259,28 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
             <div className="flex items-center gap-2 shrink-0">
               {/* Search (normal mode only) */}
               {!editMode && (
-                <div className="relative w-64">
-                  <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-4 pointer-events-none" />
+                <div className="relative w-72">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-4 pointer-events-none" />
                   <input
+                    ref={searchRef}
                     type="text"
-                    placeholder="Search services..."
+                    placeholder="Search services…"
+                    aria-label="Search services"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    className="input-base w-full pl-7 text-xs"
+                    onKeyDown={e => { if (e.key === 'Escape') { setSearch(''); e.currentTarget.blur() } }}
+                    className="input-base w-full h-9 pl-9 pr-9 text-[13px]"
                   />
-                  {search && (
-                    <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-4 hover:text-1 transition-colors">
+                  {search ? (
+                    <button
+                      onClick={() => setSearch('')}
+                      aria-label="Clear search"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 icon-btn w-6 h-6"
+                    >
                       <X size={12} />
                     </button>
+                  ) : (
+                    <span className="kbd absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden>/</span>
                   )}
                 </div>
               )}
@@ -230,7 +288,7 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
               {/* Customize / edit actions */}
               {editMode ? (
                 <>
-                  <button onClick={resetPrefs} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-3 hover:text-1 btn-ghost rounded-lg">
+                  <button onClick={resetPrefs} className="btn-ghost text-xs font-medium h-9">
                     <RotateCcw size={13} /> Reset
                   </button>
                   <button
@@ -242,35 +300,43 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
                       savedPrefsRef.current = null
                       setEditMode(false)
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold btn-ghost rounded-lg text-3 hover:text-1"
+                    className="btn-secondary text-xs h-9 px-3"
                   >
                     <X size={13} /> Cancel
                   </button>
                   <button
                     onClick={() => { savedPrefsRef.current = null; setEditMode(false) }}
-                    className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-colors shadow-sm"
+                    className="btn-primary text-xs h-9 px-3.5"
                   >
                     <Check size={13} /> Done
                   </button>
                 </>
               ) : (
-                <button onClick={() => { savedPrefsRef.current = prefs; setEditMode(true) }} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold btn-ghost rounded-lg border border-theme group">
-                  <Pencil size={12} className="group-hover:text-fuchsia-500 transition-colors" />
-                  <span className="group-hover:text-1 transition-colors">Customize</span>
+                <button
+                  onClick={() => { savedPrefsRef.current = prefs; setEditMode(true) }}
+                  className="btn-secondary text-xs h-9 px-3"
+                >
+                  <Pencil size={13} />
+                  Customize
                 </button>
               )}
             </div>
           </div>
 
           {/* Service grid */}
-          <div className="grid gap-4 w-full" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+          <div className="grid gap-3 w-full" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
             {filteredServices.length === 0 && search && (
-              <p className="col-span-full text-sm text-3 py-12 text-center w-full">
-                No services match <span className="font-mono text-2">"{search}"</span>
-              </p>
+              <div className="col-span-full flex flex-col items-center py-16 text-center">
+                <div className="w-12 h-12 rounded-xl bg-raised border border-theme flex items-center justify-center mb-3">
+                  <Search size={18} className="text-4" />
+                </div>
+                <p className="text-sm font-medium text-2">No services match “{search}”</p>
+                <button onClick={() => setSearch('')} className="mt-2 text-xs text-3 hover:text-1 underline-offset-2 hover:underline">
+                  Clear search
+                </button>
+              </div>
             )}
             {filteredServices.map((svc, index) => {
-              const c = SERVICE_CONFIG[svc.id].colors
               const hex = SERVICE_CONFIG[svc.id].hex
               const isHidden = prefs.hidden.includes(svc.id)
               const isDragging = editMode && dragIndex !== null && previewOrder[index] === normalizedOrder[dragIndex]
@@ -286,65 +352,51 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
                     onDragEnter={() => handleDragEnter(index)}
                     onDragEnd={handleDragEnd}
                     onDragOver={e => e.preventDefault()}
-                    className={`group relative flex flex-col text-left rounded-2xl border select-none cursor-grab active:cursor-grabbing overflow-hidden
+                    className={`group relative flex flex-col text-left rounded-xl border p-4 select-none cursor-grab active:cursor-grabbing bg-base transition-[border-color,box-shadow,opacity] duration-150
                       ${isDragging
-                        ? 'opacity-25 scale-95 border-dashed border-fuchsia-500/30 shadow-none'
+                        ? 'opacity-30 border-dashed border-theme'
                         : isDropTarget
-                          ? 'border-fuchsia-500 shadow-lg shadow-fuchsia-500/20'
+                          ? 'shadow-lg'
                           : isHidden
-                            ? 'opacity-40 border-dashed border-theme/50'
-                            : 'border-theme hover:border-fuchsia-500/40 hover:shadow-md'
+                            ? 'opacity-50 border-dashed border-theme'
+                            : 'border-theme hover:shadow-md'
                       }
                     `}
-                    style={{ backgroundColor: 'rgb(var(--bg-base))', outline: isDropTarget ? '2px solid rgb(192 38 211 / 0.4)' : undefined, outlineOffset: '2px' }}
+                    style={isDropTarget ? {
+                      borderColor: 'rgb(var(--accent))',
+                      boxShadow: '0 0 0 3px rgb(var(--accent) / 0.2)',
+                    } : undefined}
                   >
-                    {/* Top hex accent strip */}
-                    <div
-                      className={`h-1 w-full shrink-0 ${isHidden ? 'grayscale opacity-50' : ''}`}
-                      style={{ backgroundColor: hex }}
-                    />
-
-                    {/* Card content */}
-                    <div className="p-4 flex flex-col flex-1">
-                      {/* Drag handle */}
-                      <div className={`absolute top-[18px] left-2.5 transition-colors ${isDropTarget ? 'text-fuchsia-500' : 'text-4 group-hover:text-3'}`}>
-                        <GripVertical size={15} />
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <GripVertical size={15} className="text-4 group-hover:text-2 transition-colors -ml-1" aria-hidden />
+                        {iconTile(svc.id, svc.icon, hex, isHidden)}
                       </div>
-
-                      {/* Hide/show toggle */}
                       <button
                         onClick={() => toggleHidden(svc.id)}
-                        className={`absolute top-[18px] right-2.5 p-1.5 rounded-lg transition-all z-10
-                          ${isHidden
-                            ? 'bg-raised text-4 hover:text-emerald-500 hover:bg-emerald-500/10'
-                            : 'text-4 hover:bg-red-500/10 hover:text-red-500 opacity-0 group-hover:opacity-100'
-                          }`}
+                        className={`p-1.5 rounded-md transition-colors ${
+                          isHidden
+                            ? 'bg-raised text-3 hover:text-emerald-500 hover:bg-emerald-500/10'
+                            : 'text-4 hover:bg-red-500/10 hover:text-red-500'
+                        }`}
                         title={isHidden ? 'Show service' : 'Hide service'}
+                        aria-label={isHidden ? `Show ${svc.name}` : `Hide ${svc.name}`}
+                        aria-pressed={isHidden}
                       >
                         {isHidden ? <Eye size={14} /> : <EyeOff size={14} />}
                       </button>
-
-                      <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ml-4 mt-1 ${isHidden ? 'grayscale opacity-50' : ''}`}
-                        style={iconMode !== 'aws' ? { backgroundColor: hex + '26' } : undefined}
-                      >
-                        {iconMode === 'aws'
-                          ? <AwsServiceIcon service={svc.id} size={32} />
-                          : <svc.icon size={20} style={{ color: hex }} />
-                        }
-                      </div>
-
-                      <h2 className={`text-sm font-bold mb-1 ml-1 ${isHidden ? 'text-3' : 'text-1'}`}>{svc.name}</h2>
-                      <p className={`text-[10px] ml-1 leading-relaxed line-clamp-2 ${isHidden ? 'text-4' : 'text-3'}`}>{svc.description}</p>
-
-                      {isHidden && (
-                        <div className="mt-auto pt-3 ml-1">
-                          <span className="badge badge-gray text-[9px] font-bold uppercase tracking-widest flex items-center gap-1 w-fit">
-                            <EyeOff size={9} /> Hidden
-                          </span>
-                        </div>
-                      )}
                     </div>
+
+                    <h2 className={`text-sm font-semibold mb-1 ${isHidden ? 'text-3' : 'text-1'}`}>{svc.name}</h2>
+                    <p className={`text-xs leading-relaxed line-clamp-2 ${isHidden ? 'text-4' : 'text-3'}`}>{svc.description}</p>
+
+                    {isHidden && (
+                      <div className="mt-auto pt-3">
+                        <span className="badge-gray text-[10px] font-semibold uppercase tracking-wider w-fit">
+                          <EyeOff size={10} /> Hidden
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )
               }
@@ -355,56 +407,51 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
                   key={svc.id}
                   role="button"
                   tabIndex={0}
+                  aria-label={`Open ${svc.name}`}
                   onClick={() => onSelectService(svc.id)}
-                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onSelectService(svc.id) }}
+                  onKeyDown={e => {
+                    if (e.target !== e.currentTarget) return
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectService(svc.id) }
+                  }}
                   onContextMenu={e => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, service: svc.id }) }}
-                  className={`group relative flex flex-col text-left rounded-2xl border border-theme transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer overflow-hidden ${c.border}`}
-                  style={{ backgroundColor: 'rgb(var(--bg-base))' }}
+                  className="group relative flex flex-col text-left rounded-xl border border-theme bg-base p-4 cursor-pointer
+                    transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-lg
+                    hover:border-[color:var(--svc-border)]"
+                  style={{ '--svc-border': hexToRgba(hex, 0.45) } as React.CSSProperties}
                 >
-                  {/* Top hex accent strip */}
-                  <div className="h-1 w-full shrink-0" style={{ backgroundColor: hex }} />
-
-                  {/* Card content */}
-                  <div className="p-4 flex flex-col flex-1">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    {iconTile(svc.id, svc.icon, hex)}
                     {/* Favourite toggle */}
                     <button
                       onClick={e => { e.stopPropagation(); onToggleFavourite(svc.id) }}
                       title={isFav ? 'Remove from favourites' : 'Add to favourites'}
-                      className={`absolute top-[18px] right-2.5 p-1.5 rounded-lg transition-all z-10
-                        ${isFav
-                          ? 'text-amber-400 bg-amber-400/10'
-                          : 'opacity-0 group-hover:opacity-100 text-4 hover:text-amber-400 hover:bg-amber-400/10'
-                        }`}
+                      aria-label={isFav ? `Remove ${svc.name} from favourites` : `Add ${svc.name} to favourites`}
+                      aria-pressed={isFav}
+                      className={`p-1.5 rounded-md transition-[opacity,color,background-color] ${
+                        isFav
+                          ? 'text-amber-400 hover:bg-amber-400/10'
+                          : 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-4 hover:text-amber-400 hover:bg-amber-400/10'
+                      }`}
                     >
                       <Star size={14} fill={isFav ? 'currentColor' : 'none'} />
                     </button>
+                  </div>
 
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                      style={iconMode !== 'aws' ? { backgroundColor: hex + '26' } : undefined}
-                    >
-                      {iconMode === 'aws'
-                        ? <AwsServiceIcon service={svc.id} size={32} />
-                        : <svc.icon size={20} style={{ color: hex }} />
-                      }
-                    </div>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <h2 className="text-sm font-semibold text-1 truncate">{svc.name}</h2>
+                    <ArrowRight
+                      size={13}
+                      className="shrink-0 opacity-0 -translate-x-1 transition-[opacity,transform] duration-200 group-hover:opacity-100 group-hover:translate-x-0"
+                      style={{ color: hex }}
+                      aria-hidden
+                    />
+                  </div>
+                  <p className="text-xs text-3 leading-relaxed line-clamp-2 mb-3">{svc.description}</p>
 
-                    <h2 className="text-sm font-bold text-1 mb-1">{svc.name}</h2>
-                    <p className="text-[11px] text-3 leading-relaxed line-clamp-2 mb-3">{svc.description}</p>
-
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {svc.features.map((f) => (
-                        <span key={f} className="px-1.5 py-0.5 text-[10px] rounded-md bg-raised text-3">{f}</span>
-                      ))}
-                    </div>
-
-                    <div className="border-t border-theme mt-auto pt-2 flex items-center justify-between">
-                      <span className={`flex items-center gap-1.5 text-[11px] font-semibold ${c.text}`}>
-                        <svc.icon size={11} />
-                        {svc.name}
-                      </span>
-                      <ChevronRight size={12} className={`transition-transform duration-150 group-hover:translate-x-0.5 ${c.text}`} />
-                    </div>
+                  <div className="mt-auto flex flex-wrap gap-1">
+                    {svc.features.map((f) => (
+                      <span key={f} className="px-1.5 py-0.5 text-[10px] rounded bg-raised text-3">{f}</span>
+                    ))}
                   </div>
                 </div>
               )
@@ -416,16 +463,26 @@ export default function ServiceSelector({ settings, onSelectService, onOpenInNew
 
       {contextMenu && (
         <div
-          className="fixed z-50 bg-base border border-theme rounded-xl shadow-2xl py-1 min-w-[170px] animate-in fade-in zoom-in-95 duration-100"
+          role="menu"
+          className="popover fixed z-50 p-1 min-w-[180px] animate-in fade-in zoom-in-95 duration-100"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onMouseDown={e => e.stopPropagation()}
         >
           <button
+            role="menuitem"
             onClick={() => { onOpenInNewTab(contextMenu.service); setContextMenu(null) }}
-            className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-2 hover:bg-raised hover:text-1 transition-colors"
+            className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-xs text-2 hover:bg-raised hover:text-1 transition-colors"
           >
             <ExternalLink size={13} className="shrink-0" />
             Open in new tab
+          </button>
+          <button
+            role="menuitem"
+            onClick={() => { onToggleFavourite(contextMenu.service); setContextMenu(null) }}
+            className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-xs text-2 hover:bg-raised hover:text-1 transition-colors"
+          >
+            <Star size={13} className="shrink-0" />
+            {favouriteServices.includes(contextMenu.service) ? 'Remove from favourites' : 'Add to favourites'}
           </button>
         </div>
       )}

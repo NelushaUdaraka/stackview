@@ -23,14 +23,14 @@ function ResourceRow({ resource }: { resource: RgTaggedResource }) {
         {expanded ? <ChevronDown size={12} className="text-4 shrink-0" /> : <ChevronRight size={12} className="text-4 shrink-0" />}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border border-theme bg-raised text-3 shrink-0">{service}</span>
-            <span className="text-[9px] font-bold text-3 shrink-0">{resourceType}</span>
+            <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border border-theme bg-raised text-3 shrink-0">{service}</span>
+            <span className="text-[10px] font-bold text-3 shrink-0">{resourceType}</span>
           </div>
           <p className="text-[10px] font-mono text-2 truncate mt-0.5">{resource.resourceArn}</p>
         </div>
         <div className="flex flex-wrap gap-1 max-w-[180px] shrink-0 justify-end">
           {Object.entries(resource.tags ?? {}).slice(0, 3).map(([k, v]) => (
-            <span key={k} className="text-[8px] font-mono px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500 border border-orange-500/20 whitespace-nowrap">
+            <span key={k} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500 border border-orange-500/20 whitespace-nowrap">
               {k}={v}
             </span>
           ))}

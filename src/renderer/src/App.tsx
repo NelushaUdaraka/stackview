@@ -37,17 +37,21 @@ import TitleBar from './components/common/TitleBar'
 import NavRail from './components/common/NavRail'
 import ServiceBand from './components/common/ServiceBand'
 import UpdateBanner from './components/common/UpdateBanner'
+import CommandPalette from './components/common/CommandPalette'
 import type { AppSettings, QueueInfo, AppScreen, Service, AppTab, IconMode, Theme, UpdaterStatus } from './types'
-import { ALL_THEMES, THEME_CSS_VARS } from '../../shared/themes'
+import { ALL_THEMES, THEME_DEFINITIONS, themeCssVars } from '../../shared/themes'
 
 let themeStyleTag: HTMLStyleElement | null = null
 
 function applyTheme(t: Theme) {
   const root = document.documentElement
+  const mode = THEME_DEFINITIONS[t].mode
 
-  // Keep .dark class in sync for Tailwind's dark: variant utilities
-  if (t === 'dark') root.classList.add('dark')
-  else root.classList.remove('dark')
+  // Keep .dark class in sync for Tailwind's dark: variant utilities — every
+  // dark-mode theme needs it, not only the theme named "dark".
+  root.classList.toggle('dark', mode === 'dark')
+  // Native controls (select popups, date pickers) follow the theme as well.
+  root.style.colorScheme = mode
 
   // Inject variables into a dedicated <style> tag that sits after all
   // other stylesheets — guaranteed to win the cascade regardless of @layer ordering.
@@ -56,7 +60,7 @@ function applyTheme(t: Theme) {
     themeStyleTag.id = 'nexus-theme-vars'
     document.head.appendChild(themeStyleTag)
   }
-  const vars = THEME_CSS_VARS[t]
+  const vars = themeCssVars(t)
   themeStyleTag.textContent =
     ':root{' + Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(';') + '}'
 }
@@ -118,6 +122,7 @@ export default function App() {
   const [appVersion, setAppVersion] = useState('')
   const [autoUpdate, setAutoUpdateState] = useState(true)
   const [updaterStatus, setUpdaterStatus] = useState<UpdaterStatus>({ status: 'idle' })
+  const [paletteOpen, setPaletteOpen] = useState(false)
   const [favouriteServices, setFavouriteServices] = useState<Service[]>(() => {
     try {
       const raw = localStorage.getItem('stackview:favourites')
@@ -147,6 +152,19 @@ export default function App() {
     const unsubscribe = window.electronAPI.onUpdaterStatus(setUpdaterStatus)
     return unsubscribe
   }, [])
+
+  // Ctrl/Cmd+K toggles the service command palette once connected
+  useEffect(() => {
+    if (screen !== 'main') return
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setPaletteOpen(o => !o)
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [screen])
 
   const handleSetTheme = useCallback(async (next: Theme) => {
     setThemeState(next)
@@ -338,6 +356,7 @@ export default function App() {
   }, [])
 
   const handleDisconnect = useCallback(() => {
+    setPaletteOpen(false)
     setScreen('connection')
     setTabs([])
     setActiveTabId(null)
@@ -450,6 +469,7 @@ export default function App() {
             onRefresh={handleRefreshActiveTab}
             refreshing={refreshing}
             onSwitchService={handleSwitchService}
+            onOpenCommandPalette={() => setPaletteOpen(true)}
             onDisconnect={handleDisconnect}
             onRegionChange={handleRegionChange}
             appVersion={appVersion}
@@ -494,6 +514,15 @@ export default function App() {
               ))}
             </div>
           </div>
+          <CommandPalette
+            open={paletteOpen}
+            onClose={() => setPaletteOpen(false)}
+            favouriteServices={favouriteServices}
+            activeService={tabs.find(t => t.id === activeTabId)?.service ?? null}
+            iconMode={iconMode}
+            onSelect={handleNavRailSelect}
+            onOpenInNewTab={handleOpenInNewTab}
+          />
         </div>
       )}
       <UpdateBanner

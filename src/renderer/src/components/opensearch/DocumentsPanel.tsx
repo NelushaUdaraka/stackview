@@ -145,7 +145,7 @@ export default function DocumentsPanel({ domainEndpoint, indexName }: Props) {
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-[10px] font-bold text-purple-400 font-mono truncate">{hit._id}</span>
                     {hit._score !== undefined && (
-                      <span className="text-[9px] text-4 font-mono">score: {hit._score?.toFixed(3)}</span>
+                      <span className="text-[10px] text-4 font-mono">score: {hit._score?.toFixed(3)}</span>
                     )}
                   </div>
                   <p className="text-[11px] text-3 font-mono truncate">

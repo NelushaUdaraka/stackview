@@ -61,7 +61,7 @@ Each service module keeps a single module-scoped client and exposes `init<Svc>Cl
 
 ### Theming
 
-CSS variables only. Themes live in [src/shared/themes.ts](src/shared/themes.ts) and are injected into a single `<style id="nexus-theme-vars">` tag at runtime by `applyTheme()` in `App.tsx` to win the cascade regardless of `@layer` ordering. Tailwind `dark:` utilities are only used by `App.tsx` to toggle the `.dark` class; component styles should reference CSS variables.
+CSS variables only. Themes live in [src/shared/themes.ts](src/shared/themes.ts) and are injected into a single `<style id="nexus-theme-vars">` tag at runtime by `applyTheme()` in `App.tsx` to win the cascade regardless of `@layer` ordering. Each theme declares a `mode` (`light`/`dark`); mode-level tokens (`--accent` for focus/selection, `--shadow`/`--shadow-strength` for the elevation scale in `tailwind.config.js`) are merged under the theme's palette by `themeCssVars()`. `applyTheme()` sets the `.dark` class and `color-scheme` for every dark-mode theme, so Tailwind `dark:` variants and native controls follow the theme. `globals.css` holds only the pre-hydration default palette — don't add per-theme blocks there. Component styles should reference CSS variables; shared classes (`btn-*`, `input-base`, `popover`, `icon-btn`, `resize-handle`, `modal-backdrop`, …) are listed in [docs/adding-a-new-service.md](docs/adding-a-new-service.md).
 
 ### Auto-Update
 

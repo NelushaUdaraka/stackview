@@ -110,7 +110,7 @@ export default function ResourceGroupsSidebar({
                       {g.name}
                     </p>
                     {g.description && (
-                      <p className="text-[9px] text-4 truncate">{g.description}</p>
+                      <p className="text-[10px] text-4 truncate">{g.description}</p>
                     )}
                   </div>
                 </button>

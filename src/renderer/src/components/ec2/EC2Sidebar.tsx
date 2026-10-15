@@ -98,13 +98,13 @@ export default function EC2Sidebar({ instances, selectedInstanceId, onSelectInst
                   <p className="text-[10px] text-3 truncate font-mono">{instance.InstanceId}</p>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${getStateColor(state)}`} />
-                    <span className={`text-[9px] font-bold uppercase tracking-widest ${isSelected ? 'text-orange-500' : 'text-4'}`}>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${isSelected ? 'text-orange-500' : 'text-4'}`}>
                       {state}
                     </span>
                     {instance.InstanceType && (
                       <>
-                        <span className="text-[9px] text-4">•</span>
-                        <span className="text-[9px] text-3">{instance.InstanceType}</span>
+                        <span className="text-[10px] text-4">•</span>
+                        <span className="text-[10px] text-3">{instance.InstanceType}</span>
                       </>
                     )}
                   </div>

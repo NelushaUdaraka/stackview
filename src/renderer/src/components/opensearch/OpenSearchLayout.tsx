@@ -75,8 +75,10 @@ export default function OpenSearchLayout({
         {/* Resize handle */}
         <div
           onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20 transition-colors"
-          style={{ backgroundColor: 'rgb(var(--border))', left: 0 }}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize sidebar"
+          className="resize-handle"
         />
 
         <main className="flex-1 overflow-hidden bg-app relative mt-0.5">

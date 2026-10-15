@@ -33,15 +33,15 @@ function InfoRow({ label, value, mono = false }: { label: string; value?: string
 }
 
 function StatusBadge({ status }: { status?: string }) {
-  if (!status) return <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded border bg-raised text-4 border-theme">—</span>
+  if (!status) return <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded border bg-raised text-4 border-theme">—</span>
   const s = status.toLowerCase()
   if (s === 'resolved' || s === 'closed') {
-    return <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded border bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">RESOLVED</span>
+    return <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded border bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">RESOLVED</span>
   }
   if (s === 'pending-customer-action') {
-    return <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">PENDING</span>
+    return <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">PENDING</span>
   }
-  return <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded border bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20">{status}</span>
+  return <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded border bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20">{status}</span>
 }
 
 export default function CaseDetail({ supportCase, onResolved, showToast }: Props) {

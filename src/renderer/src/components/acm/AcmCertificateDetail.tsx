@@ -199,7 +199,7 @@ export default function AcmCertificateDetail({ cert, onRefresh, onDeleted, showT
               <div key={i} className="bg-base rounded-lg border border-theme p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold text-1">{v.DomainName}</p>
-                  <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded ${v.ValidationStatus === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${v.ValidationStatus === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
                     {v.ValidationStatus || '—'}
                   </span>
                 </div>

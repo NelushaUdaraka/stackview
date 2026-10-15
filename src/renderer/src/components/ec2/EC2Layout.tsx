@@ -90,8 +90,10 @@ export default function EC2Layout({
 
           <div
             onMouseDown={handleResizeStart}
-            className="w-1 shrink-0 cursor-col-resize relative select-none"
-            style={{ backgroundColor: 'rgb(var(--border))' }}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize sidebar"
+            className="resize-handle"
           />
 
           <main className="flex-1 overflow-hidden flex flex-col bg-app">

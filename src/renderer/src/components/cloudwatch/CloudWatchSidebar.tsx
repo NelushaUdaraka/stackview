@@ -72,7 +72,7 @@ export default function CloudWatchSidebar({
                 <p className={`text-xs font-medium break-all leading-snug ${selectedLogGroup?.logGroupName === group.logGroupName ? 'text-1' : 'text-2'}`}>
                   {group.logGroupName}
                 </p>
-                <p className="text-[9px] text-4 font-mono truncate mt-0.5 opacity-60">
+                <p className="text-[10px] text-4 font-mono truncate mt-0.5 opacity-60">
                   {group.arn?.split(':').pop()}
                 </p>
               </div>

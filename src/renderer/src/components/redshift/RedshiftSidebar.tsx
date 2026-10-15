@@ -78,7 +78,7 @@ export default function RedshiftSidebar({ clusters, selectedCluster, onSelectClu
                     {cluster.ClusterIdentifier}
                   </p>
                   <div className="flex items-center gap-1.5 min-w-0">
-                     <span className={`text-[9px] font-bold uppercase tracking-widest truncate ${
+                     <span className={`text-[10px] font-bold uppercase tracking-widest truncate ${
                        isAvailable ? 'text-emerald-500' : isModifying ? 'text-amber-500' : 'text-red-500'
                      }`}>
                        {status}

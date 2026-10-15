@@ -94,10 +94,10 @@ export default function AcmSidebar({ certificates, selectedCert, onSelectCert, o
                     {cert.DomainName}
                   </p>
                   <div className="flex items-center gap-1.5 justify-between">
-                    <p className={`text-[9px] font-mono tracking-wider truncate ${isSelected ? 'text-teal-600' : 'text-4'}`}>
+                    <p className={`text-[10px] font-mono tracking-wider truncate ${isSelected ? 'text-teal-600' : 'text-4'}`}>
                       {isImported ? 'IMPORTED' : cert.Type || 'ACM'}
                     </p>
-                    <p className={`text-[8px] font-bold uppercase tracking-widest shrink-0 text-${color}-500`}>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest shrink-0 text-${color}-500`}>
                       {cert.Status || '—'}
                     </p>
                   </div>

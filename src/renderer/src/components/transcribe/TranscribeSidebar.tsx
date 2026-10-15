@@ -85,10 +85,10 @@ export default function TranscribeSidebar({ jobs, selectedJob, onSelectJob, onCr
                     {job.jobName}
                   </p>
                   <div className="flex items-center gap-1.5 justify-between">
-                    <p className={`text-[9px] text-4 truncate`}>
+                    <p className={`text-[10px] text-4 truncate`}>
                       {job.languageCode || '—'}
                     </p>
-                    <p className={`text-[8px] font-bold uppercase tracking-widest text-${color}-500`}>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest text-${color}-500`}>
                       {job.jobStatus}
                     </p>
                   </div>

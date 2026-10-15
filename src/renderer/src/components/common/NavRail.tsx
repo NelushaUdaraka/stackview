@@ -1,15 +1,14 @@
 import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from 'react'
 import {
-  Settings, LogOut, Link2, RefreshCw, Search as SearchIcon,
-  ArrowLeftRight, ExternalLink, Plus, Star, Image, Check,
-  Download, ArrowUpCircle, CheckCircle2, AlertCircle
+  Settings, LogOut, RefreshCw, Search as SearchIcon,
+  ArrowLeftRight, ExternalLink, Plus, StarOff, Command
 } from 'lucide-react'
 import appIcon from '../../assets/icon.png'
 import type { AppSettings, Service, IconMode, Theme, UpdaterStatus } from '../../types'
-import { AWS_REGIONS } from '../../constants'
 import { AwsServiceIcon } from './AwsServiceIcons'
 import { SERVICE_CONFIG, ALL_SERVICES_ORDERED } from '../../services/serviceConfig'
-import { THEME_DEFINITIONS, ALL_THEMES } from '../../../../shared/themes'
+import { RegionList, ThemePicker, UpdateControls } from './SettingsControls'
+import { MOD_KEY } from './CommandPalette'
 
 
 function hexToRgba(hex: string, alpha: number) {
@@ -18,6 +17,9 @@ function hexToRgba(hex: string, alpha: number) {
   const b = parseInt(hex.slice(5, 7), 16)
   return `rgba(${r},${g},${b},${alpha})`
 }
+
+const RAIL_WIDTH = 64
+const ITEM_SIZE = 40
 
 interface Props {
   favouriteServices: Service[]
@@ -34,6 +36,7 @@ interface Props {
   onRefresh: () => void
   refreshing: boolean
   onSwitchService: () => void
+  onOpenCommandPalette: () => void
   onDisconnect: () => void
   onRegionChange: (region: string) => void
   appVersion: string
@@ -44,7 +47,7 @@ interface Props {
   onInstallUpdate: () => void
 }
 
-interface TooltipState { text: string; y: number }
+interface TooltipState { text: string; x: number; y: number }
 
 export default function NavRail({
   favouriteServices,
@@ -61,6 +64,7 @@ export default function NavRail({
   onRefresh,
   refreshing,
   onSwitchService,
+  onOpenCommandPalette,
   onDisconnect,
   onRegionChange,
   appVersion,
@@ -73,7 +77,6 @@ export default function NavRail({
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [regionSearch, setRegionSearch] = useState('')
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; service: Service } | null>(null)
   const [addFavOpen, setAddFavOpen] = useState(false)
   const [addFavSearch, setAddFavSearch] = useState('')
@@ -129,11 +132,6 @@ export default function NavRail({
     })
   }, [dropIdx]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const filteredRegions = AWS_REGIONS.filter(r =>
-    r.value.toLowerCase().includes(regionSearch.toLowerCase()) ||
-    r.label.toLowerCase().includes(regionSearch.toLowerCase())
-  )
-
   const availableServices = ALL_SERVICES_ORDERED.filter(s => !favouriteServices.includes(s))
   const filteredAvailable = addFavSearch.trim()
     ? availableServices.filter(s => SERVICE_CONFIG[s].label.toLowerCase().includes(addFavSearch.toLowerCase()))
@@ -151,14 +149,18 @@ export default function NavRail({
 
   useEffect(() => {
     if (!settingsOpen) return
-    setRegionSearch('')
     const handler = (e: MouseEvent) => {
       if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
         setSettingsOpen(false)
       }
     }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSettingsOpen(false) }
     document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      document.removeEventListener('keydown', onKey)
+    }
   }, [settingsOpen])
 
   useEffect(() => {
@@ -170,21 +172,33 @@ export default function NavRail({
         setAddFavSearch('')
       }
     }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setAddFavOpen(false); setAddFavSearch('') }
+    }
     document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      document.removeEventListener('keydown', onKey)
+    }
   }, [addFavOpen])
 
   useEffect(() => {
     if (!contextMenu) return
     const dismiss = () => setContextMenu(null)
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setContextMenu(null) }
     window.addEventListener('mousedown', dismiss)
-    return () => window.removeEventListener('mousedown', dismiss)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('mousedown', dismiss)
+      window.removeEventListener('keydown', onKey)
+    }
   }, [contextMenu])
 
   const handleMouseEnter = useCallback((e: React.MouseEvent, text: string, id: string) => {
     setHoveredId(id)
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    setTooltip({ text, y: rect.top + rect.height / 2 })
+    setTooltip({ text, x: rect.right + 10, y: rect.top + rect.height / 2 })
   }, [])
 
   const handleMouseLeave = useCallback(() => {
@@ -230,26 +244,60 @@ export default function NavRail({
     setDropIdx(null)
   }, [dragIdx, dropIdx, favouriteServices, onReorderFavourites])
 
+  const toggleAddFav = () => {
+    if (!addFavOpen && addFavBtnRef.current) {
+      const r = addFavBtnRef.current.getBoundingClientRect()
+      setAddFavPos({ x: r.right + 10, y: r.top })
+    }
+    setAddFavOpen(o => !o)
+    setHoveredId(null)
+    setTooltip(null)
+  }
+
+  const addFavButton = (
+    <button
+      ref={addFavBtnRef}
+      onClick={toggleAddFav}
+      aria-label="Add favourite"
+      aria-expanded={addFavOpen}
+      className={`flex items-center justify-center rounded-[10px] border border-dashed transition-colors duration-150 ${
+        addFavOpen
+          ? 'text-1 bg-raised border-transparent'
+          : 'text-3 border-theme hover:text-1 hover:bg-raised hover:border-transparent'
+      }`}
+      style={{ width: ITEM_SIZE, height: ITEM_SIZE }}
+    >
+      <Plus size={18} />
+    </button>
+  )
+
+  const hasUpdateBadge = updaterStatus.status === 'available'
+    || updaterStatus.status === 'downloading'
+    || updaterStatus.status === 'ready'
+
+  const menuItem = 'w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-2 hover:bg-raised hover:text-1 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed'
+
   return (
     <>
-      <div
-        className="drag-region shrink-0 flex flex-col items-center border-r border-theme"
-        style={{ width: 68, backgroundColor: 'rgb(var(--bg-app))' }}
+      <nav
+        aria-label="Favourite services"
+        className="drag-region shrink-0 flex flex-col items-center border-r border-theme bg-app"
+        style={{ width: RAIL_WIDTH }}
       >
         {/* Logo — clicking opens service selector */}
-        <div className="no-drag flex items-center justify-center shrink-0" style={{ height: 44, width: 68 }}>
+        <div className="no-drag flex items-center justify-center shrink-0 h-11 w-full">
           <button
             onClick={onSwitchService}
-            className="flex items-center justify-center rounded-xl transition-all duration-200 hover:scale-110"
-            style={{ width: 32, height: 32 }}
-            title="Browse services"
+            onMouseEnter={e => handleMouseEnter(e, 'Browse services', '__logo__')}
+            onMouseLeave={handleMouseLeave}
+            aria-label="Browse services"
+            className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-raised"
           >
-            <img src={appIcon} alt="StackView" style={{ width: 28, height: 28 }} draggable={false} />
+            <img src={appIcon} alt="" className="w-6 h-6" draggable={false} />
           </button>
         </div>
 
-        {/* Divider */}
-        <div className="w-8 shrink-0" style={{ height: 1, backgroundColor: 'rgb(var(--border))' }} />
+        <div className="w-8 h-px shrink-0 bg-[rgb(var(--border))]" />
 
         {/* Favourites list */}
         <div ref={listRef} className="no-drag flex flex-col items-center gap-1.5 flex-1 min-h-0 overflow-y-auto scrollbar-none py-3 w-full">
@@ -260,12 +308,6 @@ export default function NavRail({
               const Icon = SERVICE_CONFIG[svc].icon
               const label = SERVICE_CONFIG[svc].label
               const hex = SERVICE_CONFIG[svc].hex
-
-              const bgColor = isActive
-                ? hex
-                : isHovered
-                  ? hexToRgba(hex, 0.15)
-                  : 'transparent'
 
               return (
                 <div
@@ -282,33 +324,35 @@ export default function NavRail({
                   onMouseLeave={handleMouseLeave}
                   style={{ opacity: isDragging ? 0.25 : 1 }}
                 >
-                  {/* Discord-style active pill */}
+                  {/* Active indicator */}
                   <span
-                    className="absolute left-0 rounded-r-full transition-all duration-200"
+                    aria-hidden
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full transition-all duration-200"
                     style={{
-                      width: 4,
-                      height: isActive ? 32 : isHovered ? 16 : 0,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
+                      height: isActive ? 20 : isHovered ? 8 : 0,
                       backgroundColor: hex,
-                      opacity: isActive ? 1 : isHovered ? 0.5 : 0,
+                      opacity: isActive ? 1 : isHovered ? 0.6 : 0,
                     }}
                   />
 
                   <button
                     onClick={() => onSelectService(svc)}
                     onContextMenu={e => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, service: svc }) }}
-                    className="flex items-center justify-center transition-all duration-200"
+                    aria-label={SERVICE_CONFIG[svc].name}
+                    aria-current={isActive ? 'page' : undefined}
+                    className="flex items-center justify-center rounded-[10px] transition-colors duration-150"
                     style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: isActive || isHovered ? 20 : 14,
-                      backgroundColor: iconMode === 'aws' ? 'transparent' : bgColor,
+                      width: ITEM_SIZE,
+                      height: ITEM_SIZE,
+                      backgroundColor: isActive
+                        ? hexToRgba(hex, 0.16)
+                        : isHovered ? 'rgb(var(--bg-raised))' : 'transparent',
+                      boxShadow: isActive ? `inset 0 0 0 1px ${hexToRgba(hex, 0.35)}` : undefined,
                     }}
                   >
                     {iconMode === 'aws'
-                      ? <AwsServiceIcon service={svc} size={40} />
-                      : <Icon size={22} style={{ color: isActive ? '#ffffff' : hex, transition: 'color 0.15s' }} />
+                      ? <AwsServiceIcon service={svc} size={28} />
+                      : <Icon size={20} strokeWidth={isActive ? 2.25 : 2} style={{ color: hex }} />
                     }
                   </button>
                 </div>
@@ -318,36 +362,11 @@ export default function NavRail({
           {/* Add favourite button — inline at bottom when list does NOT overflow */}
           {!listOverflows && (
             <div
-              className="flex items-center justify-center w-full pt-0.5 pb-0.5"
+              className="flex items-center justify-center w-full"
               onMouseEnter={e => !addFavOpen && handleMouseEnter(e, 'Add favourite', '__addFav__')}
               onMouseLeave={handleMouseLeave}
             >
-              <button
-                ref={addFavBtnRef}
-                onClick={() => {
-                  if (!addFavOpen && addFavBtnRef.current) {
-                    const r = addFavBtnRef.current.getBoundingClientRect()
-                    setAddFavPos({ x: r.right + 8, y: r.top })
-                  }
-                  setAddFavOpen(o => !o)
-                  setHoveredId(null)
-                  setTooltip(null)
-                }}
-                className="flex items-center justify-center transition-all duration-200"
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: addFavOpen || hoveredId === '__addFav__' ? 20 : 14,
-                  backgroundColor: addFavOpen
-                    ? hexToRgba('#64748b', 0.35)
-                    : hoveredId === '__addFav__'
-                      ? hexToRgba('#64748b', 0.2)
-                      : 'rgb(var(--bg-raised))',
-                  color: addFavOpen ? 'rgb(var(--text-1))' : 'rgb(var(--text-3))',
-                }}
-              >
-                <Plus size={20} />
-              </button>
+              {addFavButton}
             </div>
           )}
         </div>
@@ -355,42 +374,15 @@ export default function NavRail({
         {/* Add favourite button — pinned below list when it overflows */}
         {listOverflows && (
           <div
-            className="no-drag shrink-0 flex items-center justify-center w-full pt-1 pb-2"
-            style={{ backgroundColor: 'rgb(var(--bg-app))' }}
+            className="no-drag shrink-0 flex items-center justify-center w-full pt-1 pb-2 bg-app"
             onMouseEnter={e => !addFavOpen && handleMouseEnter(e, 'Add favourite', '__addFav__')}
             onMouseLeave={handleMouseLeave}
           >
-            <button
-              ref={addFavBtnRef}
-              onClick={() => {
-                if (!addFavOpen && addFavBtnRef.current) {
-                  const r = addFavBtnRef.current.getBoundingClientRect()
-                  setAddFavPos({ x: r.right + 8, y: r.top })
-                }
-                setAddFavOpen(o => !o)
-                setHoveredId(null)
-                setTooltip(null)
-              }}
-              className="flex items-center justify-center transition-all duration-200"
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: addFavOpen || hoveredId === '__addFav__' ? 18 : 12,
-                backgroundColor: addFavOpen
-                  ? hexToRgba('#64748b', 0.35)
-                  : hoveredId === '__addFav__'
-                    ? hexToRgba('#64748b', 0.2)
-                    : 'rgb(var(--bg-raised))',
-                color: addFavOpen ? 'rgb(var(--text-1))' : 'rgb(var(--text-3))',
-              }}
-            >
-              <Plus size={20} />
-            </button>
+            {addFavButton}
           </div>
         )}
 
-        {/* Divider */}
-        <div className="w-8 shrink-0" style={{ height: 1, backgroundColor: 'rgb(var(--border))' }} />
+        <div className="w-8 h-px shrink-0 bg-[rgb(var(--border))]" />
 
         {/* Settings button */}
         <div
@@ -401,18 +393,13 @@ export default function NavRail({
         >
           <button
             onClick={() => { setSettingsOpen(o => !o); setHoveredId(null); setTooltip(null) }}
-            className="relative flex items-center justify-center transition-all duration-200"
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: settingsOpen || hoveredId === '__settings__' ? 20 : 14,
-              backgroundColor: settingsOpen
-                ? hexToRgba('#64748b', 0.35)
-                : hoveredId === '__settings__'
-                  ? hexToRgba('#64748b', 0.2)
-                  : 'rgb(var(--bg-raised))',
-              color: settingsOpen ? 'rgb(var(--text-1))' : 'rgb(var(--text-3))',
-            }}
+            aria-label="Settings"
+            aria-haspopup="dialog"
+            aria-expanded={settingsOpen}
+            className={`relative flex items-center justify-center rounded-[10px] transition-colors duration-150 ${
+              settingsOpen ? 'bg-raised text-1' : 'text-3 hover:bg-raised hover:text-1'
+            }`}
+            style={{ width: ITEM_SIZE, height: ITEM_SIZE }}
             title={
               updaterStatus.status === 'ready'
                 ? `Update v${updaterStatus.version ?? ''} ready — open Settings to install`
@@ -423,239 +410,130 @@ export default function NavRail({
                     : undefined
             }
           >
-            <Settings size={20} />
-            {(updaterStatus.status === 'available'
-              || updaterStatus.status === 'downloading'
-              || updaterStatus.status === 'ready') && (
+            <Settings size={19} className={`transition-transform duration-300 ${settingsOpen ? 'rotate-45' : ''}`} />
+            {hasUpdateBadge && (
               <span
-                className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 ${
-                  updaterStatus.status === 'ready'
-                    ? 'bg-emerald-500 ring-emerald-500/30 animate-pulse'
-                    : 'bg-amber-500 ring-amber-500/30'
+                className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${
+                  updaterStatus.status === 'ready' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
                 }`}
-                style={{ boxShadow: '0 0 0 2px rgb(var(--bg-raised))' }}
+                style={{ boxShadow: '0 0 0 2px rgb(var(--bg-app))' }}
               />
             )}
           </button>
 
-          {/* Settings dropdown — opens to the right */}
+          {/* Settings popover — opens to the right */}
           {settingsOpen && (
             <div
-              className="absolute left-full bottom-0 ml-2 z-50 w-72 rounded-xl shadow-2xl border border-theme overflow-x-hidden overflow-y-auto max-h-[calc(100vh-8rem)]"
-              style={{ backgroundColor: 'rgb(var(--bg-base))' }}
+              role="dialog"
+              aria-label="Settings"
+              className="popover absolute left-full bottom-2 ml-2 z-50 w-80 overflow-x-hidden overflow-y-auto max-h-[calc(100vh-4rem)] animate-in fade-in slide-in-from-bottom-2 duration-150"
             >
-              {/* Endpoint */}
-              <div className="px-3 py-2.5 flex items-center gap-2">
-                <Link2 size={12} className="text-3 shrink-0" />
-                <span className="font-mono text-xs text-2 truncate flex-1">{settings.endpoint}</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 ring-2 ring-emerald-500/20" />
+              {/* Header: app + connection */}
+              <div className="px-4 pt-3.5 pb-3 flex items-center gap-3">
+                <img src={appIcon} alt="" className="w-8 h-8 shrink-0" draggable={false} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-1">StackView</span>
+                    {appVersion && <span className="font-mono text-[10px] text-3">v{appVersion}</span>}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden />
+                    <span className="font-mono text-[11px] text-3 truncate" title={settings.endpoint}>{settings.endpoint}</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="mx-3 border-t border-theme" />
+              <div className="border-t border-theme" />
 
               {/* Region picker */}
               <div className="px-3 pt-3 pb-2">
-                <p className="text-[10px] font-semibold text-3 uppercase tracking-wider mb-1.5">Region</p>
-                <div className="relative mb-1.5">
-                  <SearchIcon size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-3" />
-                  <input
-                    type="text"
-                    value={regionSearch}
-                    onChange={e => setRegionSearch(e.target.value)}
-                    placeholder="Search regions..."
-                    className="sidebar-search pl-7 text-xs w-full"
-                    onClick={e => e.stopPropagation()}
-                  />
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <p className="section-label">Default region</p>
+                  <span className="font-mono text-[10px] text-3">{settings.region}</span>
                 </div>
-                <div className="max-h-36 overflow-y-auto rounded-lg border border-theme" style={{ backgroundColor: 'rgb(var(--bg-raised))' }}>
-                  {filteredRegions.map(r => (
-                    <button
-                      key={r.value}
-                      onClick={() => { onRegionChange(r.value); setSettingsOpen(false) }}
-                      className={`w-full text-left px-2.5 py-1.5 text-xs transition-colors flex items-center justify-between gap-2
-                        ${settings.region === r.value
-                          ? 'bg-brand-500/10 text-brand-600 dark:text-brand-300 font-semibold'
-                          : 'text-2 hover:bg-overlay'
-                        }`}
-                    >
-                      <span className="truncate">{r.label}</span>
-                      <span className="font-mono text-[10px] text-3 shrink-0">{r.value}</span>
-                    </button>
-                  ))}
-                </div>
+                <RegionList
+                  value={settings.region}
+                  onSelect={region => { onRegionChange(region); setSettingsOpen(false) }}
+                  listClassName="max-h-36"
+                />
               </div>
 
-              <div className="mx-3 border-t border-theme" />
+              <div className="border-t border-theme" />
 
               {/* Appearance */}
-              <div className="px-3 pt-3 pb-2">
-                <p className="text-[10px] font-semibold text-3 uppercase tracking-wider mb-2.5">Appearance</p>
-                <div className="grid grid-cols-3 gap-1 mb-2.5">
-                  {ALL_THEMES.map(themeKey => {
-                    const def = THEME_DEFINITIONS[themeKey]
-                    const isActive = theme === themeKey
-                    return (
+              <div className="px-4 pt-3 pb-3 space-y-3">
+                <ThemePicker theme={theme} onSelect={onSetTheme} />
+                <div>
+                  <p className="section-label mb-1.5">Service icons</p>
+                  <div className="grid grid-cols-2 gap-1 p-0.5 rounded-lg bg-raised" role="radiogroup" aria-label="Service icons">
+                    {(['lucide', 'aws'] as const).map(mode => (
                       <button
-                        key={themeKey}
-                        title={def.label}
-                        onClick={() => { onSetTheme(themeKey); setSettingsOpen(false) }}
-                        className="rounded-md overflow-hidden transition-all hover:scale-[1.02]"
-                        style={{
-                          outline: isActive ? '2px solid #0ea5e9' : '1px solid transparent',
-                          outlineOffset: 1,
-                        }}
+                        key={mode}
+                        role="radio"
+                        aria-checked={iconMode === mode}
+                        onClick={() => { if (iconMode !== mode) onToggleIconMode() }}
+                        className={`py-1 rounded-md text-[11px] font-medium transition-colors ${
+                          iconMode === mode ? 'bg-base text-1 shadow-sm' : 'text-3 hover:text-1'
+                        }`}
                       >
-                        <div className="relative h-6 w-full" style={{ backgroundColor: def.preview.bg }}>
-                          {isActive && (
-                            <span className="absolute top-0.5 right-0.5">
-                              <Check size={9} color="#ffffff" strokeWidth={3} />
-                            </span>
-                          )}
-                        </div>
-                        <div
-                          className="h-6 w-full flex items-center px-1.5 gap-1"
-                          style={{ backgroundColor: def.preview.surface }}
-                        >
-                          <span
-                            className="text-[8px] font-semibold flex-1 truncate leading-none"
-                            style={{ color: def.preview.text }}
-                          >
-                            {def.label}
-                          </span>
-                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: def.preview.bg }} />
-                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: def.preview.text }} />
-                        </div>
+                        {mode === 'lucide' ? 'Minimal' : 'AWS'}
                       </button>
-                    )
-                  })}
+                    ))}
+                  </div>
                 </div>
-                <button
-                  onClick={() => { onToggleIconMode(); setSettingsOpen(false) }}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-2 hover:bg-raised hover:text-1 rounded-lg transition-colors"
-                >
-                  <Image size={13} />
-                  {iconMode === 'lucide' ? 'AWS icons' : 'Default icons'}
-                </button>
               </div>
 
-              <div className="mx-3 border-t border-theme" />
+              <div className="border-t border-theme" />
 
               {/* Actions */}
-              <div className="px-3 pt-3 pb-2">
-                <p className="text-[10px] font-semibold text-3 uppercase tracking-wider mb-1">Actions</p>
-                <div className="space-y-0.5">
-                  <button
-                    onClick={() => { onRefresh(); setSettingsOpen(false) }}
-                    disabled={refreshing || !activeService}
-                    className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-2 hover:bg-raised hover:text-1 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
-                    Refresh
-                  </button>
-                  <button
-                    onClick={() => { onSwitchService(); setSettingsOpen(false) }}
-                    className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-2 hover:bg-raised hover:text-1 rounded-lg transition-colors"
-                  >
-                    <ArrowLeftRight size={13} />
-                    Browse services
-                  </button>
-                </div>
+              <div className="px-2 py-2">
+                <button
+                  onClick={() => { onOpenCommandPalette(); setSettingsOpen(false) }}
+                  className={menuItem}
+                >
+                  <Command size={13} />
+                  <span className="flex-1 text-left">Go to service…</span>
+                  <span className="kbd">{MOD_KEY} K</span>
+                </button>
+                <button
+                  onClick={() => { onSwitchService(); setSettingsOpen(false) }}
+                  className={menuItem}
+                >
+                  <ArrowLeftRight size={13} />
+                  Browse services
+                </button>
+                <button
+                  onClick={() => { onRefresh(); setSettingsOpen(false) }}
+                  disabled={refreshing || !activeService}
+                  className={menuItem}
+                >
+                  <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+                  Refresh current view
+                </button>
               </div>
 
-              <div className="mx-3 border-t border-theme" />
+              <div className="border-t border-theme" />
 
               {/* Updates */}
-              <div className="px-3 pt-3 pb-2">
-                <div className="flex items-center justify-between mb-2.5">
-                  <p className="text-[10px] font-semibold text-3 uppercase tracking-wider">Updates</p>
-                  {appVersion && (
-                    <span className="font-mono text-[10px] text-3">v{appVersion}</span>
-                  )}
+              <div className="px-2 pt-3 pb-2">
+                <div className="px-2">
+                  <UpdateControls
+                    appVersion=""
+                    autoUpdate={autoUpdate}
+                    onToggleAutoUpdate={onToggleAutoUpdate}
+                    updaterStatus={updaterStatus}
+                    onCheckForUpdates={onCheckForUpdates}
+                    onInstallUpdate={() => { onInstallUpdate(); setSettingsOpen(false) }}
+                  />
                 </div>
-
-                {/* Auto-update toggle */}
-                <button
-                  onClick={onToggleAutoUpdate}
-                  className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg transition-colors hover:bg-raised mb-1"
-                >
-                  <span className="text-xs text-2">Auto-update</span>
-                  <div
-                    className="relative flex-shrink-0 transition-colors duration-200"
-                    style={{
-                      width: 28, height: 16, borderRadius: 8,
-                      backgroundColor: autoUpdate ? '#0ea5e9' : 'rgb(var(--border))',
-                    }}
-                  >
-                    <div
-                      className="absolute top-0.5 transition-transform duration-200"
-                      style={{
-                        width: 12, height: 12, borderRadius: '50%',
-                        backgroundColor: '#ffffff',
-                        transform: autoUpdate ? 'translateX(14px)' : 'translateX(2px)',
-                      }}
-                    />
-                  </div>
-                </button>
-
-                {/* Status row */}
-                {updaterStatus.status !== 'idle' && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 mb-1">
-                    {updaterStatus.status === 'checking' && (
-                      <RefreshCw size={11} className="text-3 animate-spin shrink-0" />
-                    )}
-                    {updaterStatus.status === 'available' && (
-                      <ArrowUpCircle size={11} className="text-sky-500 shrink-0" />
-                    )}
-                    {updaterStatus.status === 'downloading' && (
-                      <Download size={11} className="text-sky-500 shrink-0" />
-                    )}
-                    {updaterStatus.status === 'ready' && (
-                      <CheckCircle2 size={11} className="text-emerald-500 shrink-0" />
-                    )}
-                    {updaterStatus.status === 'not-available' && (
-                      <CheckCircle2 size={11} className="text-3 shrink-0" />
-                    )}
-                    {updaterStatus.status === 'error' && (
-                      <AlertCircle size={11} className="text-red-500/70 shrink-0" />
-                    )}
-                    <span className="text-[11px] text-3 truncate">
-                      {updaterStatus.status === 'checking' && 'Checking for updates…'}
-                      {updaterStatus.status === 'available' && `v${updaterStatus.version} available`}
-                      {updaterStatus.status === 'downloading' && `Downloading… ${updaterStatus.percent ?? 0}%`}
-                      {updaterStatus.status === 'ready' && `v${updaterStatus.version} ready to install`}
-                      {updaterStatus.status === 'not-available' && 'Up to date'}
-                      {updaterStatus.status === 'error' && (updaterStatus.message ?? 'Update error')}
-                    </span>
-                  </div>
-                )}
-
-                {/* Action button */}
-                {updaterStatus.status === 'ready' ? (
-                  <button
-                    onClick={() => { onInstallUpdate(); setSettingsOpen(false) }}
-                    className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs font-medium text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-colors"
-                  >
-                    <Download size={13} />
-                    Install & Restart
-                  </button>
-                ) : (
-                  <button
-                    onClick={onCheckForUpdates}
-                    disabled={updaterStatus.status === 'checking' || updaterStatus.status === 'downloading'}
-                    className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-2 hover:bg-raised hover:text-1 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <RefreshCw size={13} className={updaterStatus.status === 'checking' ? 'animate-spin' : ''} />
-                    Check for Updates
-                  </button>
-                )}
               </div>
 
-              <div className="mx-3 border-t border-red-500/20" />
+              <div className="border-t border-theme" />
 
               <div className="px-2 py-2">
                 <button
                   onClick={() => { onDisconnect(); setSettingsOpen(false) }}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-red-500/70 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                 >
                   <LogOut size={13} />
                   Disconnect
@@ -665,32 +543,35 @@ export default function NavRail({
           )}
         </div>
 
-      </div>
+      </nav>
 
       {/* Add favourite picker — fixed to avoid overflow clipping from scroll container */}
       {addFavOpen && addFavPos && (
         <div
           ref={addFavPanelRef}
-          className="fixed z-[999] w-64 rounded-xl shadow-2xl border border-theme overflow-hidden animate-in fade-in zoom-in-95 duration-100"
-          style={{ left: addFavPos.x, top: addFavPos.y, backgroundColor: 'rgb(var(--bg-base))' }}
+          role="dialog"
+          aria-label="Add favourite"
+          className="popover fixed z-[999] w-64 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+          style={{ left: addFavPos.x, top: Math.min(addFavPos.y, window.innerHeight - 340) }}
         >
-          <div className="px-3 pt-2.5 pb-1">
-            <p className="text-[10px] font-semibold text-3 uppercase tracking-wider mb-2">Add favourite</p>
-            <div className="relative mb-2">
-              <SearchIcon size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-3 pointer-events-none" />
+          <div className="px-3 pt-3 pb-2">
+            <p className="section-label mb-2">Add favourite</p>
+            <div className="relative">
+              <SearchIcon size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-4 pointer-events-none" />
               <input
                 type="text"
                 value={addFavSearch}
                 onChange={e => setAddFavSearch(e.target.value)}
-                placeholder="Search services..."
-                className="sidebar-search pl-7 text-xs w-full"
+                placeholder="Search services…"
+                aria-label="Search services"
+                className="sidebar-search"
                 autoFocus
               />
             </div>
           </div>
-          <div className="max-h-60 overflow-y-auto mx-2 mb-2 rounded-lg border border-theme" style={{ backgroundColor: 'rgb(var(--bg-raised))' }}>
+          <div className="max-h-64 overflow-y-auto px-1.5 pb-1.5">
             {filteredAvailable.length === 0 ? (
-              <p className="text-xs text-4 px-3 py-4 text-center">
+              <p className="text-xs text-3 px-3 py-4 text-center">
                 {availableServices.length === 0 ? 'All services added' : 'No matches'}
               </p>
             ) : (
@@ -701,18 +582,19 @@ export default function NavRail({
                   <button
                     key={svc}
                     onClick={() => onToggleFavourite(svc)}
-                    className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs text-2 hover:bg-overlay transition-colors"
+                    className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-xs text-2 hover:bg-raised hover:text-1 transition-colors"
                   >
                     <span
                       className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: iconMode === 'aws' ? 'transparent' : hexToRgba(hex, 0.15) }}
+                      style={{ backgroundColor: iconMode === 'aws' ? 'transparent' : hexToRgba(hex, 0.14) }}
                     >
                       {iconMode === 'aws'
                         ? <AwsServiceIcon service={svc} size={20} />
-                        : <Icon size={14} style={{ color: hex }} />
+                        : <Icon size={13} style={{ color: hex }} />
                       }
                     </span>
-                    <span className="truncate">{SERVICE_CONFIG[svc].label}</span>
+                    <span className="flex-1 text-left truncate">{SERVICE_CONFIG[svc].label}</span>
+                    <Plus size={12} className="text-4 shrink-0" />
                   </button>
                 )
               })
@@ -724,13 +606,11 @@ export default function NavRail({
       {/* Fixed tooltip — outside NavRail to avoid overflow clipping */}
       {tooltip && hoveredId && !settingsOpen && !addFavOpen && !contextMenu && (
         <div
+          role="tooltip"
           className="fixed z-[999] pointer-events-none select-none"
-          style={{ left: 80, top: tooltip.y, transform: 'translateY(-50%)' }}
+          style={{ left: tooltip.x, top: tooltip.y, transform: 'translateY(-50%)' }}
         >
-          <div
-            className="px-2.5 py-1.5 text-xs font-semibold rounded-lg shadow-xl whitespace-nowrap text-1"
-            style={{ backgroundColor: 'rgb(var(--bg-overlay))' }}
-          >
+          <div className="px-2 py-1 text-xs font-medium rounded-md whitespace-nowrap text-1 bg-overlay border border-theme shadow-lg animate-in fade-in duration-100">
             {tooltip.text}
           </div>
         </div>
@@ -738,22 +618,25 @@ export default function NavRail({
 
       {contextMenu && (
         <div
-          className="fixed z-[999] bg-base border border-theme rounded-xl shadow-2xl py-1 min-w-[170px] animate-in fade-in zoom-in-95 duration-100"
+          role="menu"
+          className="popover fixed z-[999] p-1 min-w-[180px] animate-in fade-in zoom-in-95 duration-100"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onMouseDown={e => e.stopPropagation()}
         >
           <button
+            role="menuitem"
             onClick={() => { onOpenInNewTab(contextMenu.service); setContextMenu(null) }}
-            className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-2 hover:bg-raised hover:text-1 transition-colors"
+            className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-xs text-2 hover:bg-raised hover:text-1 transition-colors"
           >
             <ExternalLink size={13} className="shrink-0" />
             Open in new tab
           </button>
           <button
+            role="menuitem"
             onClick={() => { onToggleFavourite(contextMenu.service); setContextMenu(null) }}
-            className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium text-3 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+            className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-xs text-2 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 transition-colors"
           >
-            <Star size={13} className="shrink-0" />
+            <StarOff size={13} className="shrink-0" />
             Remove from favourites
           </button>
         </div>

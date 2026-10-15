@@ -82,7 +82,7 @@ export default function UploadObjectModal({ bucket, prefix, onClose, onUploaded 
   const pendingCount = files.filter((f) => f.status === 'pending').length
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={!uploading ? onClose : undefined} />
       <div
         className="relative w-full max-w-lg rounded-2xl shadow-2xl border border-theme flex flex-col"

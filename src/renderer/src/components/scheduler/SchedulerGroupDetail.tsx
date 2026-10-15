@@ -135,8 +135,8 @@ export default function SchedulerGroupDetail({ group, onRefresh, onDeleted, onCr
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-1 truncate">{group.name}</h2>
-                {isDefault && <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-amber-500/10 text-amber-600 border border-amber-500/20">DEFAULT</span>}
-                <span className={`px-1.5 py-0.5 text-[9px] font-bold uppercase rounded ${group.state === 'ACTIVE' || !group.state ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+                {isDefault && <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-amber-500/10 text-amber-600 border border-amber-500/20">DEFAULT</span>}
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold uppercase rounded ${group.state === 'ACTIVE' || !group.state ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
                   {group.state || 'ACTIVE'}
                 </span>
               </div>
@@ -288,30 +288,30 @@ export default function SchedulerGroupDetail({ group, onRefresh, onDeleted, onCr
                                   <div className="bg-base rounded-xl border border-theme p-4 space-y-3">
                                     <div className="grid grid-cols-2 gap-4">
                                       <div>
-                                        <p className="text-[9px] text-4 font-bold uppercase tracking-widest mb-1">Expression</p>
+                                        <p className="text-[10px] text-4 font-bold uppercase tracking-widest mb-1">Expression</p>
                                         <p className="text-xs font-mono text-amber-500 font-bold">{full.scheduleExpression || '—'}</p>
                                       </div>
                                       <div>
-                                        <p className="text-[9px] text-4 font-bold uppercase tracking-widest mb-1">Timezone</p>
+                                        <p className="text-[10px] text-4 font-bold uppercase tracking-widest mb-1">Timezone</p>
                                         <p className="text-xs font-mono text-2">{full.scheduleExpressionTimezone || 'UTC'}</p>
                                       </div>
                                     </div>
                                     {full.description && (
                                       <div>
-                                        <p className="text-[9px] text-4 font-bold uppercase tracking-widest mb-1">Description</p>
+                                        <p className="text-[10px] text-4 font-bold uppercase tracking-widest mb-1">Description</p>
                                         <p className="text-xs text-2">{full.description}</p>
                                       </div>
                                     )}
                                     <div className="grid grid-cols-2 gap-4">
                                       {full.startDate && (
                                         <div>
-                                          <p className="text-[9px] text-4 font-bold uppercase tracking-widest mb-1">Start Date</p>
+                                          <p className="text-[10px] text-4 font-bold uppercase tracking-widest mb-1">Start Date</p>
                                           <p className="text-xs text-2">{new Date(full.startDate).toLocaleString()}</p>
                                         </div>
                                       )}
                                       {full.endDate && (
                                         <div>
-                                          <p className="text-[9px] text-4 font-bold uppercase tracking-widest mb-1">End Date</p>
+                                          <p className="text-[10px] text-4 font-bold uppercase tracking-widest mb-1">End Date</p>
                                           <p className="text-xs text-2">{new Date(full.endDate).toLocaleString()}</p>
                                         </div>
                                       )}
@@ -326,14 +326,14 @@ export default function SchedulerGroupDetail({ group, onRefresh, onDeleted, onCr
                                   </h4>
                                   <div className="bg-base rounded-xl border border-theme p-4 space-y-3">
                                     <div>
-                                      <p className="text-[9px] text-4 font-bold uppercase tracking-widest mb-1">Target ARN</p>
+                                      <p className="text-[10px] text-4 font-bold uppercase tracking-widest mb-1">Target ARN</p>
                                       <div className="flex items-center gap-1.5 bg-raised/50 rounded-lg px-2.5 py-1.5 border border-theme/50">
                                         <p className="text-[10px] font-mono text-2 truncate flex-1">{full.targetArn || '—'}</p>
                                         {full.targetArn && <CopyButton text={full.targetArn} />}
                                       </div>
                                     </div>
                                     <div>
-                                      <p className="text-[9px] text-4 font-bold uppercase tracking-widest mb-1">Role ARN</p>
+                                      <p className="text-[10px] text-4 font-bold uppercase tracking-widest mb-1">Role ARN</p>
                                       <div className="flex items-center gap-1.5 bg-raised/50 rounded-lg px-2.5 py-1.5 border border-theme/50">
                                         <p className="text-[10px] font-mono text-2 truncate flex-1">{full.targetRoleArn || '—'}</p>
                                         {full.targetRoleArn && <CopyButton text={full.targetRoleArn} />}
@@ -341,7 +341,7 @@ export default function SchedulerGroupDetail({ group, onRefresh, onDeleted, onCr
                                     </div>
                                     {full.targetInput && (
                                       <div>
-                                        <p className="text-[9px] text-4 font-bold uppercase tracking-widest mb-1">Input Payload</p>
+                                        <p className="text-[10px] text-4 font-bold uppercase tracking-widest mb-1">Input Payload</p>
                                         <pre className="text-[10px] font-mono text-2 p-3 bg-raised/50 rounded-lg border border-theme overflow-x-auto leading-relaxed">
                                           {(() => { try { return JSON.stringify(JSON.parse(full.targetInput), null, 2) } catch { return full.targetInput } })()}
                                         </pre>

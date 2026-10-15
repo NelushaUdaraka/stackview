@@ -64,9 +64,10 @@ export default function SecretsManagerLayout({
         {/* Resize handle */}
         <div
           onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
-          title="Drag to resize"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize sidebar"
+          className="resize-handle"
         />
 
         {/* Main content */}

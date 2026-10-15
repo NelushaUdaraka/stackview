@@ -59,7 +59,7 @@ export default function BusDetail({ bus, onRefresh, onDeleted }: Props) {
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold text-1 truncate">{bus.name}</h2>
                 {bus.name === 'default' && (
-                   <span className="px-1.5 py-0.5 rounded bg-fuchsia-500/10 text-[9px] font-bold text-fuchsia-600 border border-fuchsia-500/20">PRIMARY</span>
+                   <span className="px-1.5 py-0.5 rounded bg-fuchsia-500/10 text-[10px] font-bold text-fuchsia-600 border border-fuchsia-500/20">PRIMARY</span>
                 )}
               </div>
               <div className="flex items-center gap-2 text-[10px] font-mono text-3 truncate" title={bus.arn}>

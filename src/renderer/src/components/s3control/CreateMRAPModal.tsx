@@ -40,7 +40,7 @@ export default function CreateMRAPModal({ onClose, onCreated }: Props) {
   const validBuckets = buckets.map((b) => b.trim()).filter(Boolean)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgb(0 0 0 / 0.6)' }}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgb(0 0 0 / 0.6)' }}>
       <div className="w-full max-w-lg rounded-2xl border border-theme shadow-2xl flex flex-col max-h-[90vh]" style={{ backgroundColor: 'rgb(var(--bg-overlay))' }}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme">
           <div className="flex items-center gap-2.5">

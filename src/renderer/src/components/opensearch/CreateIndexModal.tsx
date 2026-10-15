@@ -42,7 +42,7 @@ export default function CreateIndexModal({ domainEndpoint, onClose, onCreated }:
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-base border border-theme rounded-2xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-5 border-b border-theme">

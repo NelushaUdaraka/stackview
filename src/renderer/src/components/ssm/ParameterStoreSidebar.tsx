@@ -99,18 +99,18 @@ export default function ParameterStoreSidebar({
                 <SlidersHorizontal size={13} className={`mt-0.5 shrink-0 ${isSelected ? 'text-teal-500' : 'text-4'}`} />
                 <div className="flex-1 min-w-0">
                   {prefix && (
-                    <p className="text-[9px] text-4 font-mono truncate leading-none mb-0.5">{prefix}</p>
+                    <p className="text-[10px] text-4 font-mono truncate leading-none mb-0.5">{prefix}</p>
                   )}
                   <p className={`text-xs font-medium truncate leading-snug ${isSelected ? 'text-1' : 'text-2'}`}>
                     {short}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
-                    <span className={`inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded ${TYPE_COLORS[param.type] ?? 'text-3 bg-raised'}`}>
+                    <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${TYPE_COLORS[param.type] ?? 'text-3 bg-raised'}`}>
                       {TYPE_ICONS[param.type]}
                       {param.type}
                     </span>
                     {param.version !== undefined && (
-                      <span className="text-[9px] text-4">v{param.version}</span>
+                      <span className="text-[10px] text-4">v{param.version}</span>
                     )}
                   </div>
                 </div>

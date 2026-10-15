@@ -190,7 +190,7 @@ export default function VolumesView() {
 
       {/* Attach modal */}
       {attachModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="w-80 rounded-2xl border border-theme shadow-2xl overflow-hidden" style={{ backgroundColor: 'rgb(var(--bg-base))' }}>
             <div className="px-4 py-3 border-b border-theme flex items-center justify-between" style={{ backgroundColor: 'rgb(var(--bg-raised) / 0.6)' }}>
               <p className="text-sm font-bold text-1">Attach Volume</p>

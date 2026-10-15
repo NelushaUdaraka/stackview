@@ -25,7 +25,7 @@ export default function CreateFirewallDomainListModal({ onCreated, onClose }: Pr
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="w-full max-w-sm rounded-2xl border border-theme shadow-2xl flex flex-col" style={{ backgroundColor: 'rgb(var(--bg-base))' }}>
         {/* header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme">

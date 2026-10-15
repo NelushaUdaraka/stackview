@@ -40,7 +40,7 @@ function EventRow({ event }: { event: SwfHistoryEvent }) {
               {event.eventType}
             </span>
             {event.eventTimestamp && (
-              <span className="text-[9px] text-4 font-mono">
+              <span className="text-[10px] text-4 font-mono">
                 {new Date(event.eventTimestamp).toLocaleString()}
               </span>
             )}
@@ -86,7 +86,7 @@ export default function ExecutionHistoryModal({ domain, workflowId, runId, onClo
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
     >
       <div

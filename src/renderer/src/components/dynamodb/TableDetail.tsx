@@ -738,7 +738,7 @@ function RecordRow({ record }: { record: DynamoStreamRecord }) {
         className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-raised transition-colors"
       >
         {expanded ? <ChevronDown size={12} className="text-4 shrink-0" /> : <ChevronRight size={12} className="text-4 shrink-0" />}
-        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border ${color} shrink-0`}>
+        <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border ${color} shrink-0`}>
           {record.eventName ?? '—'}
         </span>
         <span className="text-[10px] font-mono text-3 truncate flex-1">{record.sequenceNumber ?? '—'}</span>
@@ -865,8 +865,8 @@ function StreamsTab({ tableName, showToast }: { tableName: string; showToast: (t
               <>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs font-semibold text-1">Stream Active</span>
-                  <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border bg-emerald-500/10 text-emerald-500 border-emerald-500/20">{streamInfo.streamStatus}</span>
-                  <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border border-theme bg-raised text-3">{streamInfo.streamViewType}</span>
+                  <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border bg-emerald-500/10 text-emerald-500 border-emerald-500/20">{streamInfo.streamStatus}</span>
+                  <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border border-theme bg-raised text-3">{streamInfo.streamViewType}</span>
                 </div>
                 <p className="text-[10px] font-mono text-4 truncate mt-0.5">{streamInfo.streamArn}</p>
               </>
@@ -934,13 +934,13 @@ function StreamsTab({ tableName, showToast }: { tableName: string; showToast: (t
                       <div className="px-3 py-2">
                         <p className="text-[10px] font-mono text-2 truncate">{shard.shardId.slice(-16)}</p>
                         <div className="flex items-center justify-between mt-1">
-                          <span className={`text-[8px] font-bold uppercase ${isClosed ? 'text-4' : 'text-emerald-500'}`}>
+                          <span className={`text-[10px] font-bold uppercase ${isClosed ? 'text-4' : 'text-emerald-500'}`}>
                             {isClosed ? 'closed' : 'open'}
                           </span>
                           <button
                             onClick={() => handleGetRecords(shard)}
                             disabled={loadingRecords}
-                            className="text-[9px] font-semibold text-violet-500 hover:text-violet-400 transition-colors"
+                            className="text-[10px] font-semibold text-violet-500 hover:text-violet-400 transition-colors"
                           >
                             Read
                           </button>
@@ -953,7 +953,7 @@ function StreamsTab({ tableName, showToast }: { tableName: string; showToast: (t
             </div>
             {/* Iterator type selector */}
             <div className="p-2 border-t border-theme shrink-0">
-              <p className="text-[9px] text-4 mb-1 font-bold uppercase tracking-wider">Iterator type</p>
+              <p className="text-[10px] text-4 mb-1 font-bold uppercase tracking-wider">Iterator type</p>
               <select
                 value={iteratorType}
                 onChange={(e) => setIteratorType(e.target.value as typeof iteratorType)}

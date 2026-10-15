@@ -79,10 +79,10 @@ export default function EbSidebar({
                       {bus.name}
                     </p>
                     {isDefault && !isSelected && (
-                      <span className="text-[8px] px-1 rounded bg-fuchsia-500/10 text-fuchsia-600 border border-fuchsia-500/10 shrink-0">DEFAULT</span>
+                      <span className="text-[10px] px-1 rounded bg-fuchsia-500/10 text-fuchsia-600 border border-fuchsia-500/10 shrink-0">DEFAULT</span>
                     )}
                   </div>
-                  <p className="text-[9px] text-4 font-mono truncate leading-none mt-1">
+                  <p className="text-[10px] text-4 font-mono truncate leading-none mt-1">
                     {bus.arn.split(':').slice(-1)[0]}
                   </p>
                 </div>

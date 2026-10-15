@@ -79,13 +79,13 @@ function InfoRow({
 function StatusBadge({ status }: { status: string }) {
   if (status === 'DEPRECATED') {
     return (
-      <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
+      <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
         DEPRECATED
       </span>
     )
   }
   return (
-    <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded border bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20">
+    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded border bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20">
       REGISTERED
     </span>
   )
@@ -93,16 +93,16 @@ function StatusBadge({ status }: { status: string }) {
 
 function TypeStatusBadge({ status }: { status: string }) {
   return status === 'DEPRECATED' ? (
-    <span className="text-[8px] font-bold uppercase text-amber-500">DEPRECATED</span>
+    <span className="text-[10px] font-bold uppercase text-amber-500">DEPRECATED</span>
   ) : (
-    <span className="text-[8px] font-bold uppercase text-green-500">REGISTERED</span>
+    <span className="text-[10px] font-bold uppercase text-green-500">REGISTERED</span>
   )
 }
 
 function ExecStatusBadge({ execution }: { execution: SwfExecution }) {
   if (execution.executionStatus === 'OPEN') {
     return (
-      <span className="text-[8px] font-bold uppercase text-green-500">OPEN</span>
+      <span className="text-[10px] font-bold uppercase text-green-500">OPEN</span>
     )
   }
   const cs = execution.closeStatus ?? 'CLOSED'
@@ -115,7 +115,7 @@ function ExecStatusBadge({ execution }: { execution: SwfExecution }) {
     CONTINUED_AS_NEW: 'text-blue-500',
   }
   return (
-    <span className={`text-[8px] font-bold uppercase ${colors[cs] ?? 'text-3'}`}>{cs}</span>
+    <span className={`text-[10px] font-bold uppercase ${colors[cs] ?? 'text-3'}`}>{cs}</span>
   )
 }
 
@@ -652,7 +652,7 @@ export default function DomainDetail({ domain, onDeprecated, showToast }: Props)
                                 <span className="truncate block" title={exec.workflowId}>
                                   {exec.workflowId}
                                 </span>
-                                <span className="text-[9px] font-mono text-4 truncate block" title={exec.runId}>
+                                <span className="text-[10px] font-mono text-4 truncate block" title={exec.runId}>
                                   {exec.runId.slice(0, 8)}…
                                 </span>
                               </td>

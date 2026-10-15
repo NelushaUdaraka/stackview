@@ -74,7 +74,7 @@ export default function SnsSidebar({ topics, selectedTopic, onSelectTopic, onCre
                   <p className={`text-xs font-medium truncate leading-snug ${isSelected ? 'text-1' : 'text-2'}`}>
                     {topic.name}
                   </p>
-                  <p className="text-[9px] text-4 font-mono truncate leading-none mt-1">
+                  <p className="text-[10px] text-4 font-mono truncate leading-none mt-1">
                     {topic.arn.substring(0, 32)}...
                   </p>
                 </div>

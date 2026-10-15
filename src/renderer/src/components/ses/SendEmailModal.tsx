@@ -52,7 +52,7 @@ export default function SendEmailModal({ sourceIdentity, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
       <div className="w-full max-w-2xl rounded-2xl border border-theme shadow-2xl flex flex-col max-h-[90vh]" style={{ backgroundColor: 'rgb(var(--bg-base))' }}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme shrink-0">
           <div className="flex items-center gap-3">

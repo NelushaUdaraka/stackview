@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Download, X } from 'lucide-react'
+import { Download, X, Sparkles } from 'lucide-react'
 import type { UpdaterStatus } from '../../types'
 
 interface Props {
@@ -24,51 +24,49 @@ export default function UpdateBanner({ status, onInstall }: Props) {
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 w-80 rounded-xl shadow-2xl border border-emerald-500/30 overflow-hidden animate-in slide-in-from-right-4 duration-300"
-      style={{ backgroundColor: 'rgb(var(--bg-base))' }}
+      role="status"
+      className="popover fixed bottom-5 right-5 z-50 w-80 overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300"
     >
-      <div className="flex items-stretch">
-        {/* Left accent bar */}
-        <div className="w-1 shrink-0 bg-emerald-500" />
-
-        <div className="flex-1 px-4 py-3.5 min-w-0">
-          <div className="flex items-start gap-2.5">
-            <CheckCircle2 size={15} className="shrink-0 text-emerald-500 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-1 leading-snug">
-                Update ready to install
-              </p>
-              <p className="text-xs text-3 mt-0.5 truncate">
-                {status.version
-                  ? `StackView v${status.version} is downloaded and ready.`
-                  : 'A new version is downloaded and ready.'}
-              </p>
-            </div>
-            <button
-              onClick={() => setDismissedVersion(status.version ?? 'unknown')}
-              className="shrink-0 text-4 hover:text-2 transition-colors -mt-0.5"
-              aria-label="Dismiss"
-              title="Dismiss for this session"
-            >
-              <X size={14} />
-            </button>
+      <div className="h-0.5 bg-gradient-to-r from-emerald-500 via-emerald-400 to-sky-500" aria-hidden />
+      <div className="px-4 pt-3.5 pb-3.5">
+        <div className="flex items-start gap-3">
+          <span className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-500 flex items-center justify-center shrink-0" aria-hidden>
+            <Sparkles size={15} />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-1 leading-snug">
+              Update ready to install
+            </p>
+            <p className="text-xs text-3 mt-0.5">
+              {status.version
+                ? `StackView v${status.version} has been downloaded.`
+                : 'A new version has been downloaded.'}
+            </p>
           </div>
+          <button
+            onClick={() => setDismissedVersion(status.version ?? 'unknown')}
+            className="icon-btn w-6 h-6 -mt-1 -mr-1.5"
+            aria-label="Dismiss"
+            title="Dismiss for this session"
+          >
+            <X size={13} />
+          </button>
+        </div>
 
-          <div className="flex items-center gap-2 mt-3">
-            <button
-              onClick={onInstall}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
-            >
-              <Download size={13} />
-              Install &amp; Restart
-            </button>
-            <button
-              onClick={() => setDismissedVersion(status.version ?? 'unknown')}
-              className="px-3 py-2 text-xs font-medium text-3 hover:text-1 hover:bg-raised rounded-lg transition-colors"
-            >
-              Later
-            </button>
-          </div>
+        <div className="flex items-center gap-2 mt-3.5 pl-11">
+          <button
+            onClick={onInstall}
+            className="flex-1 flex items-center justify-center gap-2 h-8 px-3 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors shadow-sm"
+          >
+            <Download size={13} />
+            Restart &amp; install
+          </button>
+          <button
+            onClick={() => setDismissedVersion(status.version ?? 'unknown')}
+            className="h-8 px-3 text-xs font-medium text-2 hover:text-1 hover:bg-raised rounded-lg transition-colors"
+          >
+            Later
+          </button>
         </div>
       </div>
     </div>
