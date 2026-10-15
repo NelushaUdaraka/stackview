@@ -7,7 +7,7 @@ import type { UpdaterStatus } from "../../shared/types";
 import { registerSqsHandlers } from "./handlers/sqsHandlers";
 import { registerS3Handlers } from "./handlers/s3Handlers";
 import { registerSecretsManagerHandlers } from "./handlers/secretsManagerHandlers";
-import { registerDynamoDbHandlers } from "./handlers/dynamoDbHandlers";
+import { registerDynamoDbHandlers } from "./handlers/dynamodbHandlers";
 import { registerCloudFormationHandlers } from "./handlers/cloudFormationHandlers";
 import { registerSsmHandlers } from "./handlers/ssmHandlers";
 import { registerSnsHandlers } from "./handlers/snsHandlers";
