@@ -76,7 +76,7 @@ export default function SnsLayout({
               key={selectedTopic.arn}
               topic={selectedTopic}
               onDeleted={handleDeleted}
-              onUpdated={handleRefresh}
+              onUpdated={loadTopics}
             />
           ) : (
             <TopicsEmptyState onCreate={() => setShowCreateModal(true)} />

@@ -498,8 +498,6 @@ export default function IamLayout({ settings }: Props) {
       {showCreateGroup && <CreateGroupModal onClose={() => setShowCreateGroup(false)} onCreated={() => { setShowCreateGroup(false); loadGroups() }} showToast={showToast} allUsers={users} />}
       {showCreateRole && <CreateRoleModal onClose={() => setShowCreateRole(false)} onCreated={() => { setShowCreateRole(false); loadRoles() }} showToast={showToast} />}
       {showCreatePolicy && <CreatePolicyModal onClose={() => setShowCreatePolicy(false)} onCreated={() => { setShowCreatePolicy(false); loadPolicies() }} showToast={showToast} />}
-
-      <ToastContainer toasts={toasts} />
     </div>
   )
 }
