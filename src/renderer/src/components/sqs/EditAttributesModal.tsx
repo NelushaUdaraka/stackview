@@ -26,7 +26,7 @@ export default function EditAttributesModal({ queue, attributes, onClose, onSave
     })
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="card w-full max-w-md mx-4 shadow-2xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme">
           <div>

@@ -31,7 +31,7 @@ function CreateApiModal({ onClose, onCreated }: any) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={MODAL_OVERLAY}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" style={MODAL_OVERLAY}>
       <div className="w-full max-w-sm rounded-2xl border border-theme shadow-2xl overflow-hidden bg-base">
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme">
           <div className="flex items-center gap-3">
@@ -135,8 +135,10 @@ export default function ApigwLayout({ settings }: Props) {
 
         <div
           onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20 transition-colors"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize sidebar"
+          className="resize-handle"
         />
 
         <main className="flex-1 overflow-hidden flex flex-col">

@@ -42,7 +42,7 @@ function RequestCertificateModal({ onClose, onCreated }: { onClose: () => void; 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
       <div className="w-full max-w-md rounded-2xl border border-theme shadow-2xl overflow-hidden" style={{ backgroundColor: 'rgb(var(--bg-base))' }}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme">
           <div className="flex items-center gap-3">
@@ -153,7 +153,7 @@ function ImportCertificateModal({ onClose, onCreated }: { onClose: () => void; o
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
       <div className="w-full max-w-lg rounded-2xl border border-theme shadow-2xl overflow-hidden" style={{ backgroundColor: 'rgb(var(--bg-base))' }}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme">
           <div className="flex items-center gap-3">
@@ -291,8 +291,10 @@ export default function AcmLayout({ settings: _settings }: Props) {
         {/* Resize handle */}
         <div
           onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize sidebar"
+          className="resize-handle"
         />
 
         {/* Main Content */}

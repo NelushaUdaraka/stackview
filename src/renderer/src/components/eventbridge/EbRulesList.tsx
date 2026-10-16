@@ -137,12 +137,12 @@ export default function EbRulesList({ bus, showToast }: Props) {
                          <div className="flex items-center gap-3">
                             {rule.eventPattern ? (
                                <div className="flex items-center gap-2 max-w-[300px]">
-                                  <span className="px-1.5 py-0.5 rounded bg-fuchsia-500/10 text-[9px] font-bold uppercase tracking-wider text-fuchsia-600 border border-fuchsia-500/20 shrink-0">PATTERN</span>
+                                  <span className="px-1.5 py-0.5 rounded bg-fuchsia-500/10 text-[10px] font-bold uppercase tracking-wider text-fuchsia-600 border border-fuchsia-500/20 shrink-0">PATTERN</span>
                                   <span className="text-[11px] font-mono text-3 truncate opacity-60 italic">{rule.eventPattern.replace(/\s+/g, ' ').substring(0, 40)}...</span>
                                </div>
                             ) : (
                                <div className="flex items-center gap-2">
-                                  <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-[9px] font-bold uppercase tracking-wider text-amber-600 border border-amber-500/20 shrink-0">SCHEDULE</span>
+                                  <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-[10px] font-bold uppercase tracking-wider text-amber-600 border border-amber-500/20 shrink-0">SCHEDULE</span>
                                   <span className="text-[11px] font-mono text-amber-600/80 font-bold">{rule.scheduleExpression}</span>
                                </div>
                             )}
@@ -277,7 +277,7 @@ function CreateRuleModal({ busName, onClose, onCreated }: { busName: string, onC
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm animate-in fade-in duration-200">
        {/* Modal precisely matched to CreateTopicModal.tsx / CreateSubscriptionModal.tsx */}
        <div className="w-full max-w-lg rounded-2xl border border-theme shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" style={{ backgroundColor: 'rgb(var(--bg-base))' }}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-theme shrink-0">

@@ -14,7 +14,7 @@ import {
   getShardIterator,
   getRecords,
   updateTableStream,
-} from '../services/dynamoDbService'
+} from '../services/dynamodbService'
 
 export function registerDynamoDbHandlers(ipcMain: IpcMain): void {
   ipcMain.handle('dynamodb:reinit', (_event, endpoint: string, region: string) => {

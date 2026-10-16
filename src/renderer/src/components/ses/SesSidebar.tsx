@@ -75,7 +75,7 @@ export default function SesSidebar({ identities, selectedIdentity, onSelectIdent
                   <p className={`text-xs font-medium truncate leading-snug mb-0.5 ${isSelected ? 'text-1' : 'text-2'}`}>
                     {identity.name}
                   </p>
-                  <p className={`text-[9px] font-bold uppercase tracking-widest ${isSelected ? (isVerified ? 'text-emerald-500' : 'text-amber-500') : (isVerified ? 'text-emerald-600' : 'text-4')}`}>
+                  <p className={`text-[10px] font-bold uppercase tracking-widest ${isSelected ? (isVerified ? 'text-emerald-500' : 'text-amber-500') : (isVerified ? 'text-emerald-600' : 'text-4')}`}>
                     {identity.verificationStatus}
                   </p>
                 </div>

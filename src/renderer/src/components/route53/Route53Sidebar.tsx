@@ -63,7 +63,7 @@ export default function Route53Sidebar({
       </button>
 
       <div className="px-3 pt-2 pb-1">
-        <span className="text-[9px] font-bold text-4 uppercase tracking-wider">Zones</span>
+        <span className="text-[10px] font-bold text-4 uppercase tracking-wider">Zones</span>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -106,7 +106,7 @@ export default function Route53Sidebar({
                   </p>
                   <p className="text-[10px] text-4 truncate mt-0.5">{shortId}</p>
                   {zone.Config?.PrivateZone && (
-                    <span className="inline-block text-[9px] font-bold uppercase tracking-wide text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded mt-1">Private</span>
+                    <span className="inline-block text-[10px] font-bold uppercase tracking-wide text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded mt-1">Private</span>
                   )}
                 </div>
               </button>

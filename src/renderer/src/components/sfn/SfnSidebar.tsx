@@ -12,9 +12,9 @@ interface Props {
 
 function typeBadge(type: 'STANDARD' | 'EXPRESS') {
   return type === 'EXPRESS' ? (
-    <span className="text-[8px] font-bold uppercase tracking-widest text-lime-500">EXPRESS</span>
+    <span className="text-[10px] font-bold uppercase tracking-widest text-lime-500">EXPRESS</span>
   ) : (
-    <span className="text-[8px] font-bold uppercase tracking-widest text-3">STANDARD</span>
+    <span className="text-[10px] font-bold uppercase tracking-widest text-3">STANDARD</span>
   )
 }
 
@@ -97,7 +97,7 @@ export default function SfnSidebar({
                     {m.name}
                   </p>
                   <div className="flex items-center gap-1.5 justify-between">
-                    <p className="text-[9px] text-4 truncate font-mono">
+                    <p className="text-[10px] text-4 truncate font-mono">
                       {m.creationDate ? new Date(m.creationDate).toLocaleDateString() : '—'}
                     </p>
                     {typeBadge(m.type)}

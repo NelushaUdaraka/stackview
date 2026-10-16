@@ -76,7 +76,7 @@ export default function OpenSearchSidebar({
                   <p className={`text-xs font-medium truncate leading-snug ${isSelected ? 'text-1 font-semibold' : 'text-2'}`}>
                     {name}
                   </p>
-                  <p className="text-[9px] font-bold text-4 uppercase tracking-widest mt-0.5">
+                  <p className="text-[10px] font-bold text-4 uppercase tracking-widest mt-0.5">
                     OpenSearch Domain
                   </p>
                 </div>

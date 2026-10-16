@@ -211,7 +211,7 @@ export default function GroupDetail({ group, onDeleted, showToast }: Props) {
                     <div className="flex items-center gap-2">
                       <p className="text-[10px] font-bold text-4 uppercase tracking-wider">Resource Query</p>
                       {detail.query && (
-                        <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded border border-theme bg-raised text-3">
+                        <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border border-theme bg-raised text-3">
                           {detail.query.type}
                         </span>
                       )}

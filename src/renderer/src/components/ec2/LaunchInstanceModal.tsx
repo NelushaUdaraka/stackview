@@ -75,7 +75,7 @@ export default function LaunchInstanceModal({ onClose, onLaunched }: Props) {
   }
 
   return (
-    <div className="no-drag fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="no-drag modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div
         className="flex flex-col w-full max-w-xl max-h-[90vh] rounded-2xl border border-theme shadow-2xl overflow-hidden"
         style={{ backgroundColor: 'rgb(var(--bg-base))' }}

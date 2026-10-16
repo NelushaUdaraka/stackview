@@ -273,7 +273,7 @@ export default function ApigwApiDetail({ api, onBack }: Props) {
 
       {/* MODALS */}
       {showCreateResource && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
            <div className="w-full max-w-sm bg-base rounded-2xl border border-theme shadow-2xl p-5 flex flex-col gap-4">
               <h3 className="font-bold text-1">Create Child Resource</h3>
               <p className="text-xs text-3">Parent: <span className="font-mono">{selectedResource?.path}</span></p>
@@ -290,7 +290,7 @@ export default function ApigwApiDetail({ api, onBack }: Props) {
       )}
 
       {showCreateMethod && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
            <div className="w-full max-w-sm bg-base rounded-2xl border border-theme shadow-2xl p-5 flex flex-col gap-4">
               <h3 className="font-bold text-1">Create Method</h3>
               <p className="text-xs text-3">Resource: <span className="font-mono">{selectedResource?.path}</span></p>
@@ -314,7 +314,7 @@ export default function ApigwApiDetail({ api, onBack }: Props) {
       )}
 
       {showCreateIntegration && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
            <div className="w-full max-w-md bg-base rounded-2xl border border-theme shadow-2xl p-5 flex flex-col gap-4">
               <h3 className="font-bold text-1">Method Integration</h3>
               <p className="text-xs text-3">Method: <span className="font-bold text-1">{newMethod}</span> on <span className="font-mono">{selectedResource?.path}</span></p>
@@ -352,7 +352,7 @@ export default function ApigwApiDetail({ api, onBack }: Props) {
       )}
 
       {showDeploy && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
            <div className="w-full max-w-sm bg-base rounded-2xl border border-theme shadow-2xl p-5 flex flex-col gap-4">
               <h3 className="font-bold text-1 flex items-center gap-2"><Zap size={16} className="text-amber-500"/> Deploy API</h3>
               <div>

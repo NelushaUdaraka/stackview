@@ -26,7 +26,7 @@ function CreateLogGroupModal({ onClose, onCreated }: { onClose: () => void, onCr
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 shadow-2xl" style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 shadow-2xl" style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}>
       <div className="w-full max-w-sm rounded-2xl border border-theme shadow-2xl overflow-hidden animate-in zoom-in duration-200" style={{ backgroundColor: 'rgb(var(--bg-base))' }}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme">
           <div className="flex items-center gap-3">
@@ -68,7 +68,7 @@ function CreateLogGroupModal({ onClose, onCreated }: { onClose: () => void, onCr
 
 function CreateLogStreamModal({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}>
       <div className="w-full max-w-sm rounded-2xl border border-theme shadow-2xl overflow-hidden bg-base p-8 text-center space-y-4">
         <AlertCircle size={40} className="mx-auto text-amber-500 opacity-50" />
         <h2 className="text-sm font-bold text-1">Create Log Stream</h2>

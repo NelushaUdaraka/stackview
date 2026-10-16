@@ -83,7 +83,7 @@ export default function SupportSidebar({
                 {loading && <Loader2 size={11} className="animate-spin text-3" />}
                 <button
                   onClick={onToggleResolved}
-                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded transition-colors
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded transition-colors
                     ${includeResolved ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400' : 'text-4 hover:text-2'}`}
                 >
                   {includeResolved ? 'All' : 'Open'}
@@ -150,8 +150,8 @@ export default function SupportSidebar({
                       {c.subject}
                     </p>
                     <div className="flex items-center gap-1.5 justify-between">
-                      <p className="text-[9px] text-4 truncate font-mono">{c.displayId || c.caseId}</p>
-                      <span className={`text-[8px] font-bold uppercase ${statusColor(c.status)}`}>
+                      <p className="text-[10px] text-4 truncate font-mono">{c.displayId || c.caseId}</p>
+                      <span className={`text-[10px] font-bold uppercase ${statusColor(c.status)}`}>
                         {c.status || '—'}
                       </span>
                     </div>

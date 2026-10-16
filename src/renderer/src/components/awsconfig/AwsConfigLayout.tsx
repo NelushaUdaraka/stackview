@@ -90,8 +90,11 @@ export default function AwsConfigLayout({ settings: _settings }: Props) {
       />
 
       <div
-        className="w-1 cursor-col-resize bg-transparent hover:bg-brand-500/30 active:bg-brand-500/50 transition-colors flex-shrink-0"
         onMouseDown={handleResizeStart}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize sidebar"
+        className="resize-handle"
       />
 
       <div className="flex-1 overflow-auto min-w-0">

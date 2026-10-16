@@ -50,7 +50,7 @@ function CreateUserModal({ onClose, onCreated, allGroups }: any) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={MODAL_OVERLAY}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" style={MODAL_OVERLAY}>
       <div className="w-full max-w-sm rounded-2xl border border-theme shadow-2xl overflow-hidden bg-base">
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme">
           <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ function CreateGroupModal({ onClose, onCreated, allUsers }: any) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={MODAL_OVERLAY}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" style={MODAL_OVERLAY}>
       <div className="w-full max-w-sm flex flex-col max-h-[90vh] rounded-2xl border border-theme shadow-2xl overflow-hidden bg-base">
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme shrink-0">
           <div className="flex items-center gap-3">
@@ -238,7 +238,7 @@ function CreateRoleModal({ onClose, onCreated }: any) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={MODAL_OVERLAY}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" style={MODAL_OVERLAY}>
       <div className="w-full max-w-2xl rounded-2xl border border-theme shadow-2xl flex flex-col max-h-[90vh] bg-base">
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme shrink-0">
           <div className="flex items-center gap-3">
@@ -315,7 +315,7 @@ function CreatePolicyModal({ onClose, onCreated }: any) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={MODAL_OVERLAY}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" style={MODAL_OVERLAY}>
       <div className="w-full max-w-2xl rounded-2xl border border-theme shadow-2xl flex flex-col max-h-[90vh] bg-base">
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme shrink-0">
           <div className="flex items-center gap-3">
@@ -482,8 +482,10 @@ export default function IamLayout({ settings }: Props) {
 
         <div
           onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20 transition-colors"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize sidebar"
+          className="resize-handle"
         />
 
         <main className="flex-1 overflow-hidden">
@@ -498,8 +500,6 @@ export default function IamLayout({ settings }: Props) {
       {showCreateGroup && <CreateGroupModal onClose={() => setShowCreateGroup(false)} onCreated={() => { setShowCreateGroup(false); loadGroups() }} showToast={showToast} allUsers={users} />}
       {showCreateRole && <CreateRoleModal onClose={() => setShowCreateRole(false)} onCreated={() => { setShowCreateRole(false); loadRoles() }} showToast={showToast} />}
       {showCreatePolicy && <CreatePolicyModal onClose={() => setShowCreatePolicy(false)} onCreated={() => { setShowCreatePolicy(false); loadPolicies() }} showToast={showToast} />}
-
-      <ToastContainer toasts={toasts} />
     </div>
   )
 }

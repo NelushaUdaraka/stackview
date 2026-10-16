@@ -95,9 +95,9 @@ function CheckRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-semibold text-1">{check.name}</span>
-            <span className={`text-[8px] font-bold uppercase ${catColor}`}>{check.category}</span>
+            <span className={`text-[10px] font-bold uppercase ${catColor}`}>{check.category}</span>
             {lastStatus && (
-              <span className="text-[8px] font-bold uppercase text-emerald-500">{lastStatus}</span>
+              <span className="text-[10px] font-bold uppercase text-emerald-500">{lastStatus}</span>
             )}
           </div>
         </div>

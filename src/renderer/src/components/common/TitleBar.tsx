@@ -218,7 +218,7 @@ export default function TitleBar({ tabs, activeTabId, onSwitch, onClose, onNew, 
         {/* Scrollable tab strip */}
         <div
           ref={tabsAreaRef}
-          className="flex items-center"
+          className="flex items-center gap-1"
           style={{ flex: '1 1 0', minWidth: 0, overflowX: 'auto', scrollbarWidth: 'none', height: 44 }}
           onDragOver={e => {
             if (e.dataTransfer.types.includes('stackview/tab') || e.dataTransfer.types.includes('stackview/service')) {
@@ -307,7 +307,7 @@ export default function TitleBar({ tabs, activeTabId, onSwitch, onClose, onNew, 
               cardElRefs.current.forEach(el => {
                 if (el) { el.style.transform = ''; el.style.transition = '' }
               })
-setDragTabId(null)
+              setDragTabId(null)
               setDropIndex(null)
               setDragCloneInfo(null)
             },
@@ -320,29 +320,35 @@ setDragTabId(null)
                 {...dragHandlers}
                 ref={el => { if (el) cardElRefs.current.set(tab.id, el); else cardElRefs.current.delete(tab.id) }}
                 onClick={() => onSwitch(tab.id)}
+                onMouseDown={e => { if (e.button === 1) e.preventDefault() }}
+                onAuxClick={e => { if (e.button === 1) onClose(tab.id) }}
                 onMouseEnter={() => setHoveredTabId(tab.id)}
                 onMouseLeave={() => setHoveredTabId(null)}
-                className="no-drag group relative flex items-center gap-1.5 px-3 text-xs text-1 font-medium"
+                aria-current="page"
+                title={label}
+                className="no-drag group relative flex items-center gap-2 pl-3 pr-1.5 text-xs text-1 font-medium shadow-sm"
                 style={{
                   flex: '1 1 160px',
                   minWidth: 64,
                   maxWidth: 200,
-                  height: 32,
+                  height: 30,
                   borderRadius: 8,
-                  backgroundColor: 'rgb(var(--bg-raised))',
+                  backgroundColor: 'rgb(var(--bg-base))',
                   border: '1px solid rgb(var(--border))',
                   opacity: isDragging ? 0.25 : 1,
                   overflow: 'hidden',
                 }}
               >
-                <Icon size={12} className={`relative z-10 ${iconColor} shrink-0`} />
+                <Icon size={13} className={`relative z-10 ${iconColor} shrink-0`} />
                 <span className="relative z-10 truncate flex-1 text-left">{label}</span>
                 <span
                   role="button"
+                  aria-label={`Close ${label} tab`}
+                  title="Close tab"
                   onClick={e => { e.stopPropagation(); onClose(tab.id) }}
-                  className="relative z-10 flex items-center justify-center w-4 h-4 rounded-full transition-all shrink-0 text-3 hover:text-1 hover:bg-overlay"
+                  className="relative z-10 flex items-center justify-center w-5 h-5 rounded-md transition-colors shrink-0 text-3 hover:text-1 hover:bg-raised"
                 >
-                  <X size={10} />
+                  <X size={12} />
                 </span>
               </button>
             )
@@ -354,17 +360,21 @@ setDragTabId(null)
               {...dragHandlers}
               ref={el => { if (el) cardElRefs.current.set(tab.id, el); else cardElRefs.current.delete(tab.id) }}
               onClick={() => onSwitch(tab.id)}
+              onMouseDown={e => { if (e.button === 1) e.preventDefault() }}
+              onAuxClick={e => { if (e.button === 1) onClose(tab.id) }}
               onMouseEnter={() => setHoveredTabId(tab.id)}
               onMouseLeave={() => setHoveredTabId(null)}
-              className="no-drag group relative flex items-center gap-1.5 px-3 text-xs transition-colors"
+              title={label}
+              className="no-drag group relative flex items-center gap-2 pl-3 pr-1.5 text-xs font-medium transition-colors"
               style={{
                 flex: '1 1 160px',
                 minWidth: 36,
                 maxWidth: 200,
-                height: 32,
+                height: 30,
                 borderRadius: 8,
+                border: '1px solid transparent',
                 backgroundColor: 'transparent',
-                color: isHovered ? 'rgb(var(--text-2))' : 'rgb(var(--text-3))',
+                color: isHovered ? 'rgb(var(--text-1))' : 'rgb(var(--text-3))',
                 opacity: isDragging ? 0.25 : 1,
                 overflow: 'hidden',
               }}
@@ -373,20 +383,22 @@ setDragTabId(null)
               <div style={{
                 position: 'absolute',
                 inset: 0,
-                borderRadius: 8,
+                borderRadius: 7,
                 background: isHovered ? 'rgb(var(--bg-raised))' : 'transparent',
                 transition: 'background 0.15s',
                 pointerEvents: 'none',
                 zIndex: 0,
               }} />
-              <Icon size={12} className={`relative z-10 ${iconColor} shrink-0 opacity-60`} />
+              <Icon size={13} className={`relative z-10 ${iconColor} shrink-0 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-70'}`} />
               <span className="relative z-10 truncate flex-1 text-left">{label}</span>
               <span
                 role="button"
+                aria-label={`Close ${label} tab`}
+                title="Close tab"
                 onClick={e => { e.stopPropagation(); onClose(tab.id) }}
-                className="relative z-10 flex items-center justify-center w-4 h-4 rounded-full transition-all shrink-0 text-4 opacity-0 group-hover:opacity-100 hover:text-1 hover:bg-overlay"
+                className="relative z-10 flex items-center justify-center w-5 h-5 rounded-md transition-colors shrink-0 text-3 opacity-0 group-hover:opacity-100 hover:text-1 hover:bg-overlay"
               >
-                <X size={10} />
+                <X size={12} />
               </span>
             </button>
           )
@@ -395,11 +407,12 @@ setDragTabId(null)
         {/* New tab button — inside scroll strip, right after tabs */}
         <button
           onClick={onNew}
-          className="no-drag flex items-center justify-center w-7 h-7 text-3 hover:text-1 hover:bg-raised rounded-full transition-colors shrink-0"
+          className="no-drag icon-btn"
           style={{ marginLeft: 4, alignSelf: 'center' }}
           title="New tab"
+          aria-label="New tab"
         >
-          <Plus size={14} />
+          <Plus size={15} />
         </button>
         </div>
       </div>
@@ -422,16 +435,17 @@ setDragTabId(null)
               zIndex: 9999,
               pointerEvents: 'none',
               borderRadius: 8,
-              backgroundColor: 'rgb(var(--bg-raised))',
+              backgroundColor: 'rgb(var(--bg-base))',
+              border: '1px solid rgb(var(--border))',
               display: 'flex',
               alignItems: 'center',
-              gap: 6,
+              gap: 8,
               padding: '0 12px',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-              opacity: 0.9,
+              boxShadow: '0 12px 28px rgb(var(--shadow) / calc(0.12 * var(--shadow-strength)))',
+              opacity: 0.95,
             }}
           >
-            <CloneIcon size={12} className={dragCloneInfo.iconColor} />
+            <CloneIcon size={13} className={dragCloneInfo.iconColor} />
             <span style={{ fontSize: 12, fontWeight: 500, color: 'rgb(var(--text-1))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
               {dragCloneInfo.label}
             </span>
@@ -442,9 +456,9 @@ setDragTabId(null)
       {/* Windows controls */}
       {isWindows && (
         <div className="no-drag self-stretch flex items-stretch shrink-0">
-          <button onClick={() => window.electronAPI.minimize()} className="flex items-center justify-center w-11 h-full text-2 hover:bg-raised transition-colors" title="Minimize"><Minus size={14} /></button>
-          <button onClick={() => window.electronAPI.maximize()} className="flex items-center justify-center w-11 h-full text-2 hover:bg-raised transition-colors" title="Maximize"><Square size={12} /></button>
-          <button onClick={() => window.electronAPI.close()} className="flex items-center justify-center w-12 h-full text-2 hover:bg-red-500 hover:text-white transition-colors" title="Close"><X size={15} /></button>
+          <button onClick={() => window.electronAPI.minimize()} className="flex items-center justify-center w-11 h-full text-3 hover:text-1 hover:bg-raised transition-colors" title="Minimize" aria-label="Minimize"><Minus size={14} /></button>
+          <button onClick={() => window.electronAPI.maximize()} className="flex items-center justify-center w-11 h-full text-3 hover:text-1 hover:bg-raised transition-colors" title="Maximize" aria-label="Maximize"><Square size={12} /></button>
+          <button onClick={() => window.electronAPI.close()} className="flex items-center justify-center w-12 h-full text-3 hover:bg-red-600 hover:text-white transition-colors" title="Close" aria-label="Close"><X size={15} /></button>
         </div>
       )}
     </div>

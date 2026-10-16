@@ -109,7 +109,7 @@ export default function CreateLambdaFunctionModal({ onClose, onCreated }: Props)
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-base border border-theme rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme bg-raised/30">

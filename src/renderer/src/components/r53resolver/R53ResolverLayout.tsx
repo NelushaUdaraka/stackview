@@ -96,7 +96,13 @@ export default function R53ResolverLayout({ settings: _settings }: Props) {
           else setShowCreateFwDomainList(true)
         }}
       />
-      <div className="w-1 cursor-col-resize bg-transparent hover:bg-brand-500/30 active:bg-brand-500/50 transition-colors flex-shrink-0" onMouseDown={handleResizeStart} />
+      <div
+        onMouseDown={handleResizeStart}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize sidebar"
+        className="resize-handle"
+      />
       <div className="flex-1 overflow-auto min-w-0">{detail}</div>
 
       {showCreateEndpoint && <CreateEndpointModal onCreated={() => { setShowCreateEndpoint(false); load(); showToast('success', 'Endpoint created') }} onClose={() => setShowCreateEndpoint(false)} />}

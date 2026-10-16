@@ -100,7 +100,7 @@ export default function AwsConfigSidebar({
             >
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-medium text-1 truncate">{r.name}</p>
-                <span className={`text-[9px] font-bold uppercase px-1 py-0.5 rounded border flex-shrink-0
+                <span className={`text-[10px] font-bold uppercase px-1 py-0.5 rounded border flex-shrink-0
                   ${r.recording ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : 'text-4 border-theme bg-raised'}`}>
                   {r.recording ? 'REC' : 'STOPPED'}
                 </span>
@@ -135,7 +135,7 @@ export default function AwsConfigSidebar({
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-medium text-1 truncate">{r.name}</p>
                 {r.state && (
-                  <span className={`text-[9px] font-bold uppercase px-1 py-0.5 rounded border flex-shrink-0
+                  <span className={`text-[10px] font-bold uppercase px-1 py-0.5 rounded border flex-shrink-0
                     ${r.state === 'ACTIVE' ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : 'text-4 border-theme bg-raised'}`}>
                     {r.state}
                   </span>

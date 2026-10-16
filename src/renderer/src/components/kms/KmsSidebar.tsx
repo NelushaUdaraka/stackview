@@ -83,10 +83,10 @@ export default function KmsSidebar({ keys, selectedKey, onSelectKey, onCreateKey
                     {primaryAlias}
                   </p>
                   <div className="flex items-center gap-1.5 justify-between">
-                    <p className={`text-[9px] font-mono tracking-wider ${isSelected ? 'text-violet-600' : 'text-4'} truncate`}>
+                    <p className={`text-[10px] font-mono tracking-wider ${isSelected ? 'text-violet-600' : 'text-4'} truncate`}>
                       {k.keyId.split('-')[0]}...
                     </p>
-                    <p className={`text-[8px] font-bold uppercase tracking-widest ${isSelected ? `text-${stateColor}-500` : `text-${stateColor}-600`}`}>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isSelected ? `text-${stateColor}-500` : `text-${stateColor}-600`}`}>
                       {k.state}
                     </p>
                   </div>

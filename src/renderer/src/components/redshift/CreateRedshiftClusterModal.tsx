@@ -51,7 +51,7 @@ const CreateRedshiftClusterModal: React.FC<Props> = ({ onClose, onCreated }) => 
   const nodeTypes = ['dc2.large', 'dc2.8xlarge', 'ds2.xlarge', 'ds2.8xlarge', 'ra3.xlplus', 'ra3.4xlarge', 'ra3.16xlarge']
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 shadow-2xl overflow-y-auto py-10" style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 shadow-2xl overflow-y-auto py-10" style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}>
       <div className="w-full max-w-lg rounded-3xl border border-theme shadow-2xl overflow-hidden animate-in zoom-in duration-200" style={{ backgroundColor: 'rgb(var(--bg-base))' }}>
         
         {/* Modal Header */}

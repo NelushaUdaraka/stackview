@@ -231,7 +231,7 @@ export default function FirewallRuleGroupDetail({ group, domainLists, onDeleted 
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-1">{r.name}</p>
-                        <span className={`text-[9px] font-bold uppercase px-1 py-0.5 rounded border flex-shrink-0
+                        <span className={`text-[10px] font-bold uppercase px-1 py-0.5 rounded border flex-shrink-0
                           ${ACTION_COLORS[r.action] ?? 'text-4 border-theme'}`}>{r.action}</span>
                       </div>
                       <p className="text-xs text-4">Priority: {r.priority} · {r.firewallDomainListId}</p>

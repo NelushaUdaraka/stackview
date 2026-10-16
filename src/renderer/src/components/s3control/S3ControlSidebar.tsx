@@ -116,11 +116,11 @@ export default function S3ControlSidebar({
                     <p className={`text-xs font-medium truncate leading-snug ${isSelected ? 'text-1' : 'text-2'}`}>
                       {ap.name}
                     </p>
-                    <p className="text-[9px] text-4 font-mono truncate leading-none mt-1">
+                    <p className="text-[10px] text-4 font-mono truncate leading-none mt-1">
                       {ap.bucket}
                     </p>
                     {ap.networkOrigin && (
-                      <span className={`inline-block mt-1 px-1 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide
+                      <span className={`inline-block mt-1 px-1 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide
                         ${ap.networkOrigin === 'VPC' ? 'bg-violet-500/10 text-violet-400' : 'bg-sky-500/10 text-sky-400'}`}>
                         {ap.networkOrigin}
                       </span>
@@ -149,12 +149,12 @@ export default function S3ControlSidebar({
                       {mrap.name}
                     </p>
                     {mrap.alias && (
-                      <p className="text-[9px] text-4 font-mono truncate leading-none mt-1">
+                      <p className="text-[10px] text-4 font-mono truncate leading-none mt-1">
                         {mrap.alias}
                       </p>
                     )}
                     {mrap.status && (
-                      <span className={`inline-block mt-1 px-1 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide
+                      <span className={`inline-block mt-1 px-1 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide
                         ${mrap.status === 'READY' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
                         {mrap.status}
                       </span>

@@ -82,7 +82,7 @@ export default function RuleDetail({ rule, onDeleted }: Props) {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-1 truncate">{rule.name ?? rule.id}</h2>
-                <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0 text-4 border-theme">
+                <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0 text-4 border-theme">
                   {rule.ruleType}
                 </span>
               </div>

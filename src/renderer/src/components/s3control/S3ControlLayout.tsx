@@ -133,8 +133,10 @@ export default function S3ControlLayout({ settings: _settings }: Props) {
 
         <div
           onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none z-20"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize sidebar"
+          className="resize-handle"
         />
 
         <main className="flex-1 overflow-hidden bg-app">

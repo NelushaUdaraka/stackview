@@ -59,7 +59,7 @@ function ExecStatusBadge({ status }: { status: SfnExecution['status'] }) {
     ABORTED: 'text-amber-500',
     PENDING_REDRIVE: 'text-sky-500',
   }
-  return <span className={`text-[8px] font-bold uppercase ${map[status] ?? 'text-3'}`}>{status}</span>
+  return <span className={`text-[10px] font-bold uppercase ${map[status] ?? 'text-3'}`}>{status}</span>
 }
 
 export default function StateMachineDetail({ machine, onDeleted }: Props) {
@@ -187,7 +187,7 @@ export default function StateMachineDetail({ machine, onDeleted }: Props) {
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <h2 className="text-lg font-bold text-1 truncate">{machine.name}</h2>
-                <span className={`px-2 py-0.5 text-[9px] font-bold uppercase rounded border
+                <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded border
                   ${machine.type === 'EXPRESS'
                     ? 'bg-lime-500/10 text-lime-600 dark:text-lime-400 border-lime-500/20'
                     : 'bg-raised text-3 border-theme'
@@ -358,7 +358,7 @@ export default function StateMachineDetail({ machine, onDeleted }: Props) {
                       <tr key={exec.executionArn} className="border-b border-theme last:border-0 hover:bg-raised transition-colors">
                         <td className="px-4 py-2.5 max-w-[200px]">
                           <span className="font-semibold text-1 truncate block" title={exec.name}>{exec.name}</span>
-                          <span className="text-[9px] font-mono text-4 truncate block" title={exec.executionArn}>
+                          <span className="text-[10px] font-mono text-4 truncate block" title={exec.executionArn}>
                             {exec.executionArn.split(':').slice(-1)[0]}
                           </span>
                         </td>

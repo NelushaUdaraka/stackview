@@ -98,9 +98,9 @@ export default function EndpointDetail({ endpoint, onDeleted, onChanged }: Props
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-1 truncate">{endpoint.name ?? endpoint.id}</h2>
-                <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0
+                <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0
                   ${STATUS_COLOR[endpoint.status] ?? 'text-4 border-theme'}`}>{endpoint.status}</span>
-                <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0 text-blue-400 border-blue-500/30 bg-blue-500/10">
+                <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0 text-blue-400 border-blue-500/30 bg-blue-500/10">
                   {endpoint.direction}
                 </span>
               </div>

@@ -170,7 +170,7 @@ export default function UpdateStackModal({ stackName, onClose, onUpdated }: Prop
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="w-full max-w-2xl rounded-2xl shadow-2xl border border-theme flex flex-col max-h-[90vh]" style={{ backgroundColor: 'rgb(var(--bg-base))' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-theme shrink-0">

@@ -36,7 +36,7 @@ export default function CreateSecretModal({ onClose, onCreated }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
         {/* Pointer events none on wrapper to allow clicks to pass to backdrop, auto on modal */}

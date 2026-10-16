@@ -38,7 +38,7 @@ function PutMetricModal({ onClose, onCreated, showToast, setLoading }: { onClose
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm shadow-2xl">
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm shadow-2xl">
       <div className="w-full max-w-sm rounded-2xl border border-theme shadow-2xl overflow-hidden animate-in zoom-in duration-200 bg-base">
         <div className="flex items-center justify-between px-5 py-4 border-b border-theme">
           <div className="flex items-center gap-3">
@@ -182,7 +182,7 @@ export default function CloudWatchMetricsView({ setLoading, showPutModal, onClos
                     <td className="px-5 py-4">
                       <div className="flex flex-wrap gap-1.5">
                         {m.Dimensions?.map((d, dIdx) => (
-                          <div key={dIdx} className="px-2 py-0.5 rounded-lg bg-raised border border-theme text-[9px] font-mono text-3">
+                          <div key={dIdx} className="px-2 py-0.5 rounded-lg bg-raised border border-theme text-[10px] font-mono text-3">
                             <span className="text-4">{d.Name}:</span> {d.Value}
                           </div>
                         )) || <span className="text-[10px] text-4 italic">No dimensions</span>}

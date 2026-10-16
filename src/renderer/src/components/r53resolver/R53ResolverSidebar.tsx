@@ -70,7 +70,7 @@ export default function R53ResolverSidebar({
             <button
               key={key}
               onClick={() => { onTabChange(key); setSearch('') }}
-              className={`flex-1 flex items-center justify-center gap-1 py-2 text-[9px] font-bold uppercase tracking-wide transition-colors
+              className={`flex-1 flex items-center justify-center gap-1 py-2 text-[10px] font-bold uppercase tracking-wide transition-colors
                 ${tab === key ? 'text-blue-400 border-b-2 border-blue-400' : 'text-3 hover:text-2'}`}
             >
               <Icon size={11} />{label}
@@ -125,10 +125,10 @@ export default function R53ResolverSidebar({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1 mb-0.5">
                     <p className={`text-xs font-medium truncate leading-snug ${sel ? 'text-1' : 'text-2'}`}>{e.name ?? e.id}</p>
-                    <span className={`text-[9px] font-bold uppercase px-1 py-0.5 rounded border flex-shrink-0
+                    <span className={`text-[10px] font-bold uppercase px-1 py-0.5 rounded border flex-shrink-0
                       ${ENDPOINT_STATUS_COLOR[e.status] ?? 'text-4 border-theme'}`}>{e.direction}</span>
                   </div>
-                  <p className="text-[9px] text-4 truncate">{e.status}</p>
+                  <p className="text-[10px] text-4 truncate">{e.status}</p>
                 </div>
               </button>
             )
@@ -149,9 +149,9 @@ export default function R53ResolverSidebar({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1 mb-0.5">
                     <p className={`text-xs font-medium truncate leading-snug ${sel ? 'text-1' : 'text-2'}`}>{r.name ?? r.id}</p>
-                    <span className="text-[9px] font-bold uppercase px-1 py-0.5 rounded border text-4 border-theme flex-shrink-0">{r.ruleType}</span>
+                    <span className="text-[10px] font-bold uppercase px-1 py-0.5 rounded border text-4 border-theme flex-shrink-0">{r.ruleType}</span>
                   </div>
-                  {r.domainName && <p className="text-[9px] text-4 truncate">{r.domainName}</p>}
+                  {r.domainName && <p className="text-[10px] text-4 truncate">{r.domainName}</p>}
                 </div>
               </button>
             )
@@ -171,7 +171,7 @@ export default function R53ResolverSidebar({
                 <Shield size={13} className={`mt-0.5 shrink-0 ${sel ? 'text-blue-400' : 'text-4'}`} />
                 <div className="flex-1 min-w-0">
                   <p className={`text-xs font-medium truncate leading-snug mb-0.5 ${sel ? 'text-1' : 'text-2'}`}>{g.name}</p>
-                  <p className="text-[9px] text-4 truncate">{g.ruleCount} rule{g.ruleCount !== 1 ? 's' : ''} · {g.status}</p>
+                  <p className="text-[10px] text-4 truncate">{g.ruleCount} rule{g.ruleCount !== 1 ? 's' : ''} · {g.status}</p>
                 </div>
               </button>
             )
@@ -191,7 +191,7 @@ export default function R53ResolverSidebar({
                 <List size={13} className={`mt-0.5 shrink-0 ${sel ? 'text-blue-400' : 'text-4'}`} />
                 <div className="flex-1 min-w-0">
                   <p className={`text-xs font-medium truncate leading-snug mb-0.5 ${sel ? 'text-1' : 'text-2'}`}>{d.name}</p>
-                  <p className="text-[9px] text-4 truncate">{d.domainCount} domain{d.domainCount !== 1 ? 's' : ''} · {d.status}</p>
+                  <p className="text-[10px] text-4 truncate">{d.domainCount} domain{d.domainCount !== 1 ? 's' : ''} · {d.status}</p>
                 </div>
               </button>
             )

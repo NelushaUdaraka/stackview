@@ -40,7 +40,7 @@ export default function CreateKinesisStreamModal({ onClose, onCreated, endpoint,
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-lg bg-base rounded-3xl border border-theme shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="px-6 py-5 border-b border-theme flex items-center justify-between bg-raised/30">
           <div className="flex items-center gap-3">
@@ -85,7 +85,7 @@ export default function CreateKinesisStreamModal({ onClose, onCreated, endpoint,
                 >
                   <Database size={18} />
                   <span className="text-xs font-bold">Provisioned</span>
-                  <span className="text-[9px] opacity-60 font-medium">Specify number of shards</span>
+                  <span className="text-[10px] opacity-60 font-medium">Specify number of shards</span>
                 </button>
                 <button
                   type="button"
@@ -97,7 +97,7 @@ export default function CreateKinesisStreamModal({ onClose, onCreated, endpoint,
                 >
                   <Activity size={18} />
                   <span className="text-xs font-bold">On-Demand</span>
-                  <span className="text-[9px] opacity-60 font-medium">Auto-scaling capacity</span>
+                  <span className="text-[10px] opacity-60 font-medium">Auto-scaling capacity</span>
                 </button>
               </div>
             </div>

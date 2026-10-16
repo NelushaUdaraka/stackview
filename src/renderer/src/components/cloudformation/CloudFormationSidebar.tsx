@@ -121,7 +121,7 @@ export default function CloudFormationSidebar({
                 <span className="text-xs font-medium text-1 truncate">{stack.StackName}</span>
               </div>
               <div className="mt-1 ml-5">
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${getStatusColor(stack.StackStatus ?? '')}`}>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${getStatusColor(stack.StackStatus ?? '')}`}>
                   {stack.StackStatus ?? 'UNKNOWN'}
                 </span>
               </div>

@@ -77,7 +77,7 @@ export default function FirehoseSidebar({ streams, selectedStreamName, onSelectS
                       {stream.DeliveryStreamName}
                     </p>
                   </div>
-                  <p className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${isSelected ? 'text-orange-500' : 'text-4'}`}>
+                  <p className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 ${isSelected ? 'text-orange-500' : 'text-4'}`}>
                     {status || 'UNKNOWN'}
                   </p>
                 </div>

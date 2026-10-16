@@ -13,13 +13,13 @@ interface Props {
 function statusBadge(status: string) {
   if (status === 'DEPRECATED') {
     return (
-      <span className="text-[8px] font-bold uppercase tracking-widest text-amber-500">
+      <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500">
         DEPRECATED
       </span>
     )
   }
   return (
-    <span className="text-[8px] font-bold uppercase tracking-widest text-green-500">
+    <span className="text-[10px] font-bold uppercase tracking-widest text-green-500">
       ACTIVE
     </span>
   )
@@ -115,7 +115,7 @@ export default function SwfSidebar({
                     {domain.name}
                   </p>
                   <div className="flex items-center gap-1.5 justify-between">
-                    <p className="text-[9px] text-4 truncate">
+                    <p className="text-[10px] text-4 truncate">
                       {domain.workflowExecutionRetentionPeriodInDays
                         ? `${domain.workflowExecutionRetentionPeriodInDays}d retention`
                         : '—'}

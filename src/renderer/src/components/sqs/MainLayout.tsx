@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useResizableSidebar } from '../../hooks/useResizableSidebar'
 import { Layers, Plus } from 'lucide-react'
 import type { AppSettings, QueueInfo } from '../../types'
@@ -29,6 +29,12 @@ export default function MainLayout({
   if (JSON.stringify(queues) !== JSON.stringify(sidebarQueues)) {
     setSidebarQueues(queues)
   }
+
+  // Load the queue list when the view opens — App only refetches it on region
+  // changes and manual refresh, so a fresh SQS tab would otherwise start empty.
+  useEffect(() => {
+    onQueuesChanged()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleQueueDeleted = useCallback(async () => {
     await onQueuesChanged()
@@ -69,9 +75,10 @@ export default function MainLayout({
         {/* Resize handle */}
         <div
           onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize relative select-none"
-          style={{ backgroundColor: 'rgb(var(--border))' }}
-          title="Drag to resize"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize sidebar"
+          className="resize-handle"
         />
 
         {/* Main content */}

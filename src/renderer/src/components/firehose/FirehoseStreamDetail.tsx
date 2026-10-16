@@ -157,11 +157,11 @@ export default function FirehoseStreamDetail({ stream, onRefresh, onDeleted }: P
                                {s3Dest && (
                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                                     <div className="p-2.5 rounded-lg bg-base border border-theme/50">
-                                       <span className="block text-[9px] text-4 font-bold uppercase mb-0.5">Bucket ARN</span>
+                                       <span className="block text-[10px] text-4 font-bold uppercase mb-0.5">Bucket ARN</span>
                                        <span className="font-mono text-[11px] text-2 break-all">{s3Dest.BucketARN}</span>
                                     </div>
                                     <div className="p-2.5 rounded-lg bg-base border border-theme/50">
-                                       <span className="block text-[9px] text-4 font-bold uppercase mb-0.5">Role ARN</span>
+                                       <span className="block text-[10px] text-4 font-bold uppercase mb-0.5">Role ARN</span>
                                        <span className="font-mono text-[11px] text-2 break-all">{s3Dest.RoleARN}</span>
                                     </div>
                                  </div>

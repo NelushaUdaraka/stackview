@@ -119,7 +119,7 @@ export default function RuleDetail({ rule, onDeleted, showToast }: Props) {
                   {c.resourceType && <p className="text-[10px] text-4">{c.resourceType}</p>}
                   {c.annotation && <p className="text-[10px] text-3 italic">{c.annotation}</p>}
                 </div>
-                <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0 ${COMPLIANCE_COLORS[c.complianceType] ?? 'text-4 bg-raised border-theme'}`}>
+                <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0 ${COMPLIANCE_COLORS[c.complianceType] ?? 'text-4 bg-raised border-theme'}`}>
                   {c.complianceType}
                 </span>
               </div>

@@ -233,8 +233,13 @@ export default function <Svc>Layout({ settings, theme, onToggleTheme, onDisconne
         </div>
 
         {/* Resize handle */}
-        <div onMouseDown={handleResizeStart} className="w-1 shrink-0 cursor-col-resize"
-          style={{ backgroundColor: 'rgb(var(--border))' }} />
+        <div
+          onMouseDown={handleResizeStart}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize sidebar"
+          className="resize-handle"
+        />
 
         {/* Content */}
         <main className="flex-1 overflow-hidden flex flex-col bg-app">
@@ -245,6 +250,19 @@ export default function <Svc>Layout({ settings, theme, onToggleTheme, onDisconne
   )
 }
 ```
+
+#### Shared UI building blocks
+
+Reuse these classes from `src/renderer/src/styles/globals.css` instead of hand-rolling styles:
+
+| Class | Use for |
+|---|---|
+| `btn-primary` / `btn-secondary` / `btn-ghost` / `btn-danger` / `icon-btn` | Buttons (`icon-btn` is icon-only, so give it an `aria-label`) |
+| `input-base`, `sidebar-search` | Form fields and the sidebar filter box |
+| `card`, `popover` | Content panels, and floating menus/pickers |
+| `badge-*`, `kbd`, `section-label` | Status pills, keyboard hints, small uppercase panel headings |
+| `resize-handle` | The sidebar divider (see the layout template above) |
+| `modal-backdrop` | A dialog's `fixed inset-0` overlay — gives the shared enter animation (add `modal-scrim` if the overlay has no dimming of its own) |
 
 ### 9. ⚠️ Add to serviceConfig.ts — MOST COMMONLY FORGOTTEN
 

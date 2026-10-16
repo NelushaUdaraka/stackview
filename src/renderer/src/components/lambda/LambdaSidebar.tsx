@@ -78,11 +78,11 @@ export default function LambdaSidebar({ functions, selectedFunctionName, onSelec
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <p className={`text-[9px] font-bold uppercase tracking-widest ${isSelected ? 'text-violet-500' : 'text-4'}`}>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isSelected ? 'text-violet-500' : 'text-4'}`}>
                       {status}
                     </p>
-                    <span className="text-[9px] text-4">•</span>
-                    <p className="text-[9px] text-3 capitalize">{func.Runtime}</p>
+                    <span className="text-[10px] text-4">•</span>
+                    <p className="text-[10px] text-3 capitalize">{func.Runtime}</p>
                   </div>
                 </div>
               </button>

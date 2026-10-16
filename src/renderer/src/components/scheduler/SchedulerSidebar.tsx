@@ -77,10 +77,10 @@ export default function SchedulerSidebar({ groups, selectedGroup, onSelectGroup,
                       {group.name}
                     </p>
                     {isDefault && !isSelected && (
-                      <span className="text-[8px] px-1 rounded bg-amber-500/10 text-amber-600 border border-amber-500/10 shrink-0">DEFAULT</span>
+                      <span className="text-[10px] px-1 rounded bg-amber-500/10 text-amber-600 border border-amber-500/10 shrink-0">DEFAULT</span>
                     )}
                   </div>
-                  <p className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${isSelected ? 'text-amber-500' : 'text-4'}`}>
+                  <p className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 ${isSelected ? 'text-amber-500' : 'text-4'}`}>
                     {group.state || 'ACTIVE'}
                   </p>
                 </div>

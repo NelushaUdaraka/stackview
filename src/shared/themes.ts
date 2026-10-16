@@ -1,44 +1,63 @@
 export const THEME_DEFINITIONS = {
-  light:            { label: 'Light',          preview: { bg: '#ffffff', surface: '#f1f5f9', text: '#0f172a' } },
-  'quiet-light':    { label: 'Quiet Light',    preview: { bg: '#f5f5f5', surface: '#efefef', text: '#333333' } },
-  'solarized-light':{ label: 'Solarized Light',preview: { bg: '#fdf6e3', surface: '#eee8d5', text: '#586e75' } },
-  'tokyo-day':      { label: 'Tokyo Day',      preview: { bg: '#e1e2e7', surface: '#d5d6db', text: '#343e58' } },
-  dark:             { label: 'Dark',           preview: { bg: '#090909', surface: '#121212', text: '#fafafa' } },
-  midnight:         { label: 'Midnight',       preview: { bg: '#0f172a', surface: '#1e293b', text: '#f1f5f9' } },
-  abyss:            { label: 'Abyss',          preview: { bg: '#000c18', surface: '#00152c', text: '#6688cc' } },
-  nord:             { label: 'Nord',           preview: { bg: '#242936', surface: '#2e3440', text: '#eceff4' } },
-  mocha:            { label: 'Mocha',          preview: { bg: '#181825', surface: '#1e1e2e', text: '#cdd6f4' } },
-  macchiato:        { label: 'Macchiato',      preview: { bg: '#1e2030', surface: '#363a4f', text: '#cad3f5' } },
-  solarized:        { label: 'Solarized',      preview: { bg: '#073642', surface: '#134350', text: '#fdf6e3' } },
-  dracula:          { label: 'Dracula',        preview: { bg: '#282a36', surface: '#343746', text: '#f8f8f2' } },
-  gruvbox:          { label: 'Gruvbox',        preview: { bg: '#282828', surface: '#3c3836', text: '#ebdbb2' } },
-  kimbie:           { label: 'Kimbie Dark',    preview: { bg: '#221a0f', surface: '#2c2316', text: '#d3af86' } },
-  monokai:          { label: 'Monokai',        preview: { bg: '#272822', surface: '#32332c', text: '#f8f8f2' } },
-  'monokai-dimmed': { label: 'Monokai Dimmed', preview: { bg: '#1e1e1a', surface: '#282823', text: '#c5c5be' } },
-  red:              { label: 'Red',            preview: { bg: '#390000', surface: '#4a0808', text: '#f8f8f8' } },
-  'tokyo-night':    { label: 'Tokyo Night',    preview: { bg: '#1a1b2e', surface: '#24283b', text: '#c0caf5' } },
-  'tokyo-storm':    { label: 'Tokyo Storm',    preview: { bg: '#24283b', surface: '#292e42', text: '#c0caf5' } },
-  'rose-pine':      { label: 'Rose Pine',      preview: { bg: '#191724', surface: '#1f1d2e', text: '#e0def4' } },
-  frappe:           { label: 'Frappé',         preview: { bg: '#303446', surface: '#414559', text: '#c6d0f5' } },
-  ayu:              { label: 'Ayu',            preview: { bg: '#1c2433', surface: '#1f2d3d', text: '#e6e1cf' } },
-  everforest:       { label: 'Everforest',     preview: { bg: '#272e33', surface: '#2e383c', text: '#d3c6aa' } },
-  kanagawa:         { label: 'Kanagawa',       preview: { bg: '#1f1f28', surface: '#2a2a37', text: '#dcd7ba' } },
-  'one-dark':       { label: 'One Dark',       preview: { bg: '#282c34', surface: '#2c313c', text: '#abb2bf' } },
-  'night-owl':      { label: 'Night Owl',      preview: { bg: '#011627', surface: '#0d2035', text: '#d6deeb' } },
-  'tomorrow-blue':  { label: 'Tomorrow Blue',  preview: { bg: '#002451', surface: '#003064', text: '#ffffff' } },
-  synthwave:        { label: 'Synthwave',      preview: { bg: '#1a1139', surface: '#241650', text: '#fefefe' } },
-  horizon:          { label: 'Horizon',        preview: { bg: '#1c1e26', surface: '#232530', text: '#d5d8da' } },
-  moonlight:        { label: 'Moonlight',      preview: { bg: '#1e2030', surface: '#222436', text: '#c8d3f5' } },
+  light:            { label: 'Light',          mode: 'light', preview: { bg: '#ffffff', surface: '#f1f5f9', text: '#0f172a' } },
+  'quiet-light':    { label: 'Quiet Light',    mode: 'light', preview: { bg: '#f5f5f5', surface: '#efefef', text: '#333333' } },
+  'solarized-light':{ label: 'Solarized Light', mode: 'light', preview: { bg: '#fdf6e3', surface: '#eee8d5', text: '#586e75' } },
+  'tokyo-day':      { label: 'Tokyo Day',      mode: 'light', preview: { bg: '#e1e2e7', surface: '#d5d6db', text: '#343e58' } },
+  dark:             { label: 'Dark',           mode: 'dark',  preview: { bg: '#0f0f12', surface: '#18181b', text: '#f4f4f5' } },
+  midnight:         { label: 'Midnight',       mode: 'dark',  preview: { bg: '#0f172a', surface: '#1e293b', text: '#f1f5f9' } },
+  abyss:            { label: 'Abyss',          mode: 'dark',  preview: { bg: '#000c18', surface: '#00152c', text: '#6688cc' } },
+  nord:             { label: 'Nord',           mode: 'dark',  preview: { bg: '#242936', surface: '#2e3440', text: '#eceff4' } },
+  mocha:            { label: 'Mocha',          mode: 'dark',  preview: { bg: '#181825', surface: '#1e1e2e', text: '#cdd6f4' } },
+  macchiato:        { label: 'Macchiato',      mode: 'dark',  preview: { bg: '#1e2030', surface: '#363a4f', text: '#cad3f5' } },
+  solarized:        { label: 'Solarized',      mode: 'dark',  preview: { bg: '#073642', surface: '#134350', text: '#fdf6e3' } },
+  dracula:          { label: 'Dracula',        mode: 'dark',  preview: { bg: '#282a36', surface: '#343746', text: '#f8f8f2' } },
+  gruvbox:          { label: 'Gruvbox',        mode: 'dark',  preview: { bg: '#282828', surface: '#3c3836', text: '#ebdbb2' } },
+  kimbie:           { label: 'Kimbie Dark',    mode: 'dark',  preview: { bg: '#221a0f', surface: '#2c2316', text: '#d3af86' } },
+  monokai:          { label: 'Monokai',        mode: 'dark',  preview: { bg: '#272822', surface: '#32332c', text: '#f8f8f2' } },
+  'monokai-dimmed': { label: 'Monokai Dimmed', mode: 'dark',  preview: { bg: '#1e1e1a', surface: '#282823', text: '#c5c5be' } },
+  red:              { label: 'Red',            mode: 'dark',  preview: { bg: '#390000', surface: '#4a0808', text: '#f8f8f8' } },
+  'tokyo-night':    { label: 'Tokyo Night',    mode: 'dark',  preview: { bg: '#1a1b2e', surface: '#24283b', text: '#c0caf5' } },
+  'tokyo-storm':    { label: 'Tokyo Storm',    mode: 'dark',  preview: { bg: '#24283b', surface: '#292e42', text: '#c0caf5' } },
+  'rose-pine':      { label: 'Rose Pine',      mode: 'dark',  preview: { bg: '#191724', surface: '#1f1d2e', text: '#e0def4' } },
+  frappe:           { label: 'Frappé',         mode: 'dark',  preview: { bg: '#303446', surface: '#414559', text: '#c6d0f5' } },
+  ayu:              { label: 'Ayu',            mode: 'dark',  preview: { bg: '#1c2433', surface: '#1f2d3d', text: '#e6e1cf' } },
+  everforest:       { label: 'Everforest',     mode: 'dark',  preview: { bg: '#272e33', surface: '#2e383c', text: '#d3c6aa' } },
+  kanagawa:         { label: 'Kanagawa',       mode: 'dark',  preview: { bg: '#1f1f28', surface: '#2a2a37', text: '#dcd7ba' } },
+  'one-dark':       { label: 'One Dark',       mode: 'dark',  preview: { bg: '#282c34', surface: '#2c313c', text: '#abb2bf' } },
+  'night-owl':      { label: 'Night Owl',      mode: 'dark',  preview: { bg: '#011627', surface: '#0d2035', text: '#d6deeb' } },
+  'tomorrow-blue':  { label: 'Tomorrow Blue',  mode: 'dark',  preview: { bg: '#002451', surface: '#003064', text: '#ffffff' } },
+  synthwave:        { label: 'Synthwave',      mode: 'dark',  preview: { bg: '#1a1139', surface: '#241650', text: '#fefefe' } },
+  horizon:          { label: 'Horizon',        mode: 'dark',  preview: { bg: '#1c1e26', surface: '#232530', text: '#d5d8da' } },
+  moonlight:        { label: 'Moonlight',      mode: 'dark',  preview: { bg: '#1e2030', surface: '#222436', text: '#c8d3f5' } },
 } as const
 
 export type Theme = keyof typeof THEME_DEFINITIONS
 
+export type ThemeMode = 'light' | 'dark'
+
 export const ALL_THEMES = Object.keys(THEME_DEFINITIONS) as Theme[]
+
+/**
+ * Tokens shared by every theme of the same mode: focus/selection accent and the
+ * shadow tint/strength used by the elevation scale. Theme vars override these.
+ */
+export const MODE_CSS_VARS: Record<ThemeMode, Record<string, string>> = {
+  light: {
+    '--accent':          '2 132 199',
+    '--shadow':          '15 23 42',
+    '--shadow-strength': '1',
+  },
+  dark: {
+    '--accent':          '56 189 248',
+    '--shadow':          '0 0 0',
+    '--shadow-strength': '3',
+  },
+}
 
 /** CSS custom-property values for each theme, keyed by property name. */
 export const THEME_CSS_VARS: Record<Theme, Record<string, string>> = {
   light: {
-    '--bg-app':          '248 250 252',
+    '--bg-app':          '246 247 249',
     '--bg-base':         '255 255 255',
     '--bg-raised':       '241 245 249',
     '--bg-overlay':      '226 232 240',
@@ -46,22 +65,22 @@ export const THEME_CSS_VARS: Record<Theme, Record<string, string>> = {
     '--border-sub':      '241 245 249',
     '--text-1':          '15 23 42',
     '--text-2':          '71 85 105',
-    '--text-3':          '100 116 139',
-    '--text-4':          '148 163 184',
+    '--text-3':          '94 108 132',
+    '--text-4':          '130 143 163',
     '--scrollbar-thumb': '#cbd5e1',
   },
   dark: {
-    '--bg-app':          '0 0 0',
-    '--bg-base':         '9 9 9',
-    '--bg-raised':       '18 18 18',
-    '--bg-overlay':      '28 28 28',
-    '--border':          '28 28 28',
-    '--border-sub':      '18 18 18',
-    '--text-1':          '250 250 250',
-    '--text-2':          '163 163 163',
-    '--text-3':          '115 115 115',
-    '--text-4':          '82 82 82',
-    '--scrollbar-thumb': '#333333',
+    '--bg-app':          '9 9 11',
+    '--bg-base':         '15 15 18',
+    '--bg-raised':       '24 24 27',
+    '--bg-overlay':      '39 39 42',
+    '--border':          '40 40 46',
+    '--border-sub':      '26 26 30',
+    '--text-1':          '244 244 245',
+    '--text-2':          '161 161 170',
+    '--text-3':          '133 133 143',
+    '--text-4':          '104 104 115',
+    '--scrollbar-thumb': '#2e2e33',
   },
   midnight: {
     '--bg-app':          '2 6 23',
@@ -427,4 +446,9 @@ export const THEME_CSS_VARS: Record<Theme, Record<string, string>> = {
     '--text-4':          '60 90 150',
     '--scrollbar-thumb': '#003f8f',
   },
+}
+
+/** Full set of CSS custom properties for a theme (mode tokens + theme palette). */
+export function themeCssVars(theme: Theme): Record<string, string> {
+  return { ...MODE_CSS_VARS[THEME_DEFINITIONS[theme].mode], ...THEME_CSS_VARS[theme] }
 }
