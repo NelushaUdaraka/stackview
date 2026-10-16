@@ -5,6 +5,10 @@ import { SERVICE_CONFIG } from '../../services/serviceConfig'
 import { AwsServiceIcon } from './AwsServiceIcons'
 import { RegionList } from './SettingsControls'
 
+// Popover geometry — width matches its w-80 class; inset keeps it off the band's edges
+const POPOVER_WIDTH = 320
+const POPOVER_INSET = 12
+
 function hexToRgba(hex: string, alpha: number) {
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
@@ -37,9 +41,29 @@ export default function ServiceBand({
   const Icon = meta.icon
 
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // Which button opened the popover, and its left offset so it opens beneath that button
+  const [anchor, setAnchor] = useState<'region' | 'cog'>('cog')
+  const [popoverLeft, setPopoverLeft] = useState(0)
+  const bandRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const cogBtnRef = useRef<HTMLButtonElement>(null)
   const regionBtnRef = useRef<HTMLButtonElement>(null)
+
+  const togglePopover = (from: 'region' | 'cog') => {
+    if (settingsOpen) {
+      setSettingsOpen(false)
+      return
+    }
+    const band = bandRef.current?.getBoundingClientRect()
+    const btn = (from === 'region' ? regionBtnRef : cogBtnRef).current?.getBoundingClientRect()
+    if (band && btn) {
+      // Line up with the button's left edge, but keep the whole popover inside the band
+      const maxLeft = band.width - POPOVER_WIDTH - POPOVER_INSET
+      setPopoverLeft(Math.max(POPOVER_INSET, Math.min(btn.left - band.left, maxLeft)))
+    }
+    setAnchor(from)
+    setSettingsOpen(true)
+  }
 
   // Close on outside click
   useEffect(() => {
@@ -68,7 +92,7 @@ export default function ServiceBand({
   const isOverride = effectiveRegion !== settings.region
 
   return (
-    <div className="shrink-0 h-12 flex items-center gap-3 px-4 relative bg-app border-b border-theme">
+    <div ref={bandRef} className="shrink-0 h-12 flex items-center gap-3 px-4 relative bg-app border-b border-theme">
       {/* Icon tile */}
       <div className="shrink-0">
         {iconMode === 'aws' ? (
@@ -102,10 +126,12 @@ export default function ServiceBand({
 
         <button
           ref={regionBtnRef}
-          onClick={() => setSettingsOpen(o => !o)}
+          onClick={() => togglePopover('region')}
           aria-haspopup="dialog"
-          aria-expanded={settingsOpen}
-          className="shrink-0 flex items-center gap-1.5 h-6 pl-2 pr-1.5 rounded-md text-xs text-2 hover:text-1 hover:bg-raised transition-colors"
+          aria-expanded={settingsOpen && anchor === 'region'}
+          className={`shrink-0 flex items-center gap-1.5 h-6 pl-2 pr-1.5 rounded-md text-xs transition-colors ${
+            settingsOpen && anchor === 'region' ? 'text-1 bg-raised' : 'text-2 hover:text-1 hover:bg-raised'
+          }`}
           title={isOverride
             ? `Region override for ${meta.label} (global is ${settings.region})`
             : `Region for ${meta.label}`}
@@ -120,7 +146,7 @@ export default function ServiceBand({
               override
             </span>
           )}
-          <ChevronDown size={12} className={`text-4 transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown size={12} className={`text-4 transition-transform ${settingsOpen && anchor === 'region' ? 'rotate-180' : ''}`} />
         </button>
       </div>
 
@@ -140,12 +166,12 @@ export default function ServiceBand({
       {/* Settings cog */}
       <button
         ref={cogBtnRef}
-        onClick={() => setSettingsOpen(o => !o)}
-        className={`icon-btn ${settingsOpen ? '!text-1 bg-raised' : ''}`}
+        onClick={() => togglePopover('cog')}
+        className={`icon-btn ${settingsOpen && anchor === 'cog' ? '!text-1 bg-raised' : ''}`}
         title="Service settings"
         aria-label={`${meta.label} settings`}
         aria-haspopup="dialog"
-        aria-expanded={settingsOpen}
+        aria-expanded={settingsOpen && anchor === 'cog'}
       >
         <Settings size={14} />
       </button>
@@ -156,7 +182,8 @@ export default function ServiceBand({
           ref={popoverRef}
           role="dialog"
           aria-label={`${meta.label} settings`}
-          className="popover absolute right-3 top-full mt-1.5 z-50 w-80 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+          className="popover absolute top-full mt-1.5 z-50 w-80 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+          style={{ left: popoverLeft }}
         >
           <div className="px-4 py-3 border-b border-theme flex items-center gap-2.5">
             <span
