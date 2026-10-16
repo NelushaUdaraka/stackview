@@ -63,6 +63,10 @@ Each service module keeps a single module-scoped client and exposes `init<Svc>Cl
 
 CSS variables only. Themes live in [src/shared/themes.ts](src/shared/themes.ts) and are injected into a single `<style id="nexus-theme-vars">` tag at runtime by `applyTheme()` in `App.tsx` to win the cascade regardless of `@layer` ordering. Each theme declares a `mode` (`light`/`dark`); mode-level tokens (`--accent` for focus/selection, `--shadow`/`--shadow-strength` for the elevation scale in `tailwind.config.js`) are merged under the theme's palette by `themeCssVars()`. `applyTheme()` sets the `.dark` class and `color-scheme` for every dark-mode theme, so Tailwind `dark:` variants and native controls follow the theme. `globals.css` holds only the pre-hydration default palette — don't add per-theme blocks there. Component styles should reference CSS variables; shared classes (`btn-*`, `input-base`, `popover`, `icon-btn`, `resize-handle`, `modal-backdrop`, …) are listed in [docs/adding-a-new-service.md](docs/adding-a-new-service.md).
 
+### UI Work
+
+The [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) skill (v2.15.0, MIT) is vendored in [.claude/skills/ui-ux-pro-max/](.claude/skills/ui-ux-pro-max/SKILL.md) and loads for UI tasks. Query it from the repo root, e.g. `python3 .claude/skills/ui-ux-pro-max/scripts/search.py "focus management modal" --stack react` or `--domain ux` (Python 3 standard library only, no network). Treat results as recommendations: StackView's existing tokens, fonts (Inter + JetBrains Mono) and shared classes take precedence over the generator's palette and font picks, and don't pass `--persist` unless asked. To update it, run `npm install -g ui-ux-pro-max-cli`, then `uipro init --ai claude --force` (that also adds six companion skills you can delete).
+
 ### Auto-Update
 
 `electron-updater` publishes to GitHub Releases — config lives under `build.publish` in [package.json](package.json). The renderer subscribes to `UpdaterStatus` events; the install-and-restart action is triggered from the Settings menu.
