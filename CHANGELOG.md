@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-16
+
 ### New Features
 - Command palette — press `Ctrl+K` (`⌘K` on macOS) to jump to any service; `Ctrl+Enter` opens it in a new tab
 - Press `/` on the services page to focus the search box
@@ -55,7 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Windows NSIS installer with per-user install and directory picker
 - Auto-update via GitHub Releases
 
-[Unreleased]: https://github.com/NelushaUdaraka/stackview/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/NelushaUdaraka/stackview/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/NelushaUdaraka/stackview/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/NelushaUdaraka/stackview/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/NelushaUdaraka/stackview/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/NelushaUdaraka/stackview/releases/tag/v0.0.1
